@@ -26,6 +26,8 @@ export default function Navbar({ onMenuClick }) {
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         {/* Hamburger Menu Button */}
         <button
+          type="button"
+          aria-label="Mở menu"
           onClick={onMenuClick}
           style={{
             background: "none",
@@ -40,30 +42,36 @@ export default function Navbar({ onMenuClick }) {
             height: "24px",
           }}
           onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#f0f0f0";
+            e.currentTarget.style.backgroundColor = "#f0f0f0";
           }}
           onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "transparent";
+            e.currentTarget.style.backgroundColor = "transparent";
           }}
         >
-          <div style={{
-            width: "18px",
-            height: "2px",
-            backgroundColor: "#333",
-            borderRadius: "1px",
-          }} />
-          <div style={{
-            width: "18px",
-            height: "2px",
-            backgroundColor: "#333",
-            borderRadius: "1px",
-          }} />
-          <div style={{
-            width: "18px",
-            height: "2px",
-            backgroundColor: "#333",
-            borderRadius: "1px",
-          }} />
+          <div
+            style={{
+              width: "18px",
+              height: "2px",
+              backgroundColor: "#333",
+              borderRadius: "1px",
+            }}
+          />
+          <div
+            style={{
+              width: "18px",
+              height: "2px",
+              backgroundColor: "#333",
+              borderRadius: "1px",
+            }}
+          />
+          <div
+            style={{
+              width: "18px",
+              height: "2px",
+              backgroundColor: "#333",
+              borderRadius: "1px",
+            }}
+          />
         </button>
 
         <h1
@@ -83,6 +91,7 @@ export default function Navbar({ onMenuClick }) {
           {user?.fullName} ({user?.role})
         </span>
         <button
+          type="button"
           onClick={handleLogout}
           style={{
             background: "#dc3545",
