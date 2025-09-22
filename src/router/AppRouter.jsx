@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register"; // 👈 thêm import
 import Dashboard from "../pages/dashboard/Index";
 import InternshipList from "../pages/internships/InternshipList";
 import StudentList from "../pages/students/StudentList";
@@ -10,10 +11,10 @@ import Users from "../pages/admin/Users";
 import Permissions from "../pages/admin/Permissions";
 
 // Layout & Guards
-import AppLayout from "../components/layout/Layout"; // 👈 đổi tên import
+import AppLayout from "../components/layout/Layout";
 import ProtectedRoute from "../components/layout/ProtectedRoute";
 import RoleGuard from "../components/layout/RoleGuard";
-//
+
 import DocQueue from "../pages/hr/DocQueue";
 
 export default function AppRouter() {
@@ -22,12 +23,11 @@ export default function AppRouter() {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} /> {/* 👈 thêm route mới */}
 
         {/* Private */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            {" "}
-            {/* 👈 dùng AppLayout */}
             <Route path="/" element={<Dashboard />} />
             <Route
               path="/internships"
@@ -69,7 +69,6 @@ export default function AppRouter() {
                 </RoleGuard>
               }
             />
-            {/* trong block <Route element={<ProtectedRoute />}><Route element={<AppLayout />} */}
             <Route
               path="/hr/documents"
               element={
