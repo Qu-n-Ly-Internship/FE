@@ -365,26 +365,43 @@ function CreateUserModal({ onClose, onCreate }) {
             >
               Mật khẩu
             </label>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <input
-                id="password"
-                type={showPw ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  border: "1px solid #ddd",
-                  borderRadius: 8,
-                  boxSizing: "border-box",
-                  paddingRight: 12,
-                }}
-              />
+
+            {/* Ô nhập mật khẩu */}
+            <input
+              id="password"
+              type={showPw ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                boxSizing: "border-box",
+                paddingRight: 12,
+              }}
+            />
+
+            {/* thay vì để text và button tách rời nhau,
+      gộp vào 1 <div> có display:flex để nằm cùng dòng */}
+            <div
+              style={{
+                display: "flex", // 🔑 xếp theo hàng ngang
+                justifyContent: "space-between", // 🔑 text bên trái, nút bên phải
+                alignItems: "center", // 🔑 căn giữa theo chiều dọc
+                marginTop: 6,
+              }}
+            >
+              {/* Text hướng dẫn */}
+              <div style={{ color: "#666", fontSize: 12 }}>
+                Tối thiểu 6 ký tự.
+              </div>
+
+              {/* Nút Ẩn/Hiện */}
               <button
                 type="button"
                 onClick={() => setShowPw((v) => !v)}
                 style={{
-                  alignSelf: "flex-end",
                   padding: "6px 10px",
                   border: "1px solid #ddd",
                   background: "white",
@@ -396,10 +413,8 @@ function CreateUserModal({ onClose, onCreate }) {
                 {showPw ? "Ẩn" : "Hiện"}
               </button>
             </div>
-            <div style={{ color: "#666", fontSize: 12, marginTop: 6 }}>
-              Tối thiểu 6 ký tự.
-            </div>
           </div>
+
           <div style={{ marginBottom: 16 }}>
             <label
               htmlFor="role"
