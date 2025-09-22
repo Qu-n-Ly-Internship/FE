@@ -24,10 +24,10 @@ export default function Users() {
     setLoading(true);
     setErr("");
     try {
-      const { content, total } = await getUsers({ 
-        q, 
-        role: filterRole, 
-        status: filterStatus 
+      const { content, total } = await getUsers({
+        q,
+        role: filterRole,
+        status: filterStatus,
       });
       setItems(content || []);
       setTotal(total || 0);
@@ -45,9 +45,11 @@ export default function Users() {
   async function onUpdateUser(id, field, value) {
     setSavingId(id);
     try {
-      const user = items.find(u => u.id === id);
+      const user = items.find((u) => u.id === id);
       await updateUser({ ...user, [field]: value });
-      setItems(prev => prev.map(u => u.id === id ? { ...u, [field]: value } : u));
+      setItems((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, [field]: value } : u))
+      );
     } catch (e) {
       alert(e?.response?.data?.message || "Cập nhật thất bại");
     } finally {
@@ -81,7 +83,7 @@ export default function Users() {
       <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 12 }}>
         Quản lý người dùng
       </h1>
-      
+
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <input
           placeholder="Tìm họ tên/email…"
@@ -145,7 +147,15 @@ export default function Users() {
       </div>
 
       {err && (
-        <div style={{ color: "#dc3545", marginBottom: 12, padding: "8px 12px", background: "#f8d7da", borderRadius: 4 }}>
+        <div
+          style={{
+            color: "#dc3545",
+            marginBottom: 12,
+            padding: "8px 12px",
+            background: "#f8d7da",
+            borderRadius: 4,
+          }}
+        >
           {err}
         </div>
       )}
@@ -211,7 +221,9 @@ export default function Users() {
                   <select
                     value={u.status}
                     disabled={savingId === u.id}
-                    onChange={(e) => onUpdateUser(u.id, "status", e.target.value)}
+                    onChange={(e) =>
+                      onUpdateUser(u.id, "status", e.target.value)
+                    }
                     style={{
                       padding: "6px 10px",
                       border: "1px solid #ddd",
@@ -226,8 +238,8 @@ export default function Users() {
                   </select>
                 </Td>
                 <Td>
-                  <button 
-                    onClick={() => onDelete(u.id)} 
+                  <button
+                    onClick={() => onDelete(u.id)}
                     style={{
                       padding: "6px 10px",
                       borderRadius: 8,
@@ -248,7 +260,7 @@ export default function Users() {
       </div>
 
       {showCreate && (
-        <CreateUserModal 
+        <CreateUserModal
           onClose={() => setShowCreate(false)}
           onCreate={onCreate}
         />
@@ -261,43 +273,57 @@ function CreateUserModal({ onClose, onCreate }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("INTERN");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!fullName || !email) {
+    if (!fullName || !email || !password) {
       alert("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    onCreate({ fullName, email, role });
+    if (password.length < 6) {
+      alert("Mật khẩu phải có tối thiểu 6 ký tự");
+      return;
+    }
+    onCreate({ fullName, email, role, password });
   };
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 1000,
-    }}>
-      <div style={{
-        background: "white",
-        padding: 24,
-        borderRadius: 12,
-        width: 400,
-        maxWidth: "90vw",
-      }}>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: "white",
+          padding: 24,
+          borderRadius: 12,
+          width: 400,
+          maxWidth: "90vw",
+        }}
+      >
         <h2 style={{ margin: "0 0 16px 0" }}>Thêm người dùng mới</h2>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", marginBottom: 4, fontSize: 14 }}>
+            <label
+              htmlFor="fullName"
+              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
+            >
               Họ tên
             </label>
             <input
+              id="fullName"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               style={{
@@ -305,14 +331,20 @@ function CreateUserModal({ onClose, onCreate }) {
                 padding: "8px 12px",
                 border: "1px solid #ddd",
                 borderRadius: 8,
+                boxSizing: "border-box",
+                paddingRight: 12,
               }}
             />
           </div>
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", marginBottom: 4, fontSize: 14 }}>
+            <label
+              htmlFor="email"
+              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
+            >
               Email
             </label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -321,14 +353,62 @@ function CreateUserModal({ onClose, onCreate }) {
                 padding: "8px 12px",
                 border: "1px solid #ddd",
                 borderRadius: 8,
+                boxSizing: "border-box",
+                paddingRight: 12,
               }}
             />
           </div>
+          <div style={{ marginBottom: 12 }}>
+            <label
+              htmlFor="password"
+              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
+            >
+              Mật khẩu
+            </label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <input
+                id="password"
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "1px solid #ddd",
+                  borderRadius: 8,
+                  boxSizing: "border-box",
+                  paddingRight: 12,
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((v) => !v)}
+                style={{
+                  alignSelf: "flex-end",
+                  padding: "6px 10px",
+                  border: "1px solid #ddd",
+                  background: "white",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                {showPw ? "Ẩn" : "Hiện"}
+              </button>
+            </div>
+            <div style={{ color: "#666", fontSize: 12, marginTop: 6 }}>
+              Tối thiểu 6 ký tự.
+            </div>
+          </div>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4, fontSize: 14 }}>
+            <label
+              htmlFor="role"
+              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
+            >
               Vai trò
             </label>
             <select
+              id="role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
               style={{
@@ -379,5 +459,7 @@ function CreateUserModal({ onClose, onCreate }) {
   );
 }
 
-const Th = ({ children, style }) => <th style={{ padding: 12, ...style }}>{children}</th>;
+const Th = ({ children, style }) => (
+  <th style={{ padding: 12, ...style }}>{children}</th>
+);
 const Td = ({ children }) => <td style={{ padding: 12 }}>{children}</td>;

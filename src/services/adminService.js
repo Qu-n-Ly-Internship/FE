@@ -60,11 +60,18 @@ export async function createUser({
   email,
   role,
   status = "PENDING",
+  password,
 }) {
   if (MOCK) {
     if (mockUsers.some((u) => u.email === email)) {
       const e = new Error("Email đã tồn tại");
       e.response = { data: { message: "Email đã tồn tại" } };
+      throw e;
+    }
+    // Giả lập kiểm tra đơn giản cho mật khẩu (nếu truyền vào)
+    if (password && password.length < 6) {
+      const e = new Error("Mật khẩu phải có tối thiểu 6 ký tự");
+      e.response = { data: { message: "Mật khẩu phải có tối thiểu 6 ký tự" } };
       throw e;
     }
     const id = Math.max(0, ...mockUsers.map((u) => u.id)) + 1;
@@ -77,6 +84,7 @@ export async function createUser({
     email,
     role,
     status,
+    password,
   });
   return data;
 }
