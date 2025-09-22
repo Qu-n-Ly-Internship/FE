@@ -8,10 +8,34 @@ import logoTeam from "../../assets/logoTeam.jpg";
 
 // Mock users for testing
 let mockUsers = [
-  { id: 1, email: "admin@company.com", password: "admin123", fullName: "Admin User", role: "ADMIN" },
-  { id: 2, email: "hr@company.com", password: "hr123", fullName: "HR Manager", role: "HR" },
-  { id: 3, email: "mentor@company.com", password: "mentor123", fullName: "Mentor", role: "MENTOR" },
-  { id: 4, email: "intern@company.com", password: "intern123", fullName: "Intern", role: "INTERN" },
+  {
+    id: 1,
+    email: "admin@company.com",
+    password: "admin123",
+    fullName: "Admin User",
+    role: "ADMIN",
+  },
+  {
+    id: 2,
+    email: "hr@company.com",
+    password: "hr123",
+    fullName: "HR Manager",
+    role: "HR",
+  },
+  {
+    id: 3,
+    email: "mentor@company.com",
+    password: "mentor123",
+    fullName: "Mentor",
+    role: "MENTOR",
+  },
+  {
+    id: 4,
+    email: "intern@company.com",
+    password: "intern123",
+    fullName: "Intern",
+    role: "INTERN",
+  },
 ];
 
 export default function Login() {
@@ -30,12 +54,19 @@ export default function Login() {
     setLoading(true);
 
     setTimeout(() => {
-      const user = mockUsers.find((u) => u.email === email && u.password === password);
+      const user = mockUsers.find(
+        (u) => u.email === email && u.password === password
+      );
 
       if (user) {
         const mockToken = `mock-jwt-token-${user.id}`;
         setAuth(
-          { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
+          {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role,
+          },
           mockToken
         );
         navigate("/");
@@ -48,7 +79,12 @@ export default function Login() {
 
   // 👉 Mock đăng nhập Google
   function loginWithGoogle() {
-    const user = { id: 100, email: "googleuser@gmail.com", fullName: "Google User", role: "USER" };
+    const user = {
+      id: 100,
+      email: "googleuser@gmail.com",
+      fullName: "Google User",
+      role: "USER",
+    };
     const token = "mock-google-token";
     setAuth(user, token);
     navigate("/");
@@ -56,7 +92,12 @@ export default function Login() {
 
   // 👉 Mock đăng nhập GitHub
   function loginWithGitHub() {
-    const user = { id: 101, email: "githubuser@github.com", fullName: "GitHub User", role: "USER" };
+    const user = {
+      id: 101,
+      email: "githubuser@github.com",
+      fullName: "GitHub User",
+      role: "USER",
+    };
     const token = "mock-github-token";
     setAuth(user, token);
     navigate("/");
@@ -66,7 +107,11 @@ export default function Login() {
     <div style={{ display: "flex", minHeight: "100vh", background: "#f7f7f7" }}>
       {/* Logo + khu vực bên trái */}
       <div style={{ flex: 1, background: "#e0e0e0" }}>
-        <img src={teamworkImage} alt="Teamwork" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <img
+          src={teamworkImage}
+          alt="Teamwork"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
       </div>
 
       {/* Khu vực form bên phải */}
@@ -83,10 +128,16 @@ export default function Login() {
         }}
       >
         <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <img src={logoTeam} alt="Logo Login" style={{ width: "200px", height: "200px" }} />
+          <img
+            src={logoTeam}
+            alt="Logo Login"
+            style={{ width: "200px", height: "200px" }}
+          />
         </div>
 
-        <h1 style={{ fontSize: 24, marginBottom: 20, textAlign: "center" }}>Đăng nhập</h1>
+        <h1 style={{ fontSize: 24, marginBottom: 20, textAlign: "center" }}>
+          Đăng nhập
+        </h1>
 
         {error && (
           <div
@@ -132,7 +183,10 @@ export default function Login() {
         />
 
         <div style={{ textAlign: "right", marginBottom: 16 }}>
-          <a href="/forgot-password" style={{ fontSize: 12, color: "#007bff", textDecoration: "none" }}>
+          <a
+            href="/forgot-password"
+            style={{ fontSize: 12, color: "#007bff", textDecoration: "none" }}
+          >
             Quên mật khẩu?
           </a>
         </div>
@@ -168,21 +222,6 @@ export default function Login() {
           }}
         >
           🔴 Đăng nhập với Google
-        </button>
-
-        <button
-          onClick={loginWithGitHub}
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 10,
-            background: "#24292e",
-            color: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          🐱 Đăng nhập với GitHub
         </button>
 
         {/* Link sang đăng ký */}
