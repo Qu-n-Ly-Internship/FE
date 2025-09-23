@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import api from "../../services/apiClient";
+
 
 // 👉 Import ảnh
 import teamworkImage from "../../assets/Hinh-anh-ky-nang-lam-viec-nhom.jpg";
@@ -30,13 +32,25 @@ export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
 
   // --- Xử lý login ---
-  function onLogin(e) {
+  async function onLogin(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
+    setTimeout(async() => {
       const user = mockUsers.find((u) => u.email === email && u.password === password);
+
+      try {
+      const response = await api.post("/auth/login", { email, password });
+      const { user, token } = response.data;
+
+      setAuth(user, token);
+      navigate("/");
+      } catch (error) {
+        setError(error.response?.data?.message || "Đã có lỗi xảy ra");
+      } finally {
+        setLoading(false);
+      }
 
       if (user) {
         const mockToken = `mock-jwt-token-${user.id}`;
@@ -53,7 +67,7 @@ export default function Login() {
   }
 
   // --- Xử lý register ---
-  function onRegister(e) {
+  async function onRegister(e) {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
