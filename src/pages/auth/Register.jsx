@@ -21,17 +21,55 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  function validate(values) {
+    const errs = {};
+    const name = values.fullName.trim();
+    const mail = values.email.trim();
+    const pass = values.password;
+    const cpass = values.confirmPassword;
+
+    if (!name) errs.fullName = "Vui lòng nhập họ và tên";
+    if (!mail) {
+      errs.email = "Vui lòng nhập email";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(mail)) errs.email = "Email không hợp lệ";
+    }
+    if (!pass) {
+      errs.password = "Vui lòng nhập mật khẩu";
+    } else if (pass.length < 6) {
+      errs.password = "Mật khẩu phải có ít nhất 6 ký tự";
+    }
+    if (!cpass) {
+      errs.confirmPassword = "Vui lòng xác nhận mật khẩu";
+    } else if (pass !== cpass) {
+      errs.confirmPassword = "Mật khẩu xác nhận không khớp";
+    }
+    return errs;
+  }
 
   function onRegister(e) {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
 
-    if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
+    const values = {
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+      confirmPassword,
+    };
+
+    const errs = validate(values);
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      setError("Vui lòng kiểm tra lại thông tin");
       return;
     }
 
-    const existUser = mockUsers.find((u) => u.email === email);
+    const existUser = mockUsers.find((u) => u.email.toLowerCase() === values.email);
     if (existUser) {
       setError("Email đã tồn tại");
       return;
@@ -39,9 +77,9 @@ export default function Register() {
 
     const newUser = {
       id: mockUsers.length + 1,
-      email,
-      password,
-      fullName: fullName || "New User",
+      email: values.email,
+      password: values.password,
+      fullName: values.fullName || "New User",
       role: "USER",
     };
 
@@ -105,6 +143,11 @@ export default function Register() {
             marginBottom: 12,
           }}
         />
+        {fieldErrors.fullName && (
+          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
+            {fieldErrors.fullName}
+          </div>
+        )}
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -117,6 +160,11 @@ export default function Register() {
             marginBottom: 12,
           }}
         />
+        {fieldErrors.email && (
+          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
+            {fieldErrors.email}
+          </div>
+        )}
         <input
           type="password"
           value={password}
@@ -130,6 +178,11 @@ export default function Register() {
             marginBottom: 12,
           }}
         />
+        {fieldErrors.password && (
+          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
+            {fieldErrors.password}
+          </div>
+        )}
         <input
           type="password"
           value={confirmPassword}
@@ -143,15 +196,21 @@ export default function Register() {
             marginBottom: 16,
           }}
         />
+        {fieldErrors.confirmPassword && (
+          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
+            {fieldErrors.confirmPassword}
+          </div>
+        )}
 
         <button
           onClick={onRegister}
+          disabled={!fullName || !email || !password || !confirmPassword}
           style={{
             width: "100%",
             padding: "10px 12px",
             border: 0,
             borderRadius: 10,
-            background: "#28a745",
+            background: !fullName || !email || !password || !confirmPassword ? "#6c757d" : "#28a745",
             color: "#fff",
             cursor: "pointer",
             marginBottom: 12,
