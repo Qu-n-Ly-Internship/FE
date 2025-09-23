@@ -1,0 +1,70 @@
+/* Hamburger menu styles */
+.navbar-hamburger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.navbar-hamburger:hover {
+  background: #f0f0f0;
+}
+.navbar-hamburger-bar {
+  width: 20px;
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+  display: block;
+}
+/* User info and logout button (optional, for better style separation) */
+.navbar-user {
+  font-size: 14px;
+  color: #666;
+}
+.navbar-logout {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+.navbar-logout:hover {
+  background: #c82333;
+}
+
+/* Navbar container and sections */
+.navbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-left,
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+}

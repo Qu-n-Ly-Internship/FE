@@ -1,0 +1,54 @@
+/* Profile page styles */
+.profile-container {
+  padding: 16px;
+}
+.profile-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.field-label {
+  font-size: 12px;
+  color: #666;
+}
+.field-value {
+  font-weight: 500;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.error-text {
+  color: #c53030;
+}
+.upload-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  margin-top: 16px;
+}
+.upload-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.upload-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hint-success {
+  color: #1a7f37;
+  font-size: 12px;
+}
+.hint-error {
+  color: #c53030;
+  font-size: 12px;
+}

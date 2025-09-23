@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllRolePermissions, updateRolePermissions, PERMISSION_GROUPS } from "../../services/permissionService";
+import "./admin.css";
 
 export default function Permissions() {
   const [rolePermissions, setRolePermissions] = useState({});
@@ -70,7 +71,7 @@ export default function Permissions() {
 
   if (loading) {
     return (
-      <div style={{ padding: 24, textAlign: "center" }}>
+      <div className="admin-center">
         <div>Đang tải...</div>
       </div>
     );
@@ -79,64 +80,34 @@ export default function Permissions() {
   const roles = Object.keys(rolePermissions);
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>
-        Quản lý Phân quyền
-      </h1>
+    <div className="admin-container">
+      <h1 className="admin-title">Quản lý Phân quyền</h1>
       
-      <p style={{ color: "#666", marginBottom: 24, fontSize: 14 }}>
+      <p className="admin-desc">
         Tích vào ô để cấp quyền cho vai trò tương ứng. Thay đổi sẽ được lưu tự động.
       </p>
 
       {error && (
-        <div style={{
-          color: "#dc3545",
-          background: "#f8d7da",
-          padding: "12px 16px",
-          borderRadius: 8,
-          marginBottom: 16,
-          border: "1px solid #f5c6cb"
-        }}>
-          {error}
-        </div>
+        <div className="admin-alert">{error}</div>
       )}
 
       {success && (
-        <div style={{
-          color: "#155724",
-          background: "#d4edda",
-          padding: "12px 16px",
-          borderRadius: 8,
-          marginBottom: 16,
-          border: "1px solid #c3e6cb"
-        }}>
-          {success}
-        </div>
+        <div className="admin-alert--success">{success}</div>
       )}
 
-      <div style={{
-        background: "#fff",
-        borderRadius: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        overflow: "hidden"
-      }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div className="admin-card">
+        <table className="admin-table">
           <thead>
-            <tr style={{ background: "#f8f9fa" }}>
-              <th style={{
-                padding: "16px",
-                textAlign: "left",
-                fontWeight: 600,
+            <tr className="admin-thead-row">
+              <th className="admin-th" style={{
                 borderBottom: "2px solid #dee2e6",
                 minWidth: "200px"
               }}>
                 Quyền
               </th>
               {roles.map(role => (
-                <th key={role} style={{
-                  padding: "16px",
+                <th key={role} className="admin-th" style={{
                   textAlign: "center",
-                  fontWeight: 600,
                   borderBottom: "2px solid #dee2e6",
                   minWidth: "120px"
                 }}>
@@ -149,44 +120,29 @@ export default function Permissions() {
             {Object.entries(PERMISSION_GROUPS).map(([groupName, permissions]) => (
               <>
                 <tr key={`group-${groupName}`}>
-                  <td colSpan={roles.length + 1} style={{
-                    padding: "12px 16px",
-                    background: "#e9ecef",
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: "#495057"
-                  }}>
+                  <td colSpan={roles.length + 1} className="admin-group-row">
                     {groupName}
                   </td>
                 </tr>
                 {permissions.map(permission => (
                   <tr key={permission} style={{ borderBottom: "1px solid #dee2e6" }}>
-                    <td style={{ padding: "12px 16px", fontSize: 14 }}>
+                    <td className="admin-td" style={{ fontSize: 14 }}>
                       {getPermissionLabel(permission)}
                     </td>
                     {roles.map(role => (
-                      <td key={`${role}-${permission}`} style={{
-                        padding: "12px 16px",
+                      <td key={`${role}-${permission}`} className="admin-td" style={{
                         textAlign: "center"
                       }}>
-                        <label style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}>
+                        <label className="admin-checkbox-label">
                           <input
                             type="checkbox"
                             checked={isPermissionChecked(role, permission)}
                             disabled={isPermissionSaving(role, permission)}
                             onChange={(e) => handlePermissionChange(role, permission, e.target.checked)}
-                            style={{
-                              width: 18,
-                              height: 18,
-                              cursor: isPermissionSaving(role, permission) ? "not-allowed" : "pointer"
-                            }}
+                            style={{ width: 18, height: 18, cursor: isPermissionSaving(role, permission) ? "not-allowed" : "pointer" }}
                           />
                           {isPermissionSaving(role, permission) && (
-                            <span style={{
-                              marginLeft: 8,
-                              fontSize: 12,
-                              color: "#666"
-                            }}>
+                            <span className="admin-checkbox-hint">
                               ...
                             </span>
                           )}

@@ -5,6 +5,7 @@ import {
   updateUser,
   deleteUser,
 } from "../../services/adminService";
+import "./admin.css";
 
 const ROLES = ["ADMIN", "HR", "MENTOR", "INTERN"];
 const STATUSES = ["ACTIVE", "PENDING", "INACTIVE"];
@@ -59,7 +60,7 @@ export default function Users() {
 
   async function onCreate(data) {
     try {
-      const user = await createUser(data);
+      await createUser(data);
       alert("Tạo thành công.");
       setShowCreate(false);
       await load();
@@ -79,31 +80,20 @@ export default function Users() {
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 12 }}>
-        Quản lý người dùng
-      </h1>
+    <div className="admin-container">
+      <h1 className="admin-title">Quản lý người dùng</h1>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      <div className="admin-toolbar">
         <input
           placeholder="Tìm họ tên/email…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            width: 280,
-          }}
+          className="admin-input admin-input--wide"
         />
         <select
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-          }}
+          className="admin-select"
         >
           <option value="">Tất cả vai trò</option>
           {ROLES.map((r) => (
@@ -115,11 +105,7 @@ export default function Users() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-          }}
+          className="admin-select"
         >
           <option value="">Tất cả trạng thái</option>
           {STATUSES.map((s) => (
@@ -130,49 +116,21 @@ export default function Users() {
         </select>
         <button
           onClick={() => setShowCreate(true)}
-          style={{
-            padding: "8px 16px",
-            background: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-          }}
+          className="admin-btn admin-btn--primary"
         >
           Thêm người dùng
         </button>
-        <div style={{ marginLeft: "auto", fontSize: 13, color: "#666" }}>
+        <div className="admin-total">
           Tổng: {total}
         </div>
       </div>
 
-      {err && (
-        <div
-          style={{
-            color: "#dc3545",
-            marginBottom: 12,
-            padding: "8px 12px",
-            background: "#f8d7da",
-            borderRadius: 4,
-          }}
-        >
-          {err}
-        </div>
-      )}
+      {err && <div className="admin-alert">{err}</div>}
 
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-          overflowX: "auto",
-        }}
-      >
-        <table
-          style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}
-        >
+      <div className="admin-card">
+        <table className="admin-table">
           <thead>
-            <tr style={{ background: "#f6f6f6", textAlign: "left" }}>
+            <tr className="admin-thead-row">
               <Th>Họ tên</Th>
               <Th>Email</Th>
               <Th>Vai trò</Th>
@@ -183,20 +141,20 @@ export default function Users() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={5} style={{ padding: 12 }}>
+                <td colSpan={5} className="admin-loading">
                   Đang tải…
                 </td>
               </tr>
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: 12, color: "#666" }}>
+                <td colSpan={5} className="admin-empty">
                   Không có dữ liệu.
                 </td>
               </tr>
             )}
             {items.map((u) => (
-              <tr key={u.id} style={{ borderTop: "1px solid #eee" }}>
+              <tr key={u.id} className="admin-tr">
                 <Td>{u.fullName}</Td>
                 <Td>{u.email}</Td>
                 <Td>
@@ -204,11 +162,7 @@ export default function Users() {
                     value={u.role}
                     disabled={savingId === u.id}
                     onChange={(e) => onUpdateUser(u.id, "role", e.target.value)}
-                    style={{
-                      padding: "6px 10px",
-                      border: "1px solid #ddd",
-                      borderRadius: 8,
-                    }}
+                    className="admin-select admin-select--sm"
                   >
                     {ROLES.map((r) => (
                       <option key={r} value={r}>
@@ -224,11 +178,7 @@ export default function Users() {
                     onChange={(e) =>
                       onUpdateUser(u.id, "status", e.target.value)
                     }
-                    style={{
-                      padding: "6px 10px",
-                      border: "1px solid #ddd",
-                      borderRadius: 8,
-                    }}
+                    className="admin-select admin-select--sm"
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -240,15 +190,7 @@ export default function Users() {
                 <Td>
                   <button
                     onClick={() => onDelete(u.id)}
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 8,
-                      border: "1px solid #dc3545",
-                      background: "#fff",
-                      color: "#dc3545",
-                      cursor: "pointer",
-                      fontSize: 12,
-                    }}
+                    className="btn-inline btn-inline--danger"
                   >
                     Xoá
                   </button>
@@ -290,57 +232,23 @@ function CreateUserModal({ onClose, onCreate }) {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: "rgba(0,0,0,0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          padding: 24,
-          borderRadius: 12,
-          width: 400,
-          maxWidth: "90vw",
-        }}
-      >
-        <h2 style={{ margin: "0 0 16px 0" }}>Thêm người dùng mới</h2>
+    <div className="modal-overlay">
+      <div className="modal-box">
+        <h2 className="modal-title">Thêm người dùng mới</h2>
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 12 }}>
-            <label
-              htmlFor="fullName"
-              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
-            >
+          <div className="form-group">
+            <label htmlFor="fullName" className="form-label">
               Họ tên
             </label>
             <input
               id="fullName"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                boxSizing: "border-box",
-                paddingRight: 12,
-              }}
+              className="form-input"
             />
           </div>
-          <div style={{ marginBottom: 12 }}>
-            <label
-              htmlFor="email"
-              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
-            >
+          <div className="form-group">
+            <label htmlFor="email" className="form-label">
               Email
             </label>
             <input
@@ -348,21 +256,11 @@ function CreateUserModal({ onClose, onCreate }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                boxSizing: "border-box",
-                paddingRight: 12,
-              }}
+              className="form-input"
             />
           </div>
-          <div style={{ marginBottom: 12 }}>
-            <label
-              htmlFor="password"
-              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
-            >
+          <div className="form-group">
+            <label htmlFor="password" className="form-label">
               Mật khẩu
             </label>
 
@@ -372,28 +270,14 @@ function CreateUserModal({ onClose, onCreate }) {
               type={showPw ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                boxSizing: "border-box",
-                paddingRight: 12,
-              }}
+              className="form-input"
             />
 
             {/* thay vì để text và button tách rời nhau,
       gộp vào 1 <div> có display:flex để nằm cùng dòng */}
-            <div
-              style={{
-                display: "flex", // 🔑 xếp theo hàng ngang
-                justifyContent: "space-between", // 🔑 text bên trái, nút bên phải
-                alignItems: "center", // 🔑 căn giữa theo chiều dọc
-                marginTop: 6,
-              }}
-            >
+            <div className="form-row">
               {/* Text hướng dẫn */}
-              <div style={{ color: "#666", fontSize: 12 }}>
+              <div className="form-hint">
                 Tối thiểu 6 ký tự.
               </div>
 
@@ -401,37 +285,22 @@ function CreateUserModal({ onClose, onCreate }) {
               <button
                 type="button"
                 onClick={() => setShowPw((v) => !v)}
-                style={{
-                  padding: "6px 10px",
-                  border: "1px solid #ddd",
-                  background: "white",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontSize: 12,
-                }}
+                className="btn-inline"
               >
                 {showPw ? "Ẩn" : "Hiện"}
               </button>
             </div>
           </div>
 
-          <div style={{ marginBottom: 16 }}>
-            <label
-              htmlFor="role"
-              style={{ display: "block", marginBottom: 4, fontSize: 14 }}
-            >
+          <div className="form-group">
+            <label htmlFor="role" className="form-label">
               Vai trò
             </label>
             <select
               id="role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-              }}
+              className="form-select"
             >
               {ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -440,31 +309,11 @@ function CreateUserModal({ onClose, onCreate }) {
               ))}
             </select>
           </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: "8px 16px",
-                border: "1px solid #ddd",
-                background: "white",
-                borderRadius: 8,
-                cursor: "pointer",
-              }}
-            >
+          <div className="form-actions">
+            <button type="button" onClick={onClose} className="btn-outline">
               Hủy
             </button>
-            <button
-              type="submit"
-              style={{
-                padding: "8px 16px",
-                border: "none",
-                background: "#007bff",
-                color: "white",
-                borderRadius: 8,
-                cursor: "pointer",
-              }}
-            >
+            <button type="submit" className="btn-primary">
               Tạo
             </button>
           </div>
@@ -475,6 +324,6 @@ function CreateUserModal({ onClose, onCreate }) {
 }
 
 const Th = ({ children, style }) => (
-  <th style={{ padding: 12, ...style }}>{children}</th>
+  <th className="admin-th" style={style}>{children}</th>
 );
-const Td = ({ children }) => <td style={{ padding: 12 }}>{children}</td>;
+const Td = ({ children }) => <td className="admin-td">{children}</td>;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getMyProfile, getMyDocuments } from "../../services/profileService";
 import StatusBadge from "../../components/common/StatusBadge";
 import { uploadMyDoc, getMyDocs } from "../../services/documentService"; // bỏ/giữ getMyDocs tùy bạn
+import "./profile.css";
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
@@ -23,28 +24,16 @@ export default function Profile() {
     })();
   }, []);
 
-  if (loading) return <div style={{ padding: 24 }}>Đang tải…</div>;
-  if (err) return <div style={{ padding: 24, color: "#c53030" }}>{err}</div>;
+  if (loading) return <div className="page-container">Đang tải…</div>;
+  if (err) return <div className="page-container error-text">{err}</div>;
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 12 }}>
-        Hồ sơ cá nhân
-      </h1>
+    <div className="profile-container">
+      <h1 className="profile-title">Hồ sơ cá nhân</h1>
 
       {/* Thông tin cơ bản */}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          padding: 16,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-          marginBottom: 16,
-        }}
-      >
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
-        >
+      <div className="upload-card" style={{ marginBottom: 16 }}>
+        <div className="field-grid">
           <Field label="Họ tên" value={profile?.fullName} />
           <Field label="Email" value={profile?.email} />
           <Field label="Trường" value={profile?.university} />
@@ -58,70 +47,52 @@ export default function Profile() {
       </div>
 
       {/* Tài liệu đã nộp & Trạng thái */}
-      <h2 style={{ fontSize: 18, fontWeight: 600, margin: "8px 0" }}>
-        Tài liệu đã nộp
-      </h2>
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          overflowX: "auto",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-        }}
-      >
-        <table
-          style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}
-        >
+      <h2 className="section-title">Tài liệu đã nộp</h2>
+      <div className="upload-card">
+        <table className="table" style={{ fontSize: 14 }}>
           <thead>
-            <tr style={{ background: "#f6f6f6", textAlign: "left" }}>
-              <Th>Tài liệu</Th>
-              <Th>Tên file</Th>
-              <Th>Ngày nộp</Th>
-              <Th>Trạng thái</Th>
-              <Th>Ghi chú</Th>
-              <Th>Tác vụ</Th>
+            <tr>
+              <th className="table-th">Tài liệu</th>
+              <th className="table-th">Tên file</th>
+              <th className="table-th">Ngày nộp</th>
+              <th className="table-th">Trạng thái</th>
+              <th className="table-th">Ghi chú</th>
+              <th className="table-th">Tác vụ</th>
             </tr>
           </thead>
           <tbody>
             {docs.length === 0 && (
               <tr>
-                <td
-                  colSpan={6}
-                  style={{ padding: 12, textAlign: "center", color: "#666" }}
-                >
+                <td colSpan={6} className="center" style={{ padding: 12, color: "#666" }}>
                   Chưa có tài liệu.
                 </td>
               </tr>
             )}
             {docs.map((it) => (
-              <tr key={it.id} style={{ borderTop: "1px solid #eee" }}>
-                <Td>{labelOf(it.type)}</Td>
-                <Td>{it.fileName}</Td>
-                <Td>{formatDate(it.uploadedAt)}</Td>
-                <Td>
+              <tr key={it.id}>
+                <td className="table-td">{labelOf(it.type)}</td>
+                <td className="table-td">{it.fileName}</td>
+                <td className="table-td">{formatDate(it.uploadedAt)}</td>
+                <td className="table-td">
                   <StatusBadge status={it.status} />
-                </Td>
-                <Td>{it.note || "-"}</Td>
-                <Td>
-                  {/* Link tải nếu BE trả URL sẵn, tuỳ API của bạn */}
+                </td>
+                <td className="table-td">{it.note || "-"}</td>
+                <td className="table-td">
                   {it.url ? (
-                    <a
-                      href={it.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ fontSize: 12 }}
-                    >
+                    <a href={it.url} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
                       Xem/Tải
                     </a>
                   ) : (
                     <span style={{ fontSize: 12, color: "#999" }}>—</span>
                   )}
-                </Td>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {/* Khu vực nộp tài liệu */}
+      <UploadBox onUploaded={() => getMyDocuments().then(setDocs)} />
     </div>
   );
 }
@@ -129,13 +100,11 @@ export default function Profile() {
 function Field({ label, value }) {
   return (
     <div>
-      <div style={{ fontSize: 12, color: "#666" }}>{label}</div>
-      <div style={{ fontWeight: 500 }}>{value || "-"}</div>
+      <div className="field-label">{label}</div>
+      <div className="field-value">{value || "-"}</div>
     </div>
   );
 }
-const Th = ({ children }) => <th style={{ padding: 12 }}>{children}</th>;
-const Td = ({ children }) => <td style={{ padding: 12 }}>{children}</td>;
 
 function formatDate(s) {
   if (!s) return "-";
@@ -184,34 +153,10 @@ function UploadBox({ onUploaded }) {
   }
 
   return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 12,
-        padding: 16,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-        marginTop: 16,
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 8 }}>Nộp tài liệu</div>
-      <form
-        onSubmit={onSubmit}
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-          }}
-        >
+    <div className="upload-card">
+      <div className="upload-title">Nộp tài liệu</div>
+      <form onSubmit={onSubmit} className="upload-form">
+        <select value={type} onChange={(e) => setType(e.target.value)}>
           <option value="CV">CV</option>
           <option value="APPLICATION">Đơn xin thực tập</option>
           <option value="CONTRACT">Hợp đồng</option>
@@ -221,22 +166,12 @@ function UploadBox({ onUploaded }) {
           type="file"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
-        <button
-          disabled={loading}
-          style={{
-            padding: "8px 14px",
-            borderRadius: 8,
-            border: 0,
-            background: "#111",
-            color: "#fff",
-          }}
-        >
+        <button disabled={loading} className="btn btn-primary">
           {loading ? "Đang tải..." : "Tải lên"}
         </button>
-        {msg && <span style={{ color: "#1a7f37", fontSize: 12 }}>{msg}</span>}
-        {err && <span style={{ color: "#c53030", fontSize: 12 }}>{err}</span>}
+        {msg && <span className="hint-success">{msg}</span>}
+        {err && <span className="hint-error">{err}</span>}
       </form>
-      <UploadBox onUploaded={() => getMyDocuments().then(setDocs)} />
     </div>
   );
 }

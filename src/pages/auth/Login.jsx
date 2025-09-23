@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import "./auth.css";
 
 // 👉 Import ảnh
 import teamworkImage from "../../assets/Hinh-anh-ky-nang-lam-viec-nhom.jpg";
@@ -104,68 +105,28 @@ export default function Login() {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f7f7f7" }}>
+    <div className="auth-container">
       {/* Logo + khu vực bên trái */}
-      <div style={{ flex: 1, background: "#e0e0e0" }}>
-        <img
-          src={teamworkImage}
-          alt="Teamwork"
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+      <div className="auth-left">
+        <img src={teamworkImage} alt="Teamwork" />
       </div>
 
       {/* Khu vực form bên phải */}
-      <div
-        style={{
-          width: "400px",
-          background: "#fff",
-          padding: "40px 24px",
-          boxShadow: "0 0 15px rgba(0,0,0,0.1)",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          paddingTop: "40px",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <img
-            src={logoTeam}
-            alt="Logo Login"
-            style={{ width: "200px", height: "200px" }}
-          />
+      <div className="auth-right">
+        <div className="auth-logo">
+          <img src={logoTeam} alt="Logo Login" />
         </div>
 
-        <h1 style={{ fontSize: 24, marginBottom: 20, textAlign: "center" }}>
-          Đăng nhập
-        </h1>
+        <h1 className="auth-title">Đăng nhập</h1>
 
-        {error && (
-          <div
-            style={{
-              color: "#dc3545",
-              fontSize: 14,
-              marginBottom: 12,
-              padding: "8px 12px",
-              background: "#f8d7da",
-              borderRadius: 4,
-            }}
-          >
-            {error}
-          </div>
-        )}
+        {error && <div className="auth-alert">{error}</div>}
 
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           disabled={loading}
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
+          className="auth-input"
         />
         <input
           type="password"
@@ -173,20 +134,11 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Mật khẩu"
           disabled={loading}
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
+          className="auth-input"
         />
 
-        <div style={{ textAlign: "right", marginBottom: 16 }}>
-          <a
-            href="/forgot-password"
-            style={{ fontSize: 12, color: "#007bff", textDecoration: "none" }}
-          >
+        <div className="auth-link-row">
+          <a href="/forgot-password" className="auth-link">
             Quên mật khẩu?
           </a>
         </div>
@@ -195,42 +147,19 @@ export default function Login() {
           type="submit"
           disabled={loading}
           onClick={onLogin}
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: 0,
-            borderRadius: 10,
-            background: loading ? "#ccc" : "#111",
-            color: "#fff",
-            cursor: loading ? "not-allowed" : "pointer",
-            marginBottom: 12,
-          }}
+          className="btn btn-primary"
         >
           {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </button>
 
-        <button
-          onClick={loginWithGoogle}
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 10,
-            background: "#fff",
-            cursor: "pointer",
-            marginBottom: 8,
-          }}
-        >
+        <button onClick={loginWithGoogle} className="btn btn-outline">
           🔴 Đăng nhập với Google
         </button>
 
         {/* Link sang đăng ký */}
-        <div style={{ marginTop: 16, fontSize: 14, textAlign: "center" }}>
+        <div className="auth-footer">
           Chưa có tài khoản?{" "}
-          <span
-            style={{ color: "#007bff", cursor: "pointer" }}
-            onClick={() => navigate("/register")} // 👈 chuyển sang trang đăng ký
-          >
+          <span className="link-button" onClick={() => navigate("/register")}>
             Đăng ký ngay
           </span>
         </div>
