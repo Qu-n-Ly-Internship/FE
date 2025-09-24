@@ -8,6 +8,7 @@ import InternshipList from "../pages/internships/InternshipList";
 import StudentList from "../pages/students/StudentList";
 import Users from "../pages/admin/Users";
 import Permissions from "../pages/admin/Permissions";
+import OAuthCallback from "../pages/auth/OAuthCallback";
 
 // Layout & Guards
 import AppLayout from "../components/layout/Layout";
@@ -22,8 +23,9 @@ export default function AppRouter() {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />{" "}
-        {/* 👈 thêm route mới */}
+        <Route path="/register" element={<Register />} /> 
+        <Route path="/oauth2/callback" element={<OAuthCallback />} />
+
         {/* Private */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
