@@ -6,19 +6,19 @@ const MOCK = true; // bật mock
 export const PERMISSIONS = {
   // Dashboard
   VIEW_DASHBOARD: "VIEW_DASHBOARD",
-  
+
   // Internships
   VIEW_INTERNSHIPS: "VIEW_INTERNSHIPS",
   CREATE_INTERNSHIP: "CREATE_INTERNSHIP",
   EDIT_INTERNSHIP: "EDIT_INTERNSHIP",
   DELETE_INTERNSHIP: "DELETE_INTERNSHIP",
-  
+
   // Students
   VIEW_STUDENTS: "VIEW_STUDENTS",
   CREATE_STUDENT: "CREATE_STUDENT",
   EDIT_STUDENT: "EDIT_STUDENT",
   DELETE_STUDENT: "DELETE_STUDENT",
-  
+
   // Admin
   MANAGE_USERS: "MANAGE_USERS",
   MANAGE_PERMISSIONS: "MANAGE_PERMISSIONS",
@@ -27,7 +27,7 @@ export const PERMISSIONS = {
 
 // Nhóm quyền theo module
 export const PERMISSION_GROUPS = {
-  "Dashboard": [PERMISSIONS.VIEW_DASHBOARD],
+  Dashboard: [PERMISSIONS.VIEW_DASHBOARD],
   "Quản lý Thực tập": [
     PERMISSIONS.VIEW_INTERNSHIPS,
     PERMISSIONS.CREATE_INTERNSHIP,
@@ -36,13 +36,13 @@ export const PERMISSION_GROUPS = {
   ],
   "Quản lý Sinh viên": [
     PERMISSIONS.VIEW_STUDENTS,
-    PERMISSIONS.CREATE_STUDENT,
+    // PERMISSIONS.CREATE_STUDENT,
     PERMISSIONS.EDIT_STUDENT,
     PERMISSIONS.DELETE_STUDENT,
   ],
   "Quản trị": [
     PERMISSIONS.MANAGE_USERS,
-    PERMISSIONS.MANAGE_PERMISSIONS,
+    // PERMISSIONS.MANAGE_PERMISSIONS,
     PERMISSIONS.VIEW_REPORTS,
   ],
 };
@@ -64,9 +64,7 @@ const mockRolePermissions = {
     PERMISSIONS.VIEW_INTERNSHIPS,
     PERMISSIONS.VIEW_STUDENTS,
   ],
-  INTERN: [
-    PERMISSIONS.VIEW_DASHBOARD,
-  ],
+  INTERN: [PERMISSIONS.VIEW_DASHBOARD],
 };
 
 // Lấy danh sách quyền của một role
@@ -84,7 +82,9 @@ export async function updateRolePermissions(role, permissions) {
     mockRolePermissions[role] = permissions;
     return { success: true };
   }
-  const { data } = await api.put(`/admin/roles/${role}/permissions`, { permissions });
+  const { data } = await api.put(`/admin/roles/${role}/permissions`, {
+    permissions,
+  });
   return data;
 }
 
@@ -92,10 +92,10 @@ export async function updateRolePermissions(role, permissions) {
 export async function getAllRolePermissions() {
   if (MOCK) {
     return {
-      roles: Object.keys(mockRolePermissions).map(role => ({
+      roles: Object.keys(mockRolePermissions).map((role) => ({
         role,
         permissions: mockRolePermissions[role],
-      }))
+      })),
     };
   }
   const { data } = await api.get("/admin/roles/permissions");
