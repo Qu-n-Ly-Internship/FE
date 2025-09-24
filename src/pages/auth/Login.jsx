@@ -1,44 +1,11 @@
-// src/pages/auth/Login.jsx
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import api from "../../services/apiClient"; // <-- axios instance
 import "./auth.css";
 
-// 👉 Import ảnh
 import teamworkImage from "../../assets/Hinh-anh-ky-nang-lam-viec-nhom.jpg";
 import logoTeam from "../../assets/logoTeam.jpg";
-
-// Mock users for testing
-let mockUsers = [
-  {
-    id: 1,
-    email: "admin@company.com",
-    password: "admin123",
-    fullName: "Admin User",
-    role: "ADMIN",
-  },
-  {
-    id: 2,
-    email: "hr@company.com",
-    password: "hr123",
-    fullName: "HR Manager",
-    role: "HR",
-  },
-  {
-    id: 3,
-    email: "mentor@company.com",
-    password: "mentor123",
-    fullName: "Mentor",
-    role: "MENTOR",
-  },
-  {
-    id: 4,
-    email: "intern@company.com",
-    password: "intern123",
-    fullName: "Intern",
-    role: "INTERN",
-  },
-];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -51,66 +18,57 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --- Xử lý login mock ---
-  function onLogin(e) {
+  async function onLogin(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const user = mockUsers.find(
-        (u) => u.email === email && u.password === password
-      );
+    try {
+      const { data } = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
-      if (user) {
-        const mockToken = `mock-jwt-token-${user.id}`;
-        setAuth(
-          {
-            id: user.id,
-            email: user.email,
-            fullName: user.fullName,
-            role: user.role,
-          },
-          mockToken
-        );
-        navigate("/");
-      } else {
-        setError("Email hoặc mật khẩu không đúng");
+      // BE trả về { user: {...}, token: "..." }
+      const user = data.user || data;
+      const jwt = data.token;
+
+      if (!user || !jwt) {
+        throw new Error("Dữ liệu đăng nhập không hợp lệ");
       }
+
+      setAuth(user, jwt);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      setError("Email hoặc mật khẩu không đúng");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   }
 
-  // 👉 Đăng nhập Google (redirect thật tới backend Spring Security)
   function loginWithGoogle() {
     window.location.href = "http://localhost:8090/oauth2/authorization/google";
   }
 
-  // Wait for persisted auth to hydrate to avoid flicker/error on F5
   if (!hasHydrated) {
     return (
-      <div
-        className="auth-container"
-        style={{ alignItems: "center", justifyContent: "center" }}
-      >
+      <div className="auth-container" style={{ alignItems: "center", justifyContent: "center" }}>
         <div className="auth-right">Đang tải...</div>
       </div>
     );
   }
 
-  // Nếu đã login thì chuyển hướng về trang chủ
   if (token) {
     return <Navigate to="/" replace />;
   }
 
   return (
     <div className="auth-container">
-      {/* Logo + khu vực bên trái */}
       <div className="auth-left">
         <img src={teamworkImage} alt="Teamwork" />
       </div>
 
-      {/* Khu vực form bên phải */}
       <div className="auth-right">
         <div className="auth-logo">
           <img src={logoTeam} alt="Logo Login" />
@@ -142,12 +100,7 @@ export default function Login() {
           </a>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          onClick={onLogin}
-          className="btn btn-primary"
-        >
+        <button type="submit" disabled={loading} onClick={onLogin} className="btn btn-primary">
           {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </button>
 
@@ -190,7 +143,6 @@ export default function Login() {
           <span>Đăng nhập với Google</span>
         </button>
 
-        {/* Link sang đăng ký */}
         <div className="auth-footer">
           Chưa có tài khoản?{" "}
           <span className="link-button" onClick={() => navigate("/register")}>

@@ -7,63 +7,40 @@ export default function OAuthCallback() {
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
-
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function handleCallback() {
       setError("");
       const params = new URLSearchParams(location.search);
-      const urlToken = params.get("token") || params.get("access_token") || params.get("jwt");
-      const redirect = params.get("redirect") || "/";
+      const token = params.get("token");
+
+      if (!token) {
+        setError("Không tìm thấy token từ backend");
+        return;
+      }
 
       try {
-        let user = null;
-        let token = urlToken || null;
+        localStorage.setItem("token", token);
 
-        // If backend gave us a token in URL, try to fetch profile with it
-        if (token) {
-          // Temporarily set token just to fetch profile
-          setAuth(null, token);
-        }
+        const { data } = await api.get("/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        // Try to fetch current user using cookie session or provided token
-        const { data } = await api.get("/auth/me");
-        user = data?.user || data || null;
-
-        // If no token (cookie-based session), mark token as 'session' so ProtectedRoute passes
-        if (!token) {
-          token = "session";
-        }
-
-        if (!user) {
-          throw new Error("Không lấy được thông tin user sau khi đăng nhập");
-        }
-
-        setAuth(user, token);
-        navigate(redirect, { replace: true });
-      } catch (e) {
-        console.error(e);
-        setError("Đăng nhập không thành công. Vui lòng thử lại.");
+        setAuth(data, token);
+        navigate("/", { replace: true });
+      } catch (err) {
+        console.error(err);
+        setError("Đăng nhập thất bại.");
       }
     }
 
     handleCallback();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location, navigate, setAuth]);
 
   return (
-    <div className="auth-container" style={{ alignItems: "center", justifyContent: "center" }}>
-      <div className="auth-right">
-        {error ? (
-          <div>
-            <div style={{ color: "#dc3545", marginBottom: 12 }}>{error}</div>
-            <button className="btn btn-primary" onClick={() => (window.location.href = "/login")}>Quay lại Login</button>
-          </div>
-        ) : (
-          <div>Đang xử lý đăng nhập...</div>
-        )}
-      </div>
+    <div className="auth-container">
+      {error ? <div>{error}</div> : <div>Đang xử lý đăng nhập...</div>}
     </div>
   );
 }

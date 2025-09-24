@@ -2,25 +2,16 @@ import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
-  withCredentials: true, // allow cookies for OAuth session
+  baseURL: "http://localhost:8090/api",
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token && token !== "session") {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
-
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      useAuthStore.getState().clearAuth();
-      window.location.href = "/login";
-    }
-    return Promise.reject(err);
-  }
-);
 
 export default api;
