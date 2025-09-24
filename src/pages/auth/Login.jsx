@@ -1,3 +1,4 @@
+// src/pages/auth/Login.jsx
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
@@ -50,7 +51,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --- Xử lý login ---
+  // --- Xử lý login mock ---
   function onLogin(e) {
     e.preventDefault();
     setError("");
@@ -80,42 +81,24 @@ export default function Login() {
     }, 1000);
   }
 
-  // 👉 Mock đăng nhập Google
+  // 👉 Đăng nhập Google (redirect thật tới backend Spring Security)
   function loginWithGoogle() {
-    const user = {
-      id: 100,
-      email: "googleuser@gmail.com",
-      fullName: "Google User",
-      role: "USER",
-    };
-    const token = "mock-google-token";
-    setAuth(user, token);
-    navigate("/");
-  }
-
-  // 👉 Mock đăng nhập GitHub
-  function loginWithGitHub() {
-    const user = {
-      id: 101,
-      email: "githubuser@github.com",
-      fullName: "GitHub User",
-      role: "USER",
-    };
-    const token = "mock-github-token";
-    setAuth(user, token);
-    navigate("/");
+    window.location.href = "http://localhost:8090/oauth2/authorization/google";
   }
 
   // Wait for persisted auth to hydrate to avoid flicker/error on F5
   if (!hasHydrated) {
     return (
-      <div className="auth-container" style={{ alignItems: "center", justifyContent: "center" }}>
+      <div
+        className="auth-container"
+        style={{ alignItems: "center", justifyContent: "center" }}
+      >
         <div className="auth-right">Đang tải...</div>
       </div>
     );
   }
 
-  // If already logged in, redirect away from Login
+  // Nếu đã login thì chuyển hướng về trang chủ
   if (token) {
     return <Navigate to="/" replace />;
   }
@@ -168,6 +151,7 @@ export default function Login() {
           {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </button>
 
+        {/* Nút login Google */}
         <button
           onClick={loginWithGoogle}
           className="btn btn-outline google-btn"
