@@ -30,12 +30,6 @@ export default function Sidebar({ isOpen, onClose }) {
       roles: ["ADMIN", "HR"],
     },
     {
-      label: "Công ty",
-      path: "/companies",
-      icon: "🏢",
-      roles: ["ADMIN", "HR"],
-    },
-    {
       label: "Quản lý người dùng",
       path: "/admin/users",
       icon: "👥",
