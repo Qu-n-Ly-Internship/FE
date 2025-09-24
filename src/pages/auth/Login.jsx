@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import "./auth.css";
 
@@ -42,6 +42,8 @@ let mockUsers = [
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const token = useAuthStore((s) => s.token);
+  const hasHydrated = useAuthStore.persist?.hasHydrated?.();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -102,6 +104,20 @@ export default function Login() {
     const token = "mock-github-token";
     setAuth(user, token);
     navigate("/");
+  }
+
+  // Wait for persisted auth to hydrate to avoid flicker/error on F5
+  if (!hasHydrated) {
+    return (
+      <div className="auth-container" style={{ alignItems: "center", justifyContent: "center" }}>
+        <div className="auth-right">Đang tải...</div>
+      </div>
+    );
+  }
+
+  // If already logged in, redirect away from Login
+  if (token) {
+    return <Navigate to="/" replace />;
   }
 
   return (
