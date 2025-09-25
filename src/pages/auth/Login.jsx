@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import api from "../../services/apiClient";
 
 // 👉 Import ảnh
 import teamworkImage from "../../assets/Hinh-anh-ky-nang-lam-viec-nhom.jpg";
@@ -18,19 +19,14 @@ let mockUsers = [
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
-  const token = useAuthStore((s) => s.token);
-  const hasHydrated = useAuthStore.persist?.hasHydrated?.();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 👉 State để toggle giữa login và register
-  const [isRegister, setIsRegister] = useState(false);
+  // 
 
   // --- Xử lý login ---
   function onLogin(e) {
@@ -68,35 +64,7 @@ export default function Login() {
   }
 
   // --- Xử lý register ---
-  async function onRegister(e) {
-    e.preventDefault();
-    setError("");
-    if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
-      return;
-    }
-
-    const existUser = mockUsers.find((u) => u.email === email);
-    if (existUser) {
-      setError("Email đã tồn tại");
-      return;
-    }
-
-    const newUser = {
-      id: mockUsers.length + 1,
-      email,
-      password,
-      fullName: fullName || "New User",
-      role: "USER",
-    };
-
-    mockUsers.push(newUser);
-
-    // auto login sau khi đăng ký
-    const token = `mock-jwt-token-${newUser.id}`;
-    setAuth(newUser, token);
-    navigate("/");
-  }
+  
 
   // 👉 Đăng nhập Google (redirect thật tới backend Spring Security)
   function loginWithGoogle() {
@@ -111,23 +79,8 @@ export default function Login() {
     navigate("/");
   }
 
-  // 👉 Mock đăng nhập GitHub
-  function loginWithGitHub() {
-    const user = {
-      id: 101,
-      email: "githubuser@github.com",
-      fullName: "GitHub User",
-      role: "USER",
-    };
-    const token = "mock-github-token";
-    setAuth(user, token);
-    navigate("/");
-  }
+  
 
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
   return (
     <div className="auth-container">
       {/* Logo + khu vực bên trái */}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMyProfile, getMyDocuments } from "../../services/profileService";
 import StatusBadge from "../../components/common/StatusBadge";
-import { uploadMyDoc, getMyDocs } from "../../services/documentService"; // bỏ/giữ getMyDocs tùy bạn
+import { uploadMyDoc } from "../../services/documentService"; // bỏ/giữ getMyDocs tùy bạn
 import "./profile.css";
 
 export default function Profile() {
