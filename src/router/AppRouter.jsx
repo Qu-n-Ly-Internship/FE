@@ -2,13 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register"; // 👈 thêm import
+import Register from "../pages/auth/Register";
 import Dashboard from "../pages/dashboard/Index";
 import InternshipList from "../pages/internships/InternshipList";
 import StudentList from "../pages/students/StudentList";
-import CompanyList from "../pages/companies/CompanyList";
 import Users from "../pages/admin/Users";
 import Permissions from "../pages/admin/Permissions";
+import OAuthCallback from "../pages/auth/OAuthCallback";
 
 // Layout & Guards
 import AppLayout from "../components/layout/Layout";
@@ -23,7 +23,8 @@ export default function AppRouter() {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} /> {/* 👈 thêm route mới */}
+        <Route path="/register" element={<Register />} /> 
+        <Route path="/oauth2/callback" element={<OAuthCallback />} />
 
         {/* Private */}
         <Route element={<ProtectedRoute />}>
@@ -42,14 +43,6 @@ export default function AppRouter() {
               element={
                 <RoleGuard roles={["HR", "ADMIN"]}>
                   <StudentList />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/companies"
-              element={
-                <RoleGuard roles={["HR", "ADMIN"]}>
-                  <CompanyList />
                 </RoleGuard>
               }
             />
@@ -79,7 +72,6 @@ export default function AppRouter() {
             />
           </Route>
         </Route>
-
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

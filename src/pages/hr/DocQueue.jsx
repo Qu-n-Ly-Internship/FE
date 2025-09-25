@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPendingDocs, reviewDoc } from "../../services/documentService";
 import StatusBadge from "../../components/common/StatusBadge";
+import "../shared/list.css";
 
 export default function DocQueue() {
   const [items, setItems] = useState([]);
@@ -22,71 +23,48 @@ export default function DocQueue() {
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 12 }}>
-        Hồ sơ chờ duyệt
-      </h1>
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          overflowX: "auto",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-        }}
-      >
-        <table
-          style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}
-        >
+    <div className="page-container">
+      <h1 className="page-title" style={{ marginBottom: 12 }}>Hồ sơ chờ duyệt</h1>
+      <div className="card">
+        <table className="table" style={{ fontSize: 14 }}>
           <thead>
-            <tr style={{ background: "#f6f6f6", textAlign: "left" }}>
-              <Th>Tài liệu</Th>
-              <Th>Tên file</Th>
-              <Th>Ngày nộp</Th>
-              <Th>Trạng thái</Th>
-              <Th>Ghi chú</Th>
-              <Th style={{ width: 200 }}>Thao tác</Th>
+            <tr>
+              <th className="table-th">Tài liệu</th>
+              <th className="table-th">Tên file</th>
+              <th className="table-th">Ngày nộp</th>
+              <th className="table-th">Trạng thái</th>
+              <th className="table-th">Ghi chú</th>
+              <th className="table-th" style={{ width: 200 }}>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6} style={{ padding: 12 }}>
-                  Đang tải…
-                </td>
+                <td colSpan={6} className="loading">Đang tải…</td>
               </tr>
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ padding: 12, color: "#666" }}>
-                  Không có hồ sơ chờ duyệt.
-                </td>
+                <td colSpan={6} className="empty">Không có hồ sơ chờ duyệt.</td>
               </tr>
             )}
             {items.map((d) => (
-              <tr key={d.id} style={{ borderTop: "1px solid #eee" }}>
-                <Td>{d.type}</Td>
-                <Td>{d.fileName}</Td>
-                <Td>{new Date(d.uploadedAt).toLocaleDateString()}</Td>
-                <Td>
+              <tr key={d.id}>
+                <td className="table-td">{d.type}</td>
+                <td className="table-td">{d.fileName}</td>
+                <td className="table-td">{new Date(d.uploadedAt).toLocaleDateString()}</td>
+                <td className="table-td">
                   <StatusBadge status={d.status} />
-                </Td>
-                <Td>{d.note || "-"}</Td>
-                <Td>
-                  <button onClick={() => onAction(d.id, "APPROVE")} style={btn}>
+                </td>
+                <td className="table-td">{d.note || "-"}</td>
+                <td className="table-td">
+                  <button onClick={() => onAction(d.id, "APPROVE")} className="btn btn-success" style={{ marginRight: 8 }}>
                     Duyệt
-                  </button>{" "}
-                  <button
-                    onClick={() => onAction(d.id, "REJECT")}
-                    style={{
-                      ...btn,
-                      background: "#fff",
-                      color: "#c53030",
-                      border: "1px solid #f0b3b3",
-                    }}
-                  >
+                  </button>
+                  <button onClick={() => onAction(d.id, "REJECT")} className="btn btn-outline-danger">
                     Từ chối
                   </button>
-                </Td>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -95,13 +73,3 @@ export default function DocQueue() {
     </div>
   );
 }
-const Th = ({ children }) => <th style={{ padding: 12 }}>{children}</th>;
-const Td = ({ children }) => <td style={{ padding: 12 }}>{children}</td>;
-const btn = {
-  padding: "6px 10px",
-  borderRadius: 8,
-  border: 0,
-  background: "#111",
-  color: "#fff",
-  cursor: "pointer",
-};

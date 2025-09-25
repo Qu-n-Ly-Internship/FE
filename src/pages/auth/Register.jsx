@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import "./auth.css";
 
 import teamworkImage from "../../assets/Hinh-anh-ky-nang-lam-viec-nhom.jpg";
 import logoTeam from "../../assets/logoTeam.jpg";
@@ -91,140 +92,72 @@ export default function Register() {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f7f7f7" }}>
+    <div className="auth-container">
       {/* Bên trái */}
-      <div style={{ flex: 1, background: "#e0e0e0" }}>
-        <img src={teamworkImage} alt="Teamwork" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <div className="auth-left">
+        <img src={teamworkImage} alt="Teamwork" />
       </div>
 
       {/* Form bên phải */}
-      <div
-        style={{
-          width: "400px",
-          background: "#fff",
-          padding: "40px 24px",
-          boxShadow: "0 0 15px rgba(0,0,0,0.1)",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          paddingTop: "40px",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <img src={logoTeam} alt="Logo Register" style={{ width: "200px", height: "200px" }} />
+      <div className="auth-right">
+        <div className="auth-logo">
+          <img src={logoTeam} alt="Logo Register" />
         </div>
 
-        <h1 style={{ fontSize: 24, marginBottom: 20, textAlign: "center" }}>Đăng ký</h1>
+        <h1 className="auth-title">Đăng ký</h1>
 
-        {error && (
-          <div
-            style={{
-              color: "#dc3545",
-              fontSize: 14,
-              marginBottom: 12,
-              padding: "8px 12px",
-              background: "#f8d7da",
-              borderRadius: 4,
-            }}
-          >
-            {error}
-          </div>
-        )}
+        {error && <div className="auth-alert">{error}</div>}
 
         <input
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Họ và tên"
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
+          className="auth-input"
         />
         {fieldErrors.fullName && (
-          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
-            {fieldErrors.fullName}
-          </div>
+          <div className="auth-inline-error">{fieldErrors.fullName}</div>
         )}
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
+          className="auth-input"
         />
         {fieldErrors.email && (
-          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
-            {fieldErrors.email}
-          </div>
+          <div className="auth-inline-error">{fieldErrors.email}</div>
         )}
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Mật khẩu"
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
+          className="auth-input"
         />
         {fieldErrors.password && (
-          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
-            {fieldErrors.password}
-          </div>
+          <div className="auth-inline-error">{fieldErrors.password}</div>
         )}
         <input
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Xác nhận mật khẩu"
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            marginBottom: 16,
-          }}
+          className="auth-input"
         />
         {fieldErrors.confirmPassword && (
-          <div style={{ color: "#dc3545", fontSize: 12, marginTop: -8, marginBottom: 12 }}>
-            {fieldErrors.confirmPassword}
-          </div>
+          <div className="auth-inline-error">{fieldErrors.confirmPassword}</div>
         )}
 
         <button
           onClick={onRegister}
           disabled={!fullName || !email || !password || !confirmPassword}
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: 0,
-            borderRadius: 10,
-            background: !fullName || !email || !password || !confirmPassword ? "#6c757d" : "#28a745",
-            color: "#fff",
-            cursor: "pointer",
-            marginBottom: 12,
-          }}
+          className="btn btn-success"
         >
           Đăng ký
         </button>
 
-        <div style={{ fontSize: 14, textAlign: "center" }}>
+        <div className="auth-footer">
           Đã có tài khoản?{" "}
-          <span
-            style={{ color: "#007bff", cursor: "pointer" }}
-            onClick={() => navigate("/login")}
-          >
+          <span className="link-button" onClick={() => navigate("/login")}>
             Đăng nhập
           </span>
         </div>

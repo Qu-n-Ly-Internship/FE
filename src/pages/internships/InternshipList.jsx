@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
+import "../shared/list.css";
 
 export default function InternshipList() {
   const [internships, setInternships] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewing, setViewing] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
 
   useEffect(() => {
     // Mock data for now
@@ -32,86 +36,268 @@ export default function InternshipList() {
   }, []);
 
   if (loading) {
-    return <div style={{ padding: "24px", textAlign: "center" }}>Đang tải...</div>;
+    return <div className="loading center">Đang tải...</div>;
   }
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1 style={{ margin: 0, fontSize: "24px", fontWeight: "600" }}>Danh sách Thực tập</h1>
-        <button style={{
-          background: "#007bff",
-          color: "white",
-          border: "none",
-          padding: "10px 20px",
-          borderRadius: "4px",
-          cursor: "pointer"
-        }}>
-          Thêm thực tập mới
-        </button>
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">Danh sách Thực tập</h1>
+        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>Thêm thực tập mới</button>
       </div>
 
-      <div style={{ background: "white", borderRadius: "8px", overflow: "hidden", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead style={{ background: "#f8f9fa" }}>
+      <div className="card">
+        <table className="table">
+          <thead>
             <tr>
-              <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Vị trí</th>
-              <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Công ty</th>
-              <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Sinh viên</th>
-              <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Trạng thái</th>
-              <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Thời gian</th>
-              <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Hành động</th>
+              <th className="table-th">Vị trí</th>
+              <th className="table-th">Công ty</th>
+              <th className="table-th">Sinh viên</th>
+              <th className="table-th">Trạng thái</th>
+              <th className="table-th">Thời gian</th>
+              <th className="table-th">Hành động</th>
             </tr>
           </thead>
           <tbody>
             {internships.map((internship) => (
               <tr key={internship.id}>
-                <td style={{ padding: "12px", borderBottom: "1px solid #dee2e6" }}>{internship.title}</td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #dee2e6" }}>{internship.company}</td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #dee2e6" }}>{internship.student}</td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #dee2e6" }}>
-                  <span style={{
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    background: internship.status === "active" ? "#d4edda" : "#f8d7da",
-                    color: internship.status === "active" ? "#155724" : "#721c24"
-                  }}>
+                <td className="table-td">{internship.title}</td>
+                <td className="table-td">{internship.company}</td>
+                <td className="table-td">{internship.student}</td>
+                <td className="table-td">
+                  <span className={`badge ${internship.status === "active" ? "badge-success" : "badge-danger"}`}>
                     {internship.status === "active" ? "Đang thực tập" : "Hoàn thành"}
                   </span>
                 </td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #dee2e6" }}>
-                  {internship.startDate} - {internship.endDate}
-                </td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #dee2e6" }}>
-                  <button style={{
-                    background: "#28a745",
-                    color: "white",
-                    border: "none",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    marginRight: "8px"
-                  }}>
-                    Xem
-                  </button>
-                  <button style={{
-                    background: "#ffc107",
-                    color: "black",
-                    border: "none",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "12px"
-                  }}>
-                    Sửa
-                  </button>
+                <td className="table-td">{internship.startDate} - {internship.endDate}</td>
+                <td className="table-td">
+                  <button className="btn btn-success" style={{ marginRight: 8 }} onClick={() => setViewing(internship)}>Xem</button>
+                  <button className="btn btn-warning" onClick={() => setEditing(internship)}>Sửa</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+      {showCreate && (
+        <CreateInternshipModal
+          onClose={() => setShowCreate(false)}
+          onCreate={(data) => {
+            const newItem = { id: Date.now(), ...data };
+            setInternships((prev) => [newItem, ...prev]);
+            setShowCreate(false);
+          }}
+        />
+      )}
+      {viewing && (
+        <ViewInternshipModal data={viewing} onClose={() => setViewing(null)} />
+      )}
+      {editing && (
+        <EditInternshipModal
+          data={editing}
+          onClose={() => setEditing(null)}
+          onSave={(updated) => {
+            setInternships((prev) => prev.map((it) => (it.id === updated.id ? updated : it)));
+            setEditing(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function CreateInternshipModal({ onClose, onCreate }) {
+  const [title, setTitle] = useState("");
+  const [company, setCompany] = useState("");
+  const [student, setStudent] = useState("");
+  const [status, setStatus] = useState("active");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [err, setErr] = useState("");
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setErr("");
+    if (!title.trim() || !company.trim() || !student.trim()) {
+      setErr("Vui lòng nhập Vị trí, Công ty, Sinh viên");
+      return;
+    }
+    if (!startDate || !endDate) {
+      setErr("Vui lòng chọn Thời gian");
+      return;
+    }
+    onCreate({
+      title: title.trim(),
+      company: company.trim(),
+      student: student.trim(),
+      status,
+      startDate,
+      endDate,
+    });
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-box">
+        <h2 className="modal-title">Thêm thực tập</h2>
+        {err && <div style={{ color: "#dc3545", marginBottom: 8 }}>{err}</div>}
+        <form onSubmit={onSubmit}>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label" htmlFor="title">Vị trí</label>
+              <input id="title" className="form-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="company">Công ty</label>
+              <input id="company" className="form-input" value={company} onChange={(e) => setCompany(e.target.value)} />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label" htmlFor="student">Sinh viên</label>
+              <input id="student" className="form-input" value={student} onChange={(e) => setStudent(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="status">Trạng thái</label>
+              <select id="status" className="form-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="active">Đang thực tập</option>
+                <option value="completed">Hoàn thành</option>
+              </select>
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label" htmlFor="start">Ngày bắt đầu</label>
+              <input id="start" type="date" className="form-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="end">Ngày kết thúc</label>
+              <input id="end" type="date" className="form-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
+          </div>
+          <div className="form-actions">
+            <button type="button" className="btn-outline" onClick={onClose}>Hủy</button>
+            <button type="submit" className="btn btn-primary">Tạo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+function ViewInternshipModal({ data, onClose }) {
+  return (
+    <div className="modal-overlay">
+      <div className="modal-box">
+        <h2 className="modal-title">Thông tin thực tập</h2>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Vị trí</label>
+            <div>{data.title}</div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Công ty</label>
+            <div>{data.company}</div>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Sinh viên</label>
+            <div>{data.student}</div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Trạng thái</label>
+            <div>{data.status === "active" ? "Đang thực tập" : "Hoàn thành"}</div>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Thời gian</label>
+            <div>{data.startDate} - {data.endDate}</div>
+          </div>
+        </div>
+        <div className="form-actions">
+          <button className="btn-outline" onClick={onClose}>Đóng</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditInternshipModal({ data, onClose, onSave }) {
+  const [title, setTitle] = useState(data.title || "");
+  const [company, setCompany] = useState(data.company || "");
+  const [student, setStudent] = useState(data.student || "");
+  const [status, setStatus] = useState(data.status || "active");
+  const [startDate, setStartDate] = useState(data.startDate || "");
+  const [endDate, setEndDate] = useState(data.endDate || "");
+  const [err, setErr] = useState("");
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setErr("");
+    if (!title.trim() || !company.trim() || !student.trim()) {
+      setErr("Vui lòng nhập Vị trí, Công ty, Sinh viên");
+      return;
+    }
+    if (!startDate || !endDate) {
+      setErr("Vui lòng chọn Thời gian");
+      return;
+    }
+    onSave({
+      ...data,
+      title: title.trim(),
+      company: company.trim(),
+      student: student.trim(),
+      status,
+      startDate,
+      endDate,
+    });
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-box">
+        <h2 className="modal-title">Sửa thông tin thực tập</h2>
+        {err && <div style={{ color: "#dc3545", marginBottom: 8 }}>{err}</div>}
+        <form onSubmit={onSubmit}>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Vị trí</label>
+              <input className="form-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Công ty</label>
+              <input className="form-input" value={company} onChange={(e) => setCompany(e.target.value)} />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Sinh viên</label>
+              <input className="form-input" value={student} onChange={(e) => setStudent(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Trạng thái</label>
+              <select className="form-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="active">Đang thực tập</option>
+                <option value="completed">Hoàn thành</option>
+              </select>
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Ngày bắt đầu</label>
+              <input type="date" className="form-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Ngày kết thúc</label>
+              <input type="date" className="form-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
+          </div>
+          <div className="form-actions">
+            <button type="button" className="btn-outline" onClick={onClose}>Hủy</button>
+            <button type="submit" className="btn btn-primary">Lưu</button>
+          </div>
+        </form>
       </div>
     </div>
   );

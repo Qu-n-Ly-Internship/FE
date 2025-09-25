@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import "./navbar.css";
 
 export default function Navbar({ onMenuClick }) {
   const navigate = useNavigate();
@@ -11,98 +12,28 @@ export default function Navbar({ onMenuClick }) {
   };
 
   return (
-    <nav
-      style={{
-        background: "#fff",
-        borderBottom: "1px solid #e5e5e5",
-        padding: "0 24px",
-        height: "64px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+    <nav className="navbar">
+      <div className="navbar-left">
         {/* Hamburger Menu Button */}
         <button
           type="button"
           aria-label="Mở menu"
           onClick={onMenuClick}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "8px",
-            borderRadius: "4px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "3px",
-            width: "24px",
-            height: "24px",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#f0f0f0";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          className="navbar-hamburger"
         >
-          <div
-            style={{
-              width: "18px",
-              height: "2px",
-              backgroundColor: "#333",
-              borderRadius: "1px",
-            }}
-          />
-          <div
-            style={{
-              width: "18px",
-              height: "2px",
-              backgroundColor: "#333",
-              borderRadius: "1px",
-            }}
-          />
-          <div
-            style={{
-              width: "18px",
-              height: "2px",
-              backgroundColor: "#333",
-              borderRadius: "1px",
-            }}
-          />
+          <span className="navbar-hamburger-bar" />
+          <span className="navbar-hamburger-bar" />
+          <span className="navbar-hamburger-bar" />
         </button>
 
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "20px",
-            fontWeight: "600",
-            color: "#1a1a1a",
-          }}
-        >
-          Quản lý Thực tập
-        </h1>
+        <h1 className="navbar-title">Quản lý Thực tập</h1>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <span style={{ fontSize: "14px", color: "#666" }}>
+      <div className="navbar-right">
+        <span className="navbar-user">
           {user?.fullName} ({user?.role})
         </span>
-        <button
-          type="button"
-          onClick={handleLogout}
-          style={{
-            background: "#dc3545",
-            color: "white",
-            border: "none",
-            padding: "8px 16px",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "14px",
-          }}
-        >
+        <button type="button" onClick={handleLogout} className="navbar-logout">
           Đăng xuất
         </button>
       </div>

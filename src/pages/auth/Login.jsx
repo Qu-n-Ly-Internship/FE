@@ -1,8 +1,7 @@
+// src/pages/auth/Login.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
-import api from "../../services/apiClient";
-
 
 // 👉 Import ảnh
 import teamworkImage from "../../assets/Hinh-anh-ky-nang-lam-viec-nhom.jpg";
@@ -19,6 +18,8 @@ let mockUsers = [
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const token = useAuthStore((s) => s.token);
+  const hasHydrated = useAuthStore.persist?.hasHydrated?.();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +33,7 @@ export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
 
   // --- Xử lý login ---
-  async function onLogin(e) {
+  function onLogin(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -97,9 +98,14 @@ export default function Login() {
     navigate("/");
   }
 
-  // 👉 Mock đăng nhập Google
+  // 👉 Đăng nhập Google (redirect thật tới backend Spring Security)
   function loginWithGoogle() {
-    const user = { id: 100, email: "googleuser@gmail.com", fullName: "Google User", role: "USER" };
+    const user = {
+      id: 100,
+      email: "googleuser@gmail.com",
+      fullName: "Google User",
+      role: "USER",
+    };
     const token = "mock-google-token";
     setAuth(user, token);
     navigate("/");
@@ -107,17 +113,30 @@ export default function Login() {
 
   // 👉 Mock đăng nhập GitHub
   function loginWithGitHub() {
-    const user = { id: 101, email: "githubuser@github.com", fullName: "GitHub User", role: "USER" };
+    const user = {
+      id: 101,
+      email: "githubuser@github.com",
+      fullName: "GitHub User",
+      role: "USER",
+    };
     const token = "mock-github-token";
     setAuth(user, token);
     navigate("/");
   }
 
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f7f7f7" }}>
+    <div className="auth-container">
       {/* Logo + khu vực bên trái */}
       <div style={{ flex: 1, background: "#e0e0e0" }}>
-        <img src={teamworkImage} alt="Teamwork" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <img
+          src={teamworkImage}
+          alt="Teamwork"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
       </div>
 
       {/* Khu vực form bên phải */}
@@ -134,11 +153,15 @@ export default function Login() {
         }}
       >
         <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <img src={logoTeam} alt="Logo Login" style={{ width: "200px", height: "200px" }} />
+          <img
+            src={logoTeam}
+            alt="Logo Login"
+            style={{ width: "200px", height: "200px" }}
+          />
         </div>
 
         <h1 style={{ fontSize: 24, marginBottom: 20, textAlign: "center" }}>
-          {isRegister ? "Đăng ký" : "Đăng nhập"}
+          Đăng nhập
         </h1>
 
         {error && (
@@ -156,36 +179,33 @@ export default function Login() {
           </div>
         )}
 
-        {/* Nếu là login */}
-        {!isRegister && (
-          <>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                marginBottom: 12,
-              }}
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mật khẩu"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                marginBottom: 12,
-              }}
-            />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            border: "1px solid #ddd",
+            borderRadius: 8,
+            marginBottom: 12,
+          }}
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Mật khẩu"
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            border: "1px solid #ddd",
+            borderRadius: 8,
+            marginBottom: 12,
+          }}
+        />
 
             <div style={{ textAlign: "right", marginBottom: 16 }}>
               <a href="/forgot-password" style={{ fontSize: 12, color: "#007bff", textDecoration: "none" }}>
@@ -211,130 +231,31 @@ export default function Login() {
               {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
 
-            <button
-              onClick={loginWithGoogle}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 10,
-                background: "#fff",
-                cursor: "pointer",
-                marginBottom: 8,
-              }}
-            >
-              🔴 Đăng nhập với Google
-            </button>
+        <button
+          onClick={loginWithGoogle}
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            border: "1px solid #ddd",
+            borderRadius: 10,
+            background: "#fff",
+            cursor: "pointer",
+            marginBottom: 8,
+          }}
+        >
+          🔴 Đăng nhập với Google
+        </button>
 
-            <button
-              onClick={loginWithGitHub}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 10,
-                background: "#24292e",
-                color: "#fff",
-                cursor: "pointer",
-              }}
-            >
-              🐱 Đăng nhập với GitHub
-            </button>
-
-            {/* Link sang đăng ký */}
-            <div style={{ marginTop: 16, fontSize: 14, textAlign: "center" }}>
-              Chưa có tài khoản?{" "}
-              <span
-                style={{ color: "#007bff", cursor: "pointer" }}
-                onClick={() => setIsRegister(true)}
-              >
-                Đăng ký ngay
-              </span>
-            </div>
-          </>
-        )}
-
-        {/* Nếu là register */}
-        {isRegister && (
-          <>
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Họ và tên"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                marginBottom: 12,
-              }}
-            />
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                marginBottom: 12,
-              }}
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mật khẩu"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                marginBottom: 12,
-              }}
-            />
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Xác nhận mật khẩu"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                marginBottom: 16,
-              }}
-            />
-
-            <button
-              onClick={onRegister}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: 0,
-                borderRadius: 10,
-                background: "#28a745",
-                color: "#fff",
-                cursor: "pointer",
-                marginBottom: 12,
-              }}
-            >
-              Đăng ký
-            </button>
-
-            <div style={{ fontSize: 14, textAlign: "center" }}>
-              Đã có tài khoản?{" "}
-              <span
-                style={{ color: "#007bff", cursor: "pointer" }}
-                onClick={() => setIsRegister(false)}
-              >
-                Đăng nhập
-              </span>
-            </div>
-          </>
-        )}
+        {/* Link sang đăng ký */}
+        <div style={{ marginTop: 16, fontSize: 14, textAlign: "center" }}>
+          Chưa có tài khoản?{" "}
+          <span
+            style={{ color: "#007bff", cursor: "pointer" }}
+            onClick={() => navigate("/register")} // 👈 chuyển sang trang đăng ký
+          >
+            Đăng ký ngay
+          </span>
+        </div>
       </div>
     </div>
   );
