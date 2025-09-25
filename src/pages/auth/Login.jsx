@@ -86,6 +86,7 @@ export default function Login() {
     window.location.href = "http://localhost:8090/oauth2/authorization/google";
   }
 
+<<<<<<< Updated upstream
   // Wait for persisted auth to hydrate to avoid flicker/error on F5
   if (!hasHydrated) {
     return (
@@ -103,6 +104,8 @@ export default function Login() {
     return <Navigate to="/" replace />;
   }
 
+=======
+>>>>>>> Stashed changes
   return (
     <div className="auth-container">
       {/* Logo + khu vực bên trái */}
@@ -190,6 +193,7 @@ export default function Login() {
           <span>Đăng nhập với Google</span>
         </button>
 
+<<<<<<< Updated upstream
         {/* Link sang đăng ký */}
         <div className="auth-footer">
           Chưa có tài khoản?{" "}
@@ -197,6 +201,172 @@ export default function Login() {
             Đăng ký ngay
           </span>
         </div>
+=======
+        {/* Nếu là login */}
+        {!isRegister && (
+          <>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mật khẩu"
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            />
+
+            <div style={{ textAlign: "right", marginBottom: 16 }}>
+              <a href="/forgot-password" style={{ fontSize: 12, color: "#007bff", textDecoration: "none" }}>
+                Quên mật khẩu?
+              </a>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              onClick={onLogin}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: 0,
+                borderRadius: 10,
+                background: loading ? "#ccc" : "#111",
+                color: "#fff",
+                cursor: loading ? "not-allowed" : "pointer",
+                marginBottom: 12,
+              }}
+            >
+              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+            </button>
+
+            <button
+              onClick={loginWithGoogle}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 10,
+                background: "#fff",
+                cursor: "pointer",
+                marginBottom: 8,
+              }}
+            >
+              🔴 Đăng nhập với Google
+            </button>
+
+            {/* Link sang đăng ký */}
+            <div style={{ marginTop: 16, fontSize: 14, textAlign: "center" }}>
+              Chưa có tài khoản?{" "}
+              <span
+                style={{ color: "#007bff", cursor: "pointer" }}
+                onClick={() => setIsRegister(true)}
+              >
+                Đăng ký ngay
+              </span>
+            </div>
+          </>
+        )}
+
+        {/* Nếu là register */}
+        {isRegister && (
+          <>
+            <input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Họ và tên"
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            />
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mật khẩu"
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Xác nhận mật khẩu"
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                marginBottom: 16,
+              }}
+            />
+
+            <button
+              onClick={onRegister}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: 0,
+                borderRadius: 10,
+                background: "#28a745",
+                color: "#fff",
+                cursor: "pointer",
+                marginBottom: 12,
+              }}
+            >
+              Đăng ký
+            </button>
+
+            <div style={{ fontSize: 14, textAlign: "center" }}>
+              Đã có tài khoản?{" "}
+              <span
+                style={{ color: "#007bff", cursor: "pointer" }}
+                onClick={() => setIsRegister(false)}
+              >
+                Đăng nhập
+              </span>
+            </div>
+          </>
+        )}
+>>>>>>> Stashed changes
       </div>
     </div>
   );
