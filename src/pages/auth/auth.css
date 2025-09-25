@@ -1,132 +1,159 @@
-/* Shared styles for Login and Register pages */
+/* auth.css */
+
+/* Container chính */
 .auth-container {
   display: flex;
-  min-height: 100vh;
-  background: #f7f7f7;
+  height: 100vh;
+  width: 100%;
+  background: #f5f6fa;
 }
+
+/* Bên trái (ảnh) chiếm 2/3 */
 .auth-left {
-  flex: 1;
-  background: #e0e0e0;
+  flex: 2; /* 2 phần */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
+
 .auth-left img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
+/* Bên phải (form login) chiếm 1/3 */
 .auth-right {
-  width: 400px;
+  flex: 1; /* 1 phần */
   background: #fff;
-  padding: 40px 24px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* center vertical content */
-  align-items: center; /* center horizontal content */
-  text-align: center; /* center text inside box */
-  padding-top: 40px;
-}
-.auth-logo {
-  text-align: center;
-  margin-bottom: 16px;
-}
-.auth-logo img {
-  width: 200px;
-  height: 200px;
-}
-.auth-title {
-  font-size: 24px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-.auth-alert {
-  color: #dc3545;
-  font-size: 14px;
-  margin-bottom: 12px;
-  padding: 8px 12px;
-  background: #f8d7da;
-  border-radius: 4px;
-}
-.auth-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-.auth-inline-error {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: -8px;
-  margin-bottom: 12px;
-}
-.auth-link-row {
-  text-align: center; /* center helper links */
-  margin-bottom: 16px;
-}
-.auth-link {
-  font-size: 12px;
-  color: #007bff;
-  text-decoration: none;
-}
-.auth-footer {
-  font-size: 14px;
-  text-align: center;
-}
-.auth-right .btn {
-  width: 100%;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-bottom: 12px;
-}
-.auth-right .btn-primary {
-  background: #111;
-  color: #fff;
-}
-.auth-right .btn-primary:disabled,
-.auth-right .btn:disabled {
-  background: #ccc;
-  color: #fff;
-  cursor: not-allowed;
-}
-.auth-right .btn-outline {
-  background: #fff;
-  color: #111;
-  border: 1px solid #ddd;
-}
-.auth-right .btn-success {
-  background: #28a745;
-  color: #fff;
-}
-.auth-right .btn-success:disabled {
-  background: #6c757d;
-  color: #fff;
-}
-.link-button {
-  color: #007bff;
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+
+  /* ❌ Bỏ viền + bo góc + bóng */
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-/* Polished Google button */
+/* Logo */
+.auth-logo img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+/* Tiêu đề */
+.auth-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+/* Input */
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.auth-input:disabled {
+  background: #f1f1f1;
+}
+
+/* Nút */
+.btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.2s;
+}
+
+.btn-primary {
+  background: #4a90e2;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #357ab8;
+}
+
+.btn-outline {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+.btn-outline:hover {
+  background: #f9f9f9;
+}
+
+/* Google button */
 .google-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 1px solid #dadce0 !important;
-  background: #fff !important;
-  color: #3c4043 !important;
-  border-radius: 8px !important;
-  transition: box-shadow 0.2s ease, transform 0.02s ease;
+  gap: 8px;
 }
-.google-btn:hover {
-  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px rgba(60, 64, 67, 0.15);
-}
-.google-btn:active {
-  transform: translateY(0.5px);
-}
+
 .google-icon {
   display: inline-block;
+}
+
+/* Link quên mật khẩu */
+.auth-link-row {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.auth-link {
+  font-size: 0.9rem;
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* Alert */
+.auth-alert {
+  width: 100%;
+  background: #ffe0e0;
+  color: #d9534f;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* Footer */
+.auth-footer {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.link-button {
+  color: #4a90e2;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.link-button:hover {
+  text-decoration: underline;
 }
