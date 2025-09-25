@@ -6,15 +6,19 @@
   height: 100vh;
   width: 100%;
   background: #f5f6fa;
+  overflow: hidden;
 }
 
 /* Bên trái (ảnh) chiếm 2/3 */
 .auth-left {
-  flex: 2; /* 2 phần */
+  flex: 2;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+
+  /* hiệu ứng fade in */
+  animation: fadeIn 1s ease forwards;
 }
 
 .auth-left img {
@@ -25,7 +29,7 @@
 
 /* Bên phải (form login) chiếm 1/3 */
 .auth-right {
-  flex: 1; /* 1 phần */
+  flex: 1;
   background: #fff;
   padding: 3rem 2rem;
   display: flex;
@@ -33,10 +37,35 @@
   align-items: center;
   justify-content: center;
 
-  /* ❌ Bỏ viền + bo góc + bóng */
   border: none;
   border-radius: 0;
   box-shadow: none;
+
+  /* hiệu ứng slide từ phải vào */
+  animation: slideInRight 0.8s ease-out forwards;
+}
+
+/* --- Keyframes --- */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Logo */
