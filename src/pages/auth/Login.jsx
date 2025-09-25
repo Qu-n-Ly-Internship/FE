@@ -87,6 +87,7 @@ export default function Login() {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // Wait for persisted auth to hydrate to avoid flicker/error on F5
   if (!hasHydrated) {
     return (
@@ -104,6 +105,8 @@ export default function Login() {
     return <Navigate to="/" replace />;
   }
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   return (
