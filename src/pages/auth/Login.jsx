@@ -73,7 +73,13 @@ export default function Login() {
           },
           mockToken
         );
-        navigate("/");
+        
+        // Chuyển hướng dựa trên vai trò
+        if (user.role === "USER") {
+          navigate("/upload-documents"); // Chỉ USER mới bị giới hạn
+        } else {
+          navigate("/"); // INTERN, ADMIN, HR đều vào Dashboard
+        }
       } else {
         setError("Email hoặc mật khẩu không đúng");
       }

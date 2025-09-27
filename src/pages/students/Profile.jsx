@@ -1,32 +1,32 @@
 import { useEffect, useState } from "react";
-import { getMyProfile, getMyDocuments } from "../../services/profileService";
-import StatusBadge from "../../components/common/StatusBadge";
-import { uploadMyDoc, getMyDocs } from "../../services/documentService"; // bỏ/giữ getMyDocs tùy bạn
+import { getMyProfile } from "../../services/profileService";
 import { useAuthStore } from "../../store/authStore";
 import "./profile.css";
 
 export default function Profile() {
   const { user, setAuth } = useAuthStore();
   const [profile, setProfile] = useState(null);
-  const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const [p, d] = await Promise.all([getMyProfile(), getMyDocuments()]);
+        const p = await getMyProfile(user);
         setProfile(p);
-        setDocs(d);
+        setEditedProfile(p);
       } catch (e) {
         setErr(e?.response?.data?.message || "Không tải được dữ liệu.");
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [user]);
 
   // Avatar upload handler
   const handleAvatarUpload = (event) => {
@@ -63,6 +63,51 @@ export default function Profile() {
       setUploadingAvatar(false);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedProfile({ ...profile });
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedProfile({ ...profile });
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // TODO(stagewise): Replace with actual API call to update profile
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock API call
+      
+      setProfile(editedProfile);
+      
+      // Update user data in auth store if basic info changed
+      if (editedProfile.fullName !== user.fullName || editedProfile.email !== user.email) {
+        const updatedUser = {
+          ...user,
+          fullName: editedProfile.fullName,
+          email: editedProfile.email
+        };
+        const currentStorage = localStorage.getItem('auth-storage');
+        const token = currentStorage ? JSON.parse(currentStorage).state.token : null;
+        setAuth(updatedUser, token);
+      }
+      
+      setIsEditing(false);
+    } catch (error) {
+      alert('Lưu thông tin thất bại. Vui lòng thử lại.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   if (loading) return <div className="page-container">Đang tải…</div>;
@@ -170,29 +215,152 @@ export default function Profile() {
 
       {/* Thông tin cơ bản */}
       <div className="upload-card" style={{ marginBottom: 16 }}>
+        {/* Header with Edit button */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>Thông tin cá nhân</h3>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {!isEditing ? (
+              <button
+                onClick={handleEdit}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px"
+                }}
+              >
+                ✏️ Chỉnh sửa
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleCancel}
+                  disabled={saving}
+                  style={{
+                    padding: "8px 16px",
+                    backgroundColor: "#6c757d",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    cursor: saving ? "not-allowed" : "pointer"
+                  }}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  style={{
+                    padding: "8px 16px",
+                    backgroundColor: "#28a745",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    cursor: saving ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px"
+                  }}
+                >
+                  {saving ? "Đang lưu..." : "✓ Lưu"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        
         <div className="field-grid">
-          <Field label="Họ tên" value={profile?.fullName} />
-          <Field label="Email" value={profile?.email} />
+          <EditableField 
+            label="Họ tên" 
+            value={isEditing ? editedProfile?.fullName : profile?.fullName}
+            isEditing={isEditing}
+            onChange={(value) => handleInputChange('fullName', value)}
+          />
+          <EditableField 
+            label="Email" 
+            value={isEditing ? editedProfile?.email : profile?.email}
+            isEditing={isEditing}
+            onChange={(value) => handleInputChange('email', value)}
+            type="email"
+          />
           <Field label="Vai trò" value={profile?.role} />
           
           {/* Hiển thị thông tin theo vai trò */}
+          {user?.role === "USER" && (
+            <>
+              <Field label="Trạng thái" value={profile?.status} />
+              <EditableField 
+                label="Trường" 
+                value={isEditing ? editedProfile?.university : profile?.university}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('university', value)}
+              />
+              <EditableField 
+                label="Ngành" 
+                value={isEditing ? editedProfile?.major : profile?.major}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('major', value)}
+              />
+              <Field label="Ngày ứng tuyển" value={formatDate(profile?.appliedDate)} />
+              <EditableField 
+                label="Thời gian mong muốn" 
+                value={isEditing ? editedProfile?.expectedStartDate : profile?.expectedStartDate}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('expectedStartDate', value)}
+                type="date"
+              />
+            </>
+          )}
+          
           {user?.role === "INTERN" && (
             <>
-              <Field label="Trường" value={profile?.university} />
-              <Field label="Ngành" value={profile?.major} />
-              <Field label="Mentor" value={profile?.mentorName || "-"} />
-              <Field
-                label="Thời gian thực tập"
-                value={formatRange(profile?.startDate, profile?.endDate)}
+              <Field label="Trạng thái" value={profile?.status} />
+              <EditableField 
+                label="Trường" 
+                value={isEditing ? editedProfile?.university : profile?.university}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('university', value)}
               />
+              <EditableField 
+                label="Ngành" 
+                value={isEditing ? editedProfile?.major : profile?.major}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('major', value)}
+              />
+              <Field label="Mentor" value={profile?.mentorName || "-"} />
+              <Field label="Thời gian thực tập" value={formatRange(profile?.startDate, profile?.endDate)} />
             </>
           )}
           
           {(user?.role === "HR" || user?.role === "ADMIN") && (
             <>
-              <Field label="Phòng ban" value={profile?.department} />
-              <Field label="Chức vụ" value={profile?.position} />
-              <Field label="Ngày vào làm" value={formatDate(profile?.joinDate)} />
+              <EditableField 
+                label="Phòng ban" 
+                value={isEditing ? editedProfile?.department : profile?.department}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('department', value)}
+              />
+              <EditableField 
+                label="Chức vụ" 
+                value={isEditing ? editedProfile?.position : profile?.position}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('position', value)}
+              />
+              <EditableField 
+                label="Ngày vào làm" 
+                value={isEditing ? editedProfile?.joinDate : profile?.joinDate}
+                isEditing={isEditing}
+                onChange={(value) => handleInputChange('joinDate', value)}
+                type="date"
+              />
               {user?.role === "ADMIN" && (
                 <Field label="Quyền hạn" value={profile?.permissions} />
               )}
@@ -201,57 +369,7 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Tài liệu - chỉ hiển thị cho INTERN */}
-      {user?.role === "INTERN" && (
-        <>
-          <h2 className="section-title">Tài liệu đã nộp</h2>
-      <div className="upload-card">
-        <table className="table" style={{ fontSize: 14 }}>
-          <thead>
-            <tr>
-              <th className="table-th">Tài liệu</th>
-              <th className="table-th">Tên file</th>
-              <th className="table-th">Ngày nộp</th>
-              <th className="table-th">Trạng thái</th>
-              <th className="table-th">Ghi chú</th>
-              <th className="table-th">Tác vụ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {docs.length === 0 && (
-              <tr>
-                <td colSpan={6} className="center" style={{ padding: 12, color: "#666" }}>
-                  Chưa có tài liệu.
-                </td>
-              </tr>
-            )}
-            {docs.map((it) => (
-              <tr key={it.id}>
-                <td className="table-td">{labelOf(it.type)}</td>
-                <td className="table-td">{it.fileName}</td>
-                <td className="table-td">{formatDate(it.uploadedAt)}</td>
-                <td className="table-td">
-                  <StatusBadge status={it.status} />
-                </td>
-                <td className="table-td">{it.note || "-"}</td>
-                <td className="table-td">
-                  {it.url ? (
-                    <a href={it.url} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
-                      Xem/Tải
-                    </a>
-                  ) : (
-                    <span style={{ fontSize: 12, color: "#999" }}>—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-          {/* Khu vực nộp tài liệu */}
-          <UploadBox onUploaded={() => getMyDocuments(user).then(setDocs)} />
-        </>
-      )}
+
     </div>
   );
 }
@@ -265,6 +383,44 @@ function Field({ label, value }) {
   );
 }
 
+function EditableField({ label, value, isEditing, onChange, type = "text" }) {
+  if (!isEditing) {
+    return (
+      <div>
+        <div className="field-label">{label}</div>
+        <div className="field-value">{type === "date" ? formatDate(value) : (value || "-")}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="field-label">{label}</div>
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: "100%",
+          padding: "8px 12px",
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+          fontSize: "14px",
+          backgroundColor: "#fff",
+          transition: "border-color 0.2s"
+        }}
+        onFocus={(e) => {
+          e.target.style.borderColor = "#007bff";
+          e.target.style.outline = "none";
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = "#ddd";
+        }}
+      />
+    </div>
+  );
+}
+
 function formatDate(s) {
   if (!s) return "-";
   const d = new Date(s);
@@ -274,65 +430,4 @@ function formatRange(a, b) {
   if (!a && !b) return "-";
   return [formatDate(a), formatDate(b)].filter(Boolean).join(" → ");
 }
-function labelOf(t) {
-  const map = {
-    CV: "CV",
-    APPLICATION: "Đơn xin thực tập",
-    CONTRACT: "Hợp đồng",
-    OTHER: "Khác",
-  };
-  return map[t] || t;
-}
 
-
-function UploadBox({ onUploaded }) {
-  const [type, setType] = useState("CV");
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
-
-  async function onSubmit(e) {
-    e.preventDefault();
-    setMsg("");
-    setErr("");
-    if (!file) {
-      setErr("Vui lòng chọn file");
-      return;
-    }
-    setLoading(true);
-    try {
-      await uploadMyDoc({ type, file });
-      setMsg("Đã tải lên, chờ HR duyệt.");
-      setFile(null);
-      onUploaded && onUploaded();
-    } catch (e) {
-      setErr("Tải lên thất bại");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="upload-card">
-      <div className="upload-title">Nộp tài liệu</div>
-      <form onSubmit={onSubmit} className="upload-form">
-        <select value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="CV">CV</option>
-          <option value="APPLICATION">Đơn xin thực tập</option>
-          <option value="CONTRACT">Hợp đồng</option>
-          <option value="OTHER">Khác</option>
-        </select>
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-        />
-        <button disabled={loading} className="btn btn-primary">
-          {loading ? "Đang tải..." : "Tải lên"}
-        </button>
-        {msg && <span className="hint-success">{msg}</span>}
-        {err && <span className="hint-error">{err}</span>}
-      </form>
-    </div>
-  );
-}

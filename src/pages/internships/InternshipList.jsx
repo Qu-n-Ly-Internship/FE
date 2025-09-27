@@ -43,7 +43,7 @@ export default function InternshipList() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Danh sách Thực tập</h1>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>Thêm thực tập mới</button>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>Thêm thực tập mới</button>
       </div>
 
       <div className="card">

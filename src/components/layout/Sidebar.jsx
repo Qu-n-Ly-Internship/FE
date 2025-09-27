@@ -55,6 +55,12 @@ export default function Sidebar({ isOpen, onClose }) {
       icon: "🔐",
       roles: ["ADMIN"],
     },
+    {
+      label: "Nộp hồ sơ",
+      path: "/upload-documents",
+      icon: "📄",
+      roles: ["USER"], // Chỉ USER mới thấy menu này
+    },
   ];
 
   const visibleItems = menuItems.filter((item) =>

@@ -81,14 +81,22 @@ export default function Register() {
       email: values.email,
       password: values.password,
       fullName: values.fullName || "New User",
-      role: "USER",
+      role: "USER", // Người tự đăng ký là USER, chỉ có quyền nộp CV
     };
 
     mockUsers.push(newUser);
 
     const token = `mock-jwt-token-${newUser.id}`;
+    console.log('Register - New user created:', newUser);
     setAuth(newUser, token);
-    navigate("/"); // auto login rồi chuyển về home
+    
+    // Chuyển hướng dựa trên vai trò - chỉ USER mới đến trang upload
+    if (newUser.role === "USER") {
+      console.log('Redirecting new USER to upload-documents');
+      navigate("/upload-documents");
+    } else {
+      navigate("/"); // INTERN và các role khác vào Dashboard
+    }
   }
 
   return (

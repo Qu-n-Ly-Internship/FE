@@ -45,7 +45,7 @@ export default function StudentList() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Danh sách Sinh viên</h1>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>Thêm sinh viên</button>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>Thêm sinh viên</button>
       </div>
 
       <div className="card">
