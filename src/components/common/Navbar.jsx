@@ -6,10 +6,7 @@ export default function Navbar({ onMenuClick }) {
   const navigate = useNavigate();
   const { user, clearAuth } = useAuthStore();
 
-  const handleLogout = () => {
-    clearAuth();
-    navigate("/login");
-  };
+
 
   return (
     <nav className="navbar">
@@ -33,9 +30,6 @@ export default function Navbar({ onMenuClick }) {
         <span className="navbar-user">
           {user?.fullName} ({user?.role})
         </span>
-        <button type="button" onClick={handleLogout} className="navbar-logout">
-          Đăng xuất
-        </button>
       </div>
     </nav>
   );

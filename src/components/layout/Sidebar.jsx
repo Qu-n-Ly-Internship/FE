@@ -3,11 +3,17 @@ import { useAuthStore } from "../../store/authStore";
 
 export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
 
   const handleNavigate = (path) => {
     navigate(path);
     onClose(); // Đóng sidebar sau khi navigate
+  };
+
+  const handleLogout = () => {
+    clearAuth();
+    navigate("/login");
+    onClose(); // Đóng sidebar sau khi logout
   };
 
   const menuItems = [
@@ -118,20 +124,60 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         {/* User Info */}
-        <div
+        <button
+          onClick={() => handleNavigate("/profile")}
           style={{
+            width: "100%",
             padding: "16px 20px",
             borderBottom: "1px solid #e5e5e5",
             backgroundColor: "#f8f9fa",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            transition: "background-color 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#e9ecef";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "#f8f9fa";
           }}
         >
+          {/* Avatar */}
           <div
-            style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: user?.avatar ? "transparent" : "#007bff",
+              backgroundImage: user?.avatar ? `url(${user.avatar})` : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: "16px",
+              fontWeight: "600",
+              flexShrink: 0,
+              border: "1px solid #e5e5e5",
+            }}
           >
-            {user?.fullName}
+            {!user?.avatar && (user?.fullName?.charAt(0)?.toUpperCase() || "U")}
           </div>
-          <div style={{ fontSize: "12px", color: "#666" }}>{user?.role}</div>
-        </div>
+          
+          {/* User Details */}
+          <div style={{ textAlign: "left", flex: 1 }}>
+            <div
+              style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px", color: "#333" }}
+            >
+              {user?.fullName}
+            </div>
+            <div style={{ fontSize: "12px", color: "#666" }}>{user?.role}</div>
+          </div>
+        </button>
 
         {/* Navigation Items */}
         <nav style={{ flex: 1, padding: "16px 0" }}>
@@ -166,11 +212,42 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
+        {/* Logout Button */}
+        <div style={{ padding: "16px 20px", borderTop: "1px solid #e5e5e5" }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              width: "100%",
+              padding: "12px",
+              border: "1px solid #dc3545",
+              backgroundColor: "#dc3545",
+              color: "white",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "500",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#c82333";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "#dc3545";
+            }}
+          >
+            {/* <span>🚪</span> */}
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+
         {/* Footer */}
         <div
           style={{
             padding: "16px 20px",
-            borderTop: "1px solid #e5e5e5",
             fontSize: "12px",
             color: "#666",
             textAlign: "center",

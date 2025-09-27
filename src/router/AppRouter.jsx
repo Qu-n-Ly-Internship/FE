@@ -16,6 +16,7 @@ import ProtectedRoute from "../components/layout/ProtectedRoute";
 import RoleGuard from "../components/layout/RoleGuard";
 
 import DocQueue from "../pages/hr/DocQueue";
+import Profile from "../pages/students/Profile";
 
 export default function AppRouter() {
   return (
@@ -70,6 +71,7 @@ export default function AppRouter() {
                 </RoleGuard>
               }
             />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
         {/* Fallback */}

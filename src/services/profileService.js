@@ -1,47 +1,74 @@
 // src/services/profileService.js
-// 🔧 MOCK: trả Promise.resolve để xem UI ngay
-export async function getMyProfile() {
+// TODO(stagewise): Replace mock data with real API calls
+export async function getMyProfile(user) {
   await delay(300);
-  return {
-    fullName: "Intern One",
-    email: "intern1@company.com",
-    university: "HCMUT",
-    major: "Software Engineering",
-    mentorName: "Mentor One",
-    startDate: "2025-03-01",
-    endDate: "2025-06-30",
+  
+  // Return profile data based on current user
+  const profileData = {
+    fullName: user?.fullName || "Unknown User",
+    email: user?.email || "unknown@example.com",
+    role: user?.role || "INTERN",
   };
+  
+  // Add role-specific data
+  if (user?.role === "INTERN") {
+    return {
+      ...profileData,
+      university: "HCMUT", // TODO(stagewise): Get from user data
+      major: "Software Engineering", // TODO(stagewise): Get from user data
+      mentorName: "Mentor One", // TODO(stagewise): Get from user data
+      startDate: "2025-03-01", // TODO(stagewise): Get from user data
+      endDate: "2025-06-30", // TODO(stagewise): Get from user data
+    };
+  } else if (user?.role === "HR") {
+    return {
+      ...profileData,
+      department: "Human Resources",
+      joinDate: "2023-01-15",
+      position: "HR Manager",
+    };
+  } else if (user?.role === "ADMIN") {
+    return {
+      ...profileData,
+      department: "IT Administration",
+      joinDate: "2022-06-01",
+      position: "System Administrator",
+      permissions: "Full Access",
+    };
+  } else {
+    return profileData;
+  }
 }
 
-export async function getMyDocuments() {
+export async function getMyDocuments(user) {
   await delay(300);
-  return [
-    {
-      id: 1,
-      type: "CV",
-      fileName: "CV_InternOne.pdf",
-      uploadedAt: "2025-03-02",
-      status: "APPROVED",
-      note: "OK",
-      url: "#",
-    },
-    {
-      id: 2,
-      type: "APPLICATION",
-      fileName: "Application.pdf",
-      uploadedAt: "2025-03-03",
-      status: "PENDING",
-      note: null,
-    },
-    {
-      id: 3,
-      type: "CONTRACT",
-      fileName: "InternshipContract.pdf",
-      uploadedAt: "2025-03-05",
-      status: "REJECTED",
-      note: "Thiếu chữ ký",
-    },
-  ];
+  
+  // TODO(stagewise): Replace with real API call based on user ID
+  // Return documents specific to the user
+  if (user?.role === "INTERN") {
+    return [
+      {
+        id: 1,
+        type: "CV",
+        fileName: `CV_${user.fullName?.replace(" ", "_")}.pdf`,
+        uploadedAt: "2025-03-02",
+        status: "APPROVED",
+        note: "OK",
+        url: "#",
+      },
+      {
+        id: 2,
+        type: "APPLICATION",
+        fileName: "Application.pdf",
+        uploadedAt: "2025-03-03",
+        status: "PENDING",
+        note: null,
+      },
+    ];
+  } else {
+    // HR/ADMIN users might not have documents or have different types
+    return [];
+  }
 }
 
 function delay(ms) {

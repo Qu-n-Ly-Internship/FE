@@ -116,7 +116,9 @@ export default function Login() {
           <img src={logoTeam} alt="Logo Login" />
         </div>
 
-        <h1 className="auth-title">Đăng nhập</h1>
+        <h1 type="submit" className="auth-title">
+          Đăng nhập
+        </h1>
 
         {error && <div className="auth-alert">{error}</div>}
 
