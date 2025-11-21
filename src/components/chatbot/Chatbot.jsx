@@ -1,7 +1,7 @@
 // src/components/ChatbotWidget.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom"; // Import useLocation
-import { askGemini } from "../../services/chatbotService";
+import { useLocation } from "react-router-dom";
+import { sendChatMessage } from "../../services/chatbotService";
 import "./Chatbot.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -26,7 +26,6 @@ const ChatbotWidget = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Hàm decode JWT token
   const decodeToken = (token) => {
     try {
       const base64Url = token.split(".")[1];
@@ -34,9 +33,7 @@ const ChatbotWidget = () => {
       const jsonPayload = decodeURIComponent(
         atob(base64)
           .split("")
-          .map(function (c) {
-            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-          })
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
           .join("")
       );
       return JSON.parse(jsonPayload);
@@ -45,16 +42,13 @@ const ChatbotWidget = () => {
     }
   };
 
-  // Kiểm tra xem có nên hiển thị chatbot không
   const shouldShowChatbot = () => {
-    // Thử lấy user từ nhiều nguồn
     const userStr = localStorage.getItem("user");
     const authStorageStr = localStorage.getItem("auth-storage");
 
     let user = null;
     let token = null;
 
-    // Thử parse từ auth-storage (Zustand store)
     try {
       if (authStorageStr) {
         const authStorage = JSON.parse(authStorageStr);
@@ -65,7 +59,6 @@ const ChatbotWidget = () => {
       console.error("Parse auth-storage error:", e);
     }
 
-    // Fallback: thử parse từ localStorage user
     if (!user) {
       try {
         if (userStr && userStr !== "{}") {
@@ -76,7 +69,6 @@ const ChatbotWidget = () => {
       }
     }
 
-    // Thử decode từ token nếu chưa có user
     if (!user && token) {
       const decoded = decodeToken(token);
       if (decoded) {
@@ -84,29 +76,16 @@ const ChatbotWidget = () => {
       }
     }
 
-    // Kiểm tra nếu đang ở trang login
     const isLoginPage =
       location.pathname === "/login" || location.pathname === "/";
 
-    // Debug
-    console.log("=== CHATBOT DEBUG ===");
-    console.log("Path:", location.pathname);
-    console.log("Auth storage:", authStorageStr);
-    console.log("Final user object:", user);
-    console.log("User role:", user?.role);
-    console.log("User roles:", user?.roles);
-
-    // Kiểm tra xem user có data thực sự không
     const hasUserData =
       user && Object.keys(user).length > 0 && (user.role || user.roles);
 
-    // Nếu chưa đăng nhập, chỉ hiển thị ở trang login
     if (!hasUserData) {
-      console.log("-> Show on login page:", isLoginPage);
       return isLoginPage;
     }
 
-    // Kiểm tra role (có thể là role hoặc roles array)
     const allowedRoles = ["intern", "user", "INTERN", "USER", "Intern", "User"];
     let shouldShow = false;
 
@@ -116,11 +95,9 @@ const ChatbotWidget = () => {
       shouldShow = user.roles.some((r) => allowedRoles.includes(r));
     }
 
-    console.log("-> Should show for role:", shouldShow);
     return shouldShow;
   };
 
-  // Đóng chatbot khi chuyển trang không được phép
   useEffect(() => {
     if (!shouldShowChatbot()) {
       setIsOpen(false);
@@ -160,10 +137,16 @@ const ChatbotWidget = () => {
     setError(null);
 
     try {
-      const response = await askGemini(userMessage.content, conversationId);
+      // Gọi API: sendChatMessage(question, conversationId)
+      // API Response: { conversation_id: string, answer: string, sources: string[] }
+      const response = await sendChatMessage(
+        userMessage.content,
+        conversationId
+      );
 
-      if (response.conversationId) {
-        setConversationId(response.conversationId);
+      // Lưu conversation_id để dùng cho các tin nhắn tiếp theo
+      if (response.conversation_id) {
+        setConversationId(response.conversation_id);
       }
 
       const botMessage = {
@@ -171,16 +154,20 @@ const ChatbotWidget = () => {
         type: "bot",
         content: response.answer,
         timestamp: new Date(),
+        sources: response.sources || [],
       };
 
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
       console.error("Error sending message:", err);
 
-      const errorMsg =
-        typeof err === "string"
-          ? err
-          : err.message || "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại.";
+      let errorMsg = "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại.";
+
+      if (typeof err === "string") {
+        errorMsg = err;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
 
       setError(errorMsg);
 
@@ -228,14 +215,12 @@ const ChatbotWidget = () => {
     setIsOpen(!isOpen);
   };
 
-  // Không render gì nếu không được phép hiển thị
   if (!shouldShowChatbot()) {
     return null;
   }
 
   return (
     <>
-      {/* Nút mở chatbot */}
       <button
         className={`chatbot-toggle-btn ${isOpen ? "hidden" : ""}`}
         onClick={toggleChat}
@@ -256,7 +241,6 @@ const ChatbotWidget = () => {
         <span className="notification-badge">1</span>
       </button>
 
-      {/* Cửa sổ chat */}
       {isOpen && (
         <div className="chatbot-widget">
           <div className="chatbot-container">
@@ -286,10 +270,7 @@ const ChatbotWidget = () => {
                   className="clear-chat-btn"
                   onClick={clearChat}
                   title="Xóa lịch sử chat"
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                  }}
+                  style={{ fontSize: "15px", fontWeight: "bold" }}
                 >
                   🗑️
                 </button>
@@ -297,10 +278,7 @@ const ChatbotWidget = () => {
                   className="close-chat-btn"
                   onClick={toggleChat}
                   title="Đóng chat"
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                  }}
+                  style={{ fontSize: "15px", fontWeight: "bold" }}
                 >
                   <span style={{ fontSize: "20px", paddingBottom: "5px" }}>
                     -
@@ -359,6 +337,11 @@ const ChatbotWidget = () => {
                         {message.content}
                       </ReactMarkdown>
                     </div>
+                    {message.sources && message.sources.length > 0 && (
+                      <div className="message-sources">
+                        <small>Nguồn: {message.sources.join(", ")}</small>
+                      </div>
+                    )}
                     <div className="message-time">
                       {formatTime(message.timestamp)}
                     </div>
