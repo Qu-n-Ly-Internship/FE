@@ -23,8 +23,12 @@ const ChatbotWidget = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [error, setError] = useState(null);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [size, setSize] = useState({ width: 400, height: 600 });
+  const [isResizing, setIsResizing] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const resizeRef = useRef(null);
 
   const decodeToken = (token) => {
     try {
@@ -104,6 +108,39 @@ const ChatbotWidget = () => {
     }
   }, [location.pathname]);
 
+  // Xử lý resize
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing) return;
+
+      const newWidth = window.innerWidth - e.clientX - 20;
+      const newHeight = window.innerHeight - e.clientY - 20;
+
+      setSize({
+        width: Math.max(300, Math.min(newWidth, 800)),
+        height: Math.max(400, Math.min(newHeight, window.innerHeight - 100)),
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "nwse-resize";
+      document.body.style.userSelect = "none";
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizing]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -137,14 +174,11 @@ const ChatbotWidget = () => {
     setError(null);
 
     try {
-      // Gọi API: sendChatMessage(question, conversationId)
-      // API Response: { conversation_id: string, answer: string, sources: string[] }
       const response = await sendChatMessage(
         userMessage.content,
         conversationId
       );
 
-      // Lưu conversation_id để dùng cho các tin nhắn tiếp theo
       if (response.conversation_id) {
         setConversationId(response.conversation_id);
       }
@@ -154,7 +188,6 @@ const ChatbotWidget = () => {
         type: "bot",
         content: response.answer,
         timestamp: new Date(),
-        sources: response.sources || [],
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -215,9 +248,31 @@ const ChatbotWidget = () => {
     setIsOpen(!isOpen);
   };
 
+  const toggleMaximize = () => {
+    setIsMaximized(!isMaximized);
+  };
+
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
   if (!shouldShowChatbot()) {
     return null;
   }
+
+  const chatbotStyle = isMaximized
+    ? {
+        width: "100vw",
+        height: "100vh",
+        right: 0,
+        bottom: 0,
+        borderRadius: 0,
+      }
+    : {
+        width: `${size.width}px`,
+        height: `${size.height}px`,
+      };
 
   return (
     <>
@@ -242,8 +297,37 @@ const ChatbotWidget = () => {
       </button>
 
       {isOpen && (
-        <div className="chatbot-widget">
-          <div className="chatbot-container">
+        <div className="chatbot-widget" style={chatbotStyle}>
+          {!isMaximized && (
+            <div
+              ref={resizeRef}
+              className="resize-handle"
+              onMouseDown={handleResizeStart}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "20px",
+                height: "20px",
+                cursor: "nwse-resize",
+                zIndex: 1000,
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: "5px",
+                  left: "5px",
+                  width: "10px",
+                  height: "10px",
+                  borderLeft: "2px solid #ccc",
+                  borderTop: "2px solid #ccc",
+                }}
+              />
+            </div>
+          )}
+
+          <div className="chatbot-container" style={{ height: "100%" }}>
             <div className="chatbot-header">
               <div className="chatbot-header-info">
                 <div className="chatbot-avatar">
@@ -266,6 +350,14 @@ const ChatbotWidget = () => {
                 </div>
               </div>
               <div className="chatbot-header-actions">
+                <button
+                  className="maximize-btn"
+                  onClick={toggleMaximize}
+                  title={isMaximized ? "Thu nhỏ" : "Phóng to"}
+                  style={{ fontSize: "15px", fontWeight: "bold" }}
+                >
+                  {isMaximized ? "🗗" : "🗖"}
+                </button>
                 <button
                   className="clear-chat-btn"
                   onClick={clearChat}
@@ -337,11 +429,7 @@ const ChatbotWidget = () => {
                         {message.content}
                       </ReactMarkdown>
                     </div>
-                    {message.sources && message.sources.length > 0 && (
-                      <div className="message-sources">
-                        <small>Nguồn: {message.sources.join(", ")}</small>
-                      </div>
-                    )}
+
                     <div className="message-time">
                       {formatTime(message.timestamp)}
                     </div>

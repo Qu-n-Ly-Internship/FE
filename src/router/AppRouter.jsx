@@ -25,8 +25,8 @@ import AttendancePage from "../pages/internships/AttendancePage";
 import LeaveRequestPage from "../pages/internships/LeaveRequestPage";
 import LeaveApprovalPage from "../pages/hr/LeaveApprovalPage";
 import Gps from "../pages/admin/Gps";
-import WorkSchedule from "../pages/hr/WorkSchedule";
 import Statistics from "../pages/statistics/Statistics";
+import MeetingManagement from "../pages/hr/MeetingManagement";
 
 // ✅ Thêm mới
 import NotificationsPage from "../pages/internships/NotificationsPage";
@@ -280,6 +280,14 @@ export default function AppRouter() {
               }
             />
             <Route
+              path="/hr/meeting-management"
+              element={
+                <AccessGuard requiredRoles={["HR"]}>
+                  <MeetingManagement />
+                </AccessGuard>
+              }
+            />
+            <Route
               path="/internship-attendance"
               element={
                 <AccessGuard requiredRoles={["INTERN"]}>
@@ -320,14 +328,6 @@ export default function AppRouter() {
               }
             />
           </Route>
-          <Route
-            path="/hr/work-schedule"
-            element={
-              <AccessGuard requiredRoles={["HR"]}>
-                <WorkSchedule />
-              </AccessGuard>
-            }
-          />
         </Route>
         {/* 🚫 Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
