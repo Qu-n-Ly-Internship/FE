@@ -176,12 +176,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       requiredRoles: ["HR"],
     },
     {
-      label: "Lịch làm việc",
-      path: "/hr/work-schedule",
-      icon: "📅",
-      requiredRoles: ["HR"],
-    },
-    {
       label: "Thông báo",
       path: "/notifications",
       icon: "🔔",
