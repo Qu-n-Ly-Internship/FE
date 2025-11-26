@@ -14,6 +14,18 @@ export default function OAuthCallback() {
     async function handleCallback() {
       setError("");
       const params = new URLSearchParams(location.search);
+
+      // ✅ Kiểm tra nếu user từ chối cấp quyền
+            const oauthError = params.get("error");
+            if (oauthError) {
+              if (oauthError === "access_denied") {
+                setError("Bạn đã từ chối cấp quyền. Vui lòng thử lại nếu muốn đăng nhập bằng Google.");
+              } else {
+                setError(`Lỗi OAuth: ${oauthError}`);
+              }
+              return; // Dừng xử lý
+            }
+
       const urlToken = params.get("token") || params.get("access_token") || params.get("jwt");
       const redirect = params.get("redirect") || "/";
 
