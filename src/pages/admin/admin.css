@@ -1,7 +1,7 @@
 /* ================================
    🌐 ADMIN PANEL GLOBAL STYLE
    ================================ */
-:root {
+.admin-scope {
   --admin-primary: #0c203f;
   --admin-success: #34c759;
   --admin-danger: #ff3b30;
@@ -17,6 +17,15 @@
    🧩 CONTAINER & TITLE
    ================================ */
 .admin-container {
+  --admin-primary: #0c203f;
+  --admin-success: #34c759;
+  --admin-danger: #ff3b30;
+  --admin-warning: #ffd60a;
+  --admin-bg-light: #f4f8fb;
+  --admin-bg-card: #fff;
+  --admin-border-radius: 12px;
+  --admin-shadow: 0 4px 16px rgba(19, 19, 20, 0.08);
+  --admin-font-main: "Segoe UI", "Roboto", Arial, sans-serif;
   padding: 32px 24px;
   background: var(--admin-bg-light);
   min-height: 100vh;
