@@ -170,6 +170,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       requiredRoles: ["INTERN"],
     },
     {
+      label: "Lịch họp",
+      path: "/hr/meeting-management",
+      icon: "📅",
+      requiredRoles: ["HR"],
+    },
+    {
       label: "Duyệt nghỉ phép",
       path: "/hr/leave-approvals",
       icon: "🛎️",

@@ -26,6 +26,7 @@ import LeaveRequestPage from "../pages/internships/LeaveRequestPage";
 import LeaveApprovalPage from "../pages/hr/LeaveApprovalPage";
 import Gps from "../pages/admin/Gps";
 import Statistics from "../pages/statistics/Statistics";
+import MeetingManagement from "../pages/hr/MeetingManagement";
 
 // ✅ Thêm mới
 import NotificationsPage from "../pages/internships/NotificationsPage";
@@ -275,6 +276,14 @@ export default function AppRouter() {
               element={
                 <AccessGuard requiredRoles={["HR", "ADMIN"]}>
                   <ReviewSupportRequests />
+                </AccessGuard>
+              }
+            />
+            <Route
+              path="/hr/meeting-management"
+              element={
+                <AccessGuard requiredRoles={["HR"]}>
+                  <MeetingManagement />
                 </AccessGuard>
               }
             />
