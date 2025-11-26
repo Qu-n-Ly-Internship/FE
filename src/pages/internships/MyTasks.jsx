@@ -91,7 +91,7 @@ export default function MyTasks() {
 
       // ✅ Gọi API với userId
       const response = await axios.get(
-        `http://localhost:8090/api/tasks/my-tasks?userId=${userId}`
+        `http://codeft.duckdns.org:8090/api/tasks/my-tasks?userId=${userId}`
       );
 
       console.log("Tasks response:", response.data);

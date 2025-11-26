@@ -12,7 +12,7 @@ function getCurrentUserId() {
 const NotificationService = {
   connectSSE(userId, onMessage, onError) {
     const url = `${
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:8090/api"
+      import.meta.env.VITE_API_BASE_URL || "http://codeft.duckdns.org:8090/api"
     }/notifications/stream/${userId}`;
 
     const eventSource = new EventSource(url);

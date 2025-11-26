@@ -1,7 +1,7 @@
 // src/services/taskService.js
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8090/api/tasks";
+const API_BASE_URL = "http://codeft.duckdns.org:8090/api/tasks";
 
 // ✅ Helper function để lấy userId từ localStorage
 const getUserId = () => {
