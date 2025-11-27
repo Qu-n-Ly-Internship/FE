@@ -62,7 +62,7 @@ export default function InternSelectionModal({ onClose, onSelect }) {
           flexDirection: "column",
           maxHeight: "90vh",
           width: "90%",
-          maxWidth: "1000px"
+          maxWidth: "1000px",
         }}
       >
         <div className="modal-header">
@@ -71,14 +71,17 @@ export default function InternSelectionModal({ onClose, onSelect }) {
             ✕
           </button>
         </div>
-        <div className="modal-body" style={{
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "200px",
-          maxHeight: "calc(90vh - 150px)",
-          padding: "0"
-        }}>
+        <div
+          className="modal-body"
+          style={{
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "200px",
+            maxHeight: "calc(90vh - 150px)",
+            padding: "0",
+          }}
+        >
           <input
             type="text"
             placeholder="Tìm kiếm theo tên hoặc email..."
@@ -90,126 +93,201 @@ export default function InternSelectionModal({ onClose, onSelect }) {
 
           {/* ✅ Hiển thị số lượng intern */}
           {!loading && interns.length > 0 && (
-            <div style={{
-              marginBottom: "1rem",
-              padding: "0.5rem",
-              background: "#f0f9ff",
-              borderRadius: "4px",
-              fontSize: "14px",
-              color: "#0369a1"
-            }}>
-              📋 Có <strong>{interns.length}</strong> thực tập sinh trong các program bạn quản lý
+            <div
+              style={{
+                marginBottom: "1rem",
+                padding: "0.5rem",
+                background: "#f0f9ff",
+                borderRadius: "4px",
+                fontSize: "14px",
+                color: "#0369a1",
+              }}
+            >
+              📋 Có <strong>{interns.length}</strong> thực tập sinh trong các
+              program bạn quản lý
             </div>
           )}
 
           {loading ? (
             <div className="loading center">Đang tải...</div>
           ) : error ? (
-            <div className="center" style={{
-              padding: "2rem",
-              color: "#dc2626",
-              textAlign: "center"
-            }}>
+            <div
+              className="center"
+              style={{
+                padding: "2rem",
+                color: "#dc2626",
+                textAlign: "center",
+              }}
+            >
               ⚠️ {error}
             </div>
           ) : interns.length === 0 ? (
-            <div className="center" style={{ padding: "2rem", textAlign: "center" }}>
+            <div
+              className="center"
+              style={{ padding: "2rem", textAlign: "center" }}
+            >
               {searchQuery
                 ? `Không tìm thấy thực tập sinh phù hợp với "${searchQuery}"`
                 : "Không tìm thấy thực tập sinh."}
             </div>
           ) : (
-            <div style={{ 
-              width: "100%",
-              overflowX: "auto"
-            }}>
-              <table className="table table-hover" style={{
+            <div
+              style={{
                 width: "100%",
-                tableLayout: "auto",
-                minWidth: "100%",
-                margin: 0,
-                borderCollapse: "collapse"
-              }}>
-              <thead>
-                <tr>
-                  <th className="table-th" style={{
-                    padding: "12px",
-                    textAlign: "left",
-                    backgroundColor: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 10
-                  }}>
-                    Tên thực tập sinh
-                  </th>
-                  <th className="table-th" style={{
-                    padding: "12px 24px 12px 40px",
-                    textAlign: "left",
-                    backgroundColor: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 10,
-                    minWidth: "250px"
-                  }}>
-                    Email
-                  </th>
-                  <th className="table-th" style={{
-                    padding: "12px",
-                    textAlign: "left",
-                    backgroundColor: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 10
-                  }}>
-                    Dự án
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {interns.map((intern) => (
-                  <tr
-                    key={intern.intern_id || intern.id}
-                    onClick={() => onSelect(intern)}
-                    onKeyPress={(e) => e.key === "Enter" && onSelect(intern)}
-                    role="button"
-                    tabIndex={0}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <td className="table-td" style={{
-                      padding: "12px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f1f5f9"
-                    }}>
-                      {intern.student || intern.fullname}
-                    </td>
-                    <td className="table-td" style={{
-                      padding: "12px 24px 12px 40px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f1f5f9"
-                    }}>
-                      {intern.studentEmail || intern.email}
-                    </td>
-                    <td className="table-td" style={{
-                      padding: "12px",
-                      fontSize: "13px",
-                      color: "#6b7280",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f1f5f9"
-                    }}>
-                      {intern.programName || "-"}
-                    </td>
+                overflowX: "auto",
+              }}
+            >
+              <table
+                className="table table-hover"
+                style={{
+                  width: "100%",
+                  tableLayout: "auto",
+                  minWidth: "100%",
+                  margin: 0,
+                  borderCollapse: "collapse",
+                }}
+              >
+                <thead>
+                  <tr>
+                    <th
+                      className="table-th"
+                      style={{
+                        padding: "12px",
+                        textAlign: "left",
+                        backgroundColor: "#f8fafc",
+                        borderBottom: "1px solid #e2e8f0",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Tên thực tập sinh
+                    </th>
+                    <th
+                      className="table-th"
+                      style={{
+                        padding: "12px 24px 12px 40px",
+                        textAlign: "left",
+                        backgroundColor: "#f8fafc",
+                        borderBottom: "1px solid #e2e8f0",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        minWidth: "250px",
+                      }}
+                    >
+                      Email
+                    </th>
+                    <th
+                      className="table-th"
+                      style={{
+                        padding: "12px",
+                        textAlign: "left",
+                        backgroundColor: "#f8fafc",
+                        borderBottom: "1px solid #e2e8f0",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Dự án
+                    </th>
                   </tr>
-                ))}
-              </tbody>
+                </thead>
+                <tbody>
+                  {interns.map((intern) => {
+                    const hasProject = intern.title || intern.programName; // ✅ Check có project chưa
+
+                    return (
+                      <tr
+                        key={intern.intern_id || intern.id}
+                        onClick={() => {
+                          if (hasProject) {
+                            toast.warning(
+                              `${
+                                intern.student || intern.fullname
+                              } đã thuộc project "${intern.title}"`
+                            );
+                            return;
+                          }
+                          onSelect(intern);
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            if (hasProject) {
+                              toast.warning(
+                                `${
+                                  intern.student || intern.fullname
+                                } đã thuộc project "${intern.title}"`
+                              );
+                              return;
+                            }
+                            onSelect(intern);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        style={{
+                          cursor: hasProject ? "not-allowed" : "pointer",
+                          opacity: hasProject ? 0.6 : 1,
+                          backgroundColor: hasProject
+                            ? "#f9fafb"
+                            : "transparent",
+                        }}
+                        title={
+                          hasProject ? `Đã thuộc project: ${intern.title}` : ""
+                        }
+                      >
+                        <td
+                          className="table-td"
+                          style={{
+                            padding: "12px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            borderBottom: "1px solid #f1f5f9",
+                          }}
+                        >
+                          {intern.student || intern.fullname}
+                          {hasProject && (
+                            <span
+                              style={{ marginLeft: "8px", color: "#dc2626" }}
+                            >
+                              🔒
+                            </span>
+                          )}
+                        </td>
+                        <td
+                          className="table-td"
+                          style={{
+                            padding: "12px 24px 12px 40px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            borderBottom: "1px solid #f1f5f9",
+                          }}
+                        >
+                          {intern.studentEmail || intern.email}
+                        </td>
+                        <td
+                          className="table-td"
+                          style={{
+                            padding: "12px",
+                            fontSize: "13px",
+                            color: hasProject ? "#dc2626" : "#6b7280",
+                            fontWeight: hasProject ? "500" : "normal",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            borderBottom: "1px solid #f1f5f9",
+                          }}
+                        >
+                          {intern.title || intern.programName || "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
             </div>
           )}

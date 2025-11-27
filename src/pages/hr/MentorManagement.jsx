@@ -12,6 +12,8 @@ import { getDepartmentsByProgram } from "../../services/departmentService";
 import InternSelectionModal from "../../components/common/InternSelectionModal";
 import "./MentorManagement.css";
 
+import { toast } from "react-toastify";
+
 export default function HRProjectManagement() {
   const [projects, setProjects] = useState([]);
   const [programs, setPrograms] = useState([]);
@@ -116,34 +118,41 @@ export default function HRProjectManagement() {
   const handleSelectIntern = async (intern) => {
     if (!selectedProject) return;
 
+    const internId = intern?.intern_id || intern?.internProfileId || intern?.id;
+
+    if (!internId) {
+      toast.error("Không tìm thấy ID thực tập sinh!");
+      setError("Không tìm thấy ID thực tập sinh!");
+      return;
+    }
+
+    // ✅ Kiểm tra intern đã có project chưa
+    const hasProject = intern.title || intern.programName;
+
+    if (hasProject) {
+      toast.warning(
+        `⚠️ ${intern.student || intern.fullname} đã thuộc project "${
+          intern.title
+        }"`,
+        { autoClose: 3000 }
+      );
+      return; // ✅ Không cho thêm nếu đã có project
+    }
+
     setLoading(true);
     setError(null);
     setSuccessMessage("");
 
     try {
-      const internId =
-        intern?.intern_id || intern?.internProfileId || intern?.id;
-
-      if (!internId) {
-        setError("Không tìm thấy ID thực tập sinh!");
-        setLoading(false);
-        return;
-      }
-
-      // 🚫 Kiểm tra intern đã có project chưa
-      if (intern.programId || intern.projectId || intern.currentProject) {
-        setError("Thực tập sinh này đã thuộc một project khác!");
-        setLoading(false);
-        return;
-      }
-
       await addInternToProject(selectedProject.id, internId);
 
-      setSuccessMessage(
-        `Đã thêm ${intern.student || intern.fullName} vào project ${
-          selectedProject.title
-        }`
-      );
+      const message = `✅ Đã thêm ${
+        intern.student || intern.fullName
+      } vào project ${selectedProject.title}`;
+
+      // ✅ Hiển thị cả toast và success message
+      toast.success(message, { autoClose: 3000 });
+      setSuccessMessage(message);
       setShowModal(false);
 
       // Reload lại danh sách project
@@ -158,14 +167,14 @@ export default function HRProjectManagement() {
       }, 3000);
     } catch (err) {
       console.error("Error adding intern:", err);
-      setError(
-        err.response?.data?.message || "Không thể thêm intern vào project"
-      );
+      const errorMsg =
+        err.response?.data?.message || "Không thể thêm intern vào project";
+      toast.error(errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
   };
-
 
   const handleRemoveIntern = async (internId, internName, projectTitle) => {
     if (
@@ -197,7 +206,9 @@ export default function HRProjectManagement() {
         isSuccess = true;
       } else {
         console.error("Real error:", err);
-        setError(err.response?.data?.message || "Không thể xóa intern");
+        const errorMsg = err.response?.data?.message || "Không thể xóa intern";
+        toast.error(errorMsg); // ✅ Toast lỗi
+        setError(errorMsg);
       }
     }
 
@@ -209,7 +220,9 @@ export default function HRProjectManagement() {
     }
 
     if (isSuccess) {
-      setSuccessMessage(`Đã xóa ${internName} khỏi project`);
+      const message = `🗑️ Đã xóa ${internName} khỏi project "${projectTitle}"`;
+      toast.success(message, { autoClose: 3000 }); // ✅ Toast thành công
+      setSuccessMessage(message);
       setTimeout(() => {
         setSuccessMessage("");
       }, 3000);
@@ -232,6 +245,7 @@ export default function HRProjectManagement() {
     setSuccessMessage("");
 
     let isSuccess = false;
+    let newProjectTitle = "";
 
     try {
       await transferInternToAnotherProject(transferData.internId, newProjectId);
@@ -247,7 +261,10 @@ export default function HRProjectManagement() {
         isSuccess = true;
       } else {
         console.error("Real error:", err);
-        setError(err.response?.data?.message || "Không thể chuyển intern");
+        const errorMsg =
+          err.response?.data?.message || "Không thể chuyển intern";
+        toast.error(errorMsg); // ✅ Toast lỗi
+        setError(errorMsg);
       }
     }
 
@@ -260,9 +277,11 @@ export default function HRProjectManagement() {
 
     if (isSuccess) {
       const newProject = projects.find((p) => p.id === newProjectId);
-      setSuccessMessage(
-        `Đã chuyển ${transferData.internName} sang project "${newProject?.title}"`
-      );
+      newProjectTitle = newProject?.title || "project mới";
+
+      const message = `🔄 Đã chuyển ${transferData.internName} sang project "${newProjectTitle}"`;
+      toast.success(message, { autoClose: 3000 }); // ✅ Toast thành công
+      setSuccessMessage(message);
       setShowTransferModal(false);
       setTransferData(null);
 
@@ -348,7 +367,7 @@ export default function HRProjectManagement() {
 
           <div className="filter-dropdowns">
             <div className="dropdown-container">
-              <div className={`dropdown ${selectedProgramId ? 'active' : ''}`}>
+              <div className={`dropdown ${selectedProgramId ? "active" : ""}`}>
                 <select
                   className="dropdown-select"
                   value={selectedProgramId}
@@ -366,7 +385,11 @@ export default function HRProjectManagement() {
             </div>
 
             <div className="dropdown-container">
-              <div className={`dropdown ${!selectedProgramId ? 'disabled' : ''} ${selectedDepartmentId ? 'active' : ''}`}>
+              <div
+                className={`dropdown ${!selectedProgramId ? "disabled" : ""} ${
+                  selectedDepartmentId ? "active" : ""
+                }`}
+              >
                 <select
                   className="dropdown-select"
                   value={selectedDepartmentId}
