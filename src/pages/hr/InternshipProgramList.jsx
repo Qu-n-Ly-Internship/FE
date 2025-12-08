@@ -48,6 +48,7 @@ export default function InternshipProgramList() {
   useEffect(() => {
     async function loadPrograms() {
       try {
+        setLoading(true);
         const data = await getAllPrograms();
         setPrograms(data);
       } catch (error) {
@@ -84,7 +85,6 @@ export default function InternshipProgramList() {
   // ✏️ Cập nhật chương trình
   const handleUpdateProgram = async (updatedData) => {
     try {
-      // API call: updateProgram(id, data)
       await updateProgram(updatedData.id, updatedData);
       toast.success("Cập nhật chương trình thành công! ✅");
       // Tải lại danh sách
@@ -127,6 +127,7 @@ export default function InternshipProgramList() {
     }
   };
 
+  // Lọc danh sách chương trình
   const filteredPrograms = programs.filter((program) => {
     const nameMatch = program.programName
       .toLowerCase()
@@ -146,15 +147,24 @@ export default function InternshipProgramList() {
     return nameMatch;
   });
 
+  const clearFilters = () => {
+    setNameFilter("");
+    setStartDateFilter("");
+    setEndDateFilter("");
+  };
+
   if (loading) {
     return (
-      <div className="loading center">Đang tải danh sách chương trình...</div>
+      <div className="page-container">
+        <div className="loading center">Đang tải danh sách chương trình...</div>
+      </div>
     );
   }
 
   return (
     <div className="page-container">
       <ToastContainer position="top-right" autoClose={3000} />
+
       <div className="page-header">
         <h1 className="page-title">Chương trình Thực tập</h1>
         <button
@@ -168,8 +178,12 @@ export default function InternshipProgramList() {
       {/* Filters */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div
-          className="form-row"
-          style={{ padding: 16, gap: 16, alignItems: "flex-end" }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: 16,
+            alignItems: "flex-end",
+          }}
         >
           <div className="form-group">
             <label className="form-label">Lọc theo tên</label>
@@ -200,14 +214,7 @@ export default function InternshipProgramList() {
             />
           </div>
           <div className="form-group">
-            <button
-              className="btn clear-filters-btn"
-              onClick={() => {
-                setNameFilter("");
-                setStartDateFilter("");
-                setEndDateFilter("");
-              }}
-            >
+            <button className="btn clear-filters-btn" onClick={clearFilters}>
               Xóa bộ lọc
             </button>
           </div>
@@ -215,61 +222,77 @@ export default function InternshipProgramList() {
       </div>
 
       <div className="card">
-        <table className="table">
-          <thead>
-            <tr>
-              <th className="table-th">STT</th>
-              <th className="table-th">Tên chương trình</th>
-              <th className="table-th">Ngày bắt đầu</th>
-              <th className="table-th">Ngày kết thúc</th>
-              <th className="table-th">Mô tả</th>
-              <th className="table-th">Người khởi tạo</th>
-              <th className="table-th">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPrograms.length === 0 ? (
+        <div className="internship-table-wrapper">
+          <table className="table">
+            <thead>
               <tr>
-                <td className="table-td center" colSpan={7}>
-                  Không tìm thấy chương trình nào.
-                </td>
+                <th className="table-th">STT</th>
+                <th className="table-th">Tên chương trình</th>
+                <th className="table-th">Ngày bắt đầu</th>
+                <th className="table-th">Ngày kết thúc</th>
+                <th className="table-th">Mô tả</th>
+                <th className="table-th">Người khởi tạo</th>
+                <th className="table-th">Hành động</th>
               </tr>
-            ) : (
-              filteredPrograms.map((program, index) => (
-                <tr key={program.id}>
-                  <td className="table-td">{index + 1}</td>
-                  <td className="table-td">{program.programName}</td>
-                  <td className="table-td">{formatDate(program.dateCreate)}</td>
-                  <td className="table-td">{formatDate(program.dateEnd)}</td>
-                  <td className="table-td text-truncate">
-                    {program.description}
-                  </td>
-                  <td className="table-td">{program.hrName || "Không rõ"}</td>
-                  <td className="table-td action-buttons">
-                    <button
-                      className="program-btn-info"
-                      onClick={() => navigate(`/hr/departments/${program.id}`)}
-                    >
-                      Chi tiết P.Ban
-                    </button>
-                    <button
-                      className="program-btn-warning"
-                      onClick={() => setEditing(program)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      className="program-btn-danger"
-                      onClick={() => handleDeleteProgram(program.id)}
-                    >
-                      Xóa
-                    </button>
+            </thead>
+            <tbody>
+              {filteredPrograms.length === 0 ? (
+                <tr>
+                  <td className="table-td center" colSpan={7}>
+                    Không tìm thấy chương trình nào.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredPrograms.map((program, index) => (
+                  <tr key={program.id}>
+                    <td className="table-td center">{index + 1}</td>
+                    <td className="table-td">{program.programName}</td>
+                    <td className="table-td">
+                      {formatDate(program.dateCreate)}
+                    </td>
+                    <td className="table-td">{formatDate(program.dateEnd)}</td>
+                    <td className="table-td">
+                      <div
+                        className="text-truncate"
+                        title={program.description}
+                      >
+                        {program.description}
+                      </div>
+                    </td>
+                    <td className="table-td">{program.hrName || "Không rõ"}</td>
+                    <td className="table-td">
+                      <div className="action-buttons">
+                        <button
+                          className="program-btn-info"
+                          onClick={() =>
+                            navigate(`/hr/departments/${program.id}`)
+                          }
+                          title="Xem chi tiết phòng ban"
+                        >
+                          Chi tiết P.Ban
+                        </button>
+                        <button
+                          className="program-btn-warning"
+                          onClick={() => setEditing(program)}
+                          title="Chỉnh sửa chương trình"
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          className="program-btn-danger"
+                          onClick={() => handleDeleteProgram(program.id)}
+                          title="Xóa chương trình"
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showCreate && (
@@ -279,7 +302,6 @@ export default function InternshipProgramList() {
         />
       )}
 
-      {/* ✅ Modal View nhận program object, bao gồm cả program.id */}
       {viewing && (
         <ViewProgramModal program={viewing} onClose={() => setViewing(null)} />
       )}
@@ -296,7 +318,7 @@ export default function InternshipProgramList() {
 }
 
 // ==========================================================
-// ➕ 2. MODAL TẠO CHƯƠNG TRÌNH: CreateProgramModal
+// CREATE PROGRAM MODAL
 // ==========================================================
 function CreateProgramModal({ onClose, onCreate }) {
   const user = useAuthStore((state) => state.user);
@@ -329,7 +351,7 @@ function CreateProgramModal({ onClose, onCreate }) {
       return;
     }
 
-    const userId = user?.id; // Lấy userId từ Zustand
+    const userId = user?.id;
 
     if (!userId) {
       toast.error(
@@ -343,7 +365,7 @@ function CreateProgramModal({ onClose, onCreate }) {
       dateCreate: dateCreate ? dateCreate.format("YYYY-MM-DD") : "",
       dateEnd: dateEnd ? dateEnd.format("YYYY-MM-DD") : "",
       description: description.trim(),
-      userId, // ID của người tạo (HR)
+      userId,
     };
 
     onCreate(payload);
@@ -354,11 +376,10 @@ function CreateProgramModal({ onClose, onCreate }) {
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         <h2 className="modal-title">Tạo chương trình thực tập mới</h2>
         <form onSubmit={handleSubmit}>
-          {/* Tên chương trình */}
           <div className="form-group">
-            <label>Tên chương trình *</label>
+            <label className="form-label">Tên chương trình *</label>
             <input
-              className={`   ${
+              className={`form-input ${
                 validationErrors.programName ? "input-error" : ""
               }`}
               value={programName}
@@ -371,10 +392,9 @@ function CreateProgramModal({ onClose, onCreate }) {
             )}
           </div>
 
-          {/* Ngày bắt đầu & Ngày kết thúc */}
           <div className="form-row">
             <div className="form-group">
-              <label>Ngày bắt đầu *</label>
+              <label className="form-label">Ngày bắt đầu *</label>
               <DatePicker
                 format="YYYY-MM-DD"
                 value={dateCreate}
@@ -382,6 +402,7 @@ function CreateProgramModal({ onClose, onCreate }) {
                 className="app-date-picker"
                 status={validationErrors.dateCreate ? "error" : undefined}
                 showToday={false}
+                style={{ width: "100%" }}
               />
               {validationErrors.dateCreate && (
                 <div className="error-message">
@@ -391,7 +412,7 @@ function CreateProgramModal({ onClose, onCreate }) {
             </div>
 
             <div className="form-group">
-              <label>Ngày kết thúc *</label>
+              <label className="form-label">Ngày kết thúc *</label>
               <DatePicker
                 format="YYYY-MM-DD"
                 value={dateEnd}
@@ -399,6 +420,7 @@ function CreateProgramModal({ onClose, onCreate }) {
                 className="app-date-picker"
                 status={validationErrors.dateEnd ? "error" : undefined}
                 showToday={false}
+                style={{ width: "100%" }}
               />
               {validationErrors.dateEnd && (
                 <div className="error-message">{validationErrors.dateEnd}</div>
@@ -406,9 +428,8 @@ function CreateProgramModal({ onClose, onCreate }) {
             </div>
           </div>
 
-          {/* Mô tả */}
           <div className="form-group">
-            <label>Mô tả</label>
+            <label className="form-label">Mô tả</label>
             <textarea
               className="form-input"
               rows={3}
@@ -418,10 +439,10 @@ function CreateProgramModal({ onClose, onCreate }) {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-outline" onClick={onClose}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>
               Hủy
             </button>
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn btn-primary btn-sm">
               Tạo chương trình
             </button>
           </div>
@@ -437,15 +458,13 @@ CreateProgramModal.propTypes = {
 };
 
 // ==========================================================
-// 🔎 3. MODAL XEM CHI TIẾT: ViewProgramModal
+// VIEW PROGRAM MODAL
 // ==========================================================
 function ViewProgramModal({ program, onClose }) {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔹 Gọi API lấy departments khi mở modal
-  // ✅ program.id được sử dụng TẠI ĐÂY
   useEffect(() => {
     async function loadDepartments() {
       setLoading(true);
@@ -462,7 +481,7 @@ function ViewProgramModal({ program, onClose }) {
       }
     }
     loadDepartments();
-  }, [program.id]); // Dependency array đảm bảo chỉ gọi khi program.id thay đổi
+  }, [program.id]);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -471,43 +490,35 @@ function ViewProgramModal({ program, onClose }) {
           Chi tiết chương trình: {program.programName}
         </h2>
         <div className="modal-content-scroll">
-          {" "}
-          {/* Thêm scroll cho nội dung */}
           <div className="form-group">
-            <label>Tên chương trình</label>
+            <label className="form-label">Tên chương trình</label>
             <div className="detail-value">{program.programName}</div>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Ngày bắt đầu</label>
-              <div className="detail-value">{program.dateCreate}</div>
+              <label className="form-label">Ngày bắt đầu</label>
+              <div className="detail-value">
+                {formatDate(program.dateCreate)}
+              </div>
             </div>
             <div className="form-group">
-              <label>Ngày kết thúc</label>
-              <div className="detail-value">{program.dateEnd}</div>
+              <label className="form-label">Ngày kết thúc</label>
+              <div className="detail-value">{formatDate(program.dateEnd)}</div>
             </div>
           </div>
           <div className="form-group">
-            <label>Mô tả</label>
+            <label className="form-label">Mô tả</label>
             <div className="detail-value text-pre-wrap">
               {program.description || "Không có mô tả"}
             </div>
           </div>
           <div className="form-group">
-            <label>Người khởi tạo</label>
+            <label className="form-label">Người khởi tạo</label>
             <div className="detail-value">{program.hrName || "Không rõ"}</div>
           </div>
-          {/* 🔹 Danh sách Department */}
+
           <div className="form-group section-title">
-            <h3
-              style={{
-                marginBottom: "5px",
-                borderBottom: "1px solid #eee",
-                paddingBottom: "5px",
-              }}
-            >
-              Phòng ban thuộc chương trình
-            </h3>
+            <h3>Phòng ban thuộc chương trình</h3>
             {loading ? (
               <div className="loading center">Đang tải phòng ban...</div>
             ) : error ? (
@@ -532,7 +543,7 @@ function ViewProgramModal({ program, onClose }) {
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-outline" onClick={onClose}>
+          <button type="button" className="btn btn-outline" onClick={onClose}>
             Đóng
           </button>
         </div>
@@ -547,10 +558,9 @@ ViewProgramModal.propTypes = {
 };
 
 // ==========================================================
-// ✏️ 4. MODAL CHỈNH SỬA: EditProgramModal
+// EDIT PROGRAM MODAL
 // ==========================================================
 function EditProgramModal({ program, onClose, onSave }) {
-  // Lấy giá trị hiện tại của program để khởi tạo state
   const [programName, setProgramName] = useState(program.programName);
   const [dateCreate, setDateCreate] = useState(
     program.dateCreate ? dayjs(program.dateCreate) : null
@@ -583,15 +593,13 @@ function EditProgramModal({ program, onClose, onSave }) {
       return;
     }
 
-    // Gửi dữ liệu đã cập nhật, bao gồm cả id
     onSave({
-      id: program.id, // Đảm bảo ID được gửi đi để cập nhật
+      id: program.id,
       programName: programName.trim(),
       dateCreate: dateCreate ? dateCreate.format("YYYY-MM-DD") : "",
       dateEnd: dateEnd ? dateEnd.format("YYYY-MM-DD") : "",
       description: description.trim(),
-      // Giữ lại các trường khác (như hrId) nếu cần
-      hrId: program.hrId, // Hoặc thông tin người tạo cũ
+      hrId: program.hrId,
     });
   };
 
@@ -600,9 +608,8 @@ function EditProgramModal({ program, onClose, onSave }) {
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         <h2 className="modal-title">Chỉnh sửa chương trình</h2>
         <form onSubmit={handleSubmit}>
-          {/* Tên chương trình */}
           <div className="form-group">
-            <label>Tên chương trình *</label>
+            <label className="form-label">Tên chương trình *</label>
             <input
               className={`form-input ${
                 validationErrors.programName ? "input-error" : ""
@@ -617,10 +624,9 @@ function EditProgramModal({ program, onClose, onSave }) {
             )}
           </div>
 
-          {/* Ngày bắt đầu & Ngày kết thúc */}
           <div className="form-row">
             <div className="form-group">
-              <label>Ngày bắt đầu *</label>
+              <label className="form-label">Ngày bắt đầu *</label>
               <DatePicker
                 format="YYYY-MM-DD"
                 value={dateCreate}
@@ -628,6 +634,7 @@ function EditProgramModal({ program, onClose, onSave }) {
                 className="app-date-picker"
                 status={validationErrors.dateCreate ? "error" : undefined}
                 showToday={false}
+                style={{ width: "100%" }}
               />
               {validationErrors.dateCreate && (
                 <div className="error-message">
@@ -636,7 +643,7 @@ function EditProgramModal({ program, onClose, onSave }) {
               )}
             </div>
             <div className="form-group">
-              <label>Ngày kết thúc *</label>
+              <label className="form-label">Ngày kết thúc *</label>
               <DatePicker
                 format="YYYY-MM-DD"
                 value={dateEnd}
@@ -644,6 +651,7 @@ function EditProgramModal({ program, onClose, onSave }) {
                 className="app-date-picker"
                 status={validationErrors.dateEnd ? "error" : undefined}
                 showToday={false}
+                style={{ width: "100%" }}
               />
               {validationErrors.dateEnd && (
                 <div className="error-message">{validationErrors.dateEnd}</div>
@@ -651,9 +659,8 @@ function EditProgramModal({ program, onClose, onSave }) {
             </div>
           </div>
 
-          {/* Mô tả */}
           <div className="form-group">
-            <label>Mô tả</label>
+            <label className="form-label">Mô tả</label>
             <textarea
               className="form-input"
               rows={3}
@@ -663,10 +670,10 @@ function EditProgramModal({ program, onClose, onSave }) {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-outline" onClick={onClose}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>
               Hủy
             </button>
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn btn-primary btn-sm">
               Lưu thay đổi
             </button>
           </div>

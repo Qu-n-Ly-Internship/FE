@@ -8,7 +8,7 @@ import {
 import SupportRequestReviewModal from "../../components/hr/SupportRequestReviewModal";
 import "./ReviewSupportRequests.css";
 
-// Component Status Badge - ĐÃ SỬA: Xóa PROCESSING, đổi RESOLVED thành COMPLETED
+// Component Status Badge
 function RequestStatusBadge({ status }) {
   let config = {
     text: status || "Unknown",
@@ -16,23 +16,19 @@ function RequestStatusBadge({ status }) {
   };
   switch (status) {
     case "PENDING":
-      config = { text: "Chờ xử lý", className: "status-pending" };
+      config = { text: "Chờ xử lý", className: "badge-pending" };
       break;
     case "COMPLETED":
       config = {
         text: "Đã xác nhận",
-        className: "status-completed",
+        className: "badge-approved",
       };
       break;
     case "REJECTED":
-      config = { text: "Từ chối", className: "status-rejected" };
+      config = { text: "Từ chối", className: "badge-rejected" };
       break;
   }
-  return (
-    <span className={`status-badge ${config.className}`}>
-      <span className="icon">{config.icon}</span> {config.text}
-    </span>
-  );
+  return <span className={`badge ${config.className}`}>{config.text}</span>;
 }
 
 // Helper để lấy label cho priority
@@ -151,7 +147,8 @@ export default function ReviewSupportRequests() {
   };
 
   return (
-    <div className="review-requests-container">
+    <div className="page-container review-requests-container">
+      {/* Page Header */}
       <div className="page-header">
         <h1 className="page-title">Duyệt Yêu Cầu Hỗ Trợ</h1>
         <button
@@ -163,217 +160,275 @@ export default function ReviewSupportRequests() {
         </button>
       </div>
 
+      {/* Error Alert */}
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {/* Filter Bar */}
-      <div className="filters-bar">
-        <div className="filter-group">
-          <label htmlFor="searchFilter">Tìm kiếm:</label>
-          <input
-            id="searchFilter"
-            type="text"
-            className="filter-input"
-            placeholder="Tìm trong tiêu đề hoặc nội dung..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* Statistics Cards */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">📋</div>
+          <div className="stat-info">
+            <div className="stat-value">{totalItems}</div>
+            <div className="stat-label">Tổng yêu cầu</div>
+          </div>
         </div>
-
-        <div className="filter-group">
-          <label htmlFor="statusFilter">Trạng thái:</label>
-          <select
-            id="statusFilter"
-            className="filter-select"
-            value={filterStatus}
-            onChange={(e) => {
-              setFilterStatus(e.target.value);
-              setCurrentPage(0);
-            }}
-          >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="PENDING">Chờ xử lý</option>
-            <option value="COMPLETED">Đã giải quyết</option>
-            <option value="REJECTED">Từ chối</option>
-          </select>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">⏳</div>
+          <div className="stat-info">
+            <div className="stat-value stat-pending-value">
+              {
+                requests.filter((r) => r.status?.toLowerCase() === "pending")
+                  .length
+              }
+            </div>
+            <div className="stat-label">Đang chờ</div>
+          </div>
         </div>
-
-        <div className="filter-group">
-          <label htmlFor="priorityFilter">Độ ưu tiên:</label>
-          <select
-            id="priorityFilter"
-            className="filter-select"
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-          >
-            <option value="ALL">Tất cả</option>
-            <option value="NORMAL">Bình thường</option>
-            <option value="HIGH">Cao</option>
-            <option value="URGENT">Khẩn cấp</option>
-          </select>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">✓</div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {
+                requests.filter((r) => r.status?.toLowerCase() === "completed")
+                  .length
+              }
+            </div>
+            <div className="stat-label">Đã giải quyết</div>
+          </div>
         </div>
-
-        <div className="filter-group">
-          <label htmlFor="sortFilter">Sắp xếp:</label>
-          <select
-            id="sortFilter"
-            className="filter-select"
-            value={sortBy}
-            onChange={(e) => {
-              setSortBy(e.target.value);
-              setCurrentPage(0);
-            }}
-          >
-            <option value="createdAt">Ngày tạo</option>
-            <option value="priority">Độ ưu tiên</option>
-            <option value="status">Trạng thái</option>
-          </select>
+        <div className="stat-card">
+          <div className="stat-icon stat-rejected-icon">✕</div>
+          <div className="stat-info">
+            <div className="stat-value stat-rejected-value">
+              {
+                requests.filter((r) => r.status?.toLowerCase() === "rejected")
+                  .length
+              }
+            </div>
+            <div className="stat-label">Từ chối</div>
+          </div>
         </div>
-
-        <button
-          className="btn btn-outline"
-          onClick={clearFilters}
-          style={{ alignSelf: "flex-end", height: "38px" }}
-        >
-          Xóa bộ lọc
-        </button>
       </div>
 
-      {/* Stats */}
-      <div className="stats-bar">
-        <span>
-          Hiển thị {filteredRequests.length} / {totalItems} yêu cầu
-        </span>
+      {/* Filter Bar */}
+      <div className="card filters-card">
+        <div className="filters-grid">
+          <div className="form-group">
+            <label htmlFor="searchFilter" className="form-label">
+              Tìm kiếm:
+            </label>
+            <input
+              id="searchFilter"
+              type="text"
+              className="form-input"
+              placeholder="Tìm trong tiêu đề hoặc nội dung..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="statusFilter" className="form-label">
+              Trạng thái:
+            </label>
+            <select
+              id="statusFilter"
+              className="form-select"
+              value={filterStatus}
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="PENDING">Chờ xử lý</option>
+              <option value="COMPLETED">Đã giải quyết</option>
+              <option value="REJECTED">Từ chối</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="priorityFilter" className="form-label">
+              Độ ưu tiên:
+            </label>
+            <select
+              id="priorityFilter"
+              className="form-select"
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="NORMAL">Bình thường</option>
+              <option value="HIGH">Cao</option>
+              <option value="URGENT">Khẩn cấp</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="sortFilter" className="form-label">
+              Sắp xếp:
+            </label>
+            <select
+              id="sortFilter"
+              className="form-select"
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                setCurrentPage(0);
+              }}
+            >
+              <option value="createdAt">Ngày tạo</option>
+              <option value="priority">Độ ưu tiên</option>
+              <option value="status">Trạng thái</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <button className="btn btn-clear" onClick={clearFilters}>
+            Xóa bộ lọc
+          </button>
+        </div>
       </div>
 
       {/* Request List Table */}
-      <div className="request-list-container">
-        <table className="request-table">
-          <thead>
-            <tr>
-              <th>STT</th>
-              <th>Thực tập sinh</th>
-              <th>Tiêu đề</th>
-              <th>Nội dung</th>
-              <th>Độ ưu tiên</th>
-              <th>Ngày gửi</th>
-              <th>Trạng thái</th>
-              <th>File</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="9" className="loading">
-                  Đang tải...
-                </td>
-              </tr>
-            ) : filteredRequests.length === 0 ? (
-              <tr>
-                <td colSpan="9" className="empty-requests">
-                  Không có yêu cầu nào phù hợp.
-                </td>
-              </tr>
-            ) : (
-              filteredRequests.map((req, index) => (
-                        <tr key={req.id}>
-
-                          <td>{currentPage * pageSize + index + 1}</td>
-
-                          <td>
-                            <strong>{req.internName || "Chưa có thông tin"}</strong>
-                            {req.internEmail && (
-                              <div style={{ fontSize: '0.85em', color: '#666' }}>
-                                {req.internEmail}
-                              </div>
-                            )}
-                          </td>
-
-                          <td className="request-subject">
-                            <strong>{req.subject}</strong>
-                          </td>
-                          <td className="request-description">
-                            {req.message?.length > 100
-                              ? req.message.substring(0, 100) + "..."
-                              : req.message}
-                          </td>
-                          <td>
-                            <span
-                              className={`priority-badge priority-${req.priority?.toLowerCase()}`}
-                            >
-                              {getPriorityLabel(req.priority)}
-                            </span>
-                          </td>
-                          <td>
-                    {req.createdAt
-                      ? new Date(req.createdAt).toLocaleDateString("vi-VN", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "-"}
-                  </td>
-                  <td>
-                    <RequestStatusBadge status={req.status} />
-                  </td>
-                  <td>
-                    {req.attachmentFileId ? (
-                      <a
-                        href={req.attachmentFileId}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="attachment-link"
-                      >
-                        📎 Xem
-                      </a>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td className="action-buttons">
-                    <button
-                      className="btn btn-info btn-sm"
-                      onClick={() => setViewingRequest(req)}
-                    >
-                      Xem/Duyệt
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="pagination">
-            <div className="pagination-info">
-              Hiển thị {totalItems === 0 ? 0 : currentPage * pageSize + 1}–
-              {Math.min((currentPage + 1) * pageSize, totalItems)} trên{" "}
-              {totalItems}
-            </div>
-            <div className="pagination-controls">
-              <button
-                className="btn btn-sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 0}
-              >
-                ‹ Trước
-              </button>
-              <span className="page-info">
-                Trang {currentPage + 1} / {totalPages}
-              </span>
-              <button
-                className="btn btn-sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages - 1}
-              >
-                Sau ›
-              </button>
-            </div>
+      <div className="card">
+        {loading ? (
+          <div className="loading center">Đang tải...</div>
+        ) : filteredRequests.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">🔭</div>
+            <div className="empty-text">Không có yêu cầu nào phù hợp.</div>
           </div>
+        ) : (
+          <>
+            <div className="table-wrapper">
+              <table className="table request-table">
+                <thead>
+                  <tr>
+                    <th className="table-th">STT</th>
+                    <th className="table-th">Thực tập sinh</th>
+                    <th className="table-th">Tiêu đề</th>
+                    <th className="table-th">Nội dung</th>
+                    <th className="table-th">Độ ưu tiên</th>
+                    <th className="table-th">Ngày gửi</th>
+                    <th className="table-th">Trạng thái</th>
+                    <th className="table-th">File</th>
+                    <th className="table-th">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRequests.map((req, index) => (
+                    <tr key={req.id}>
+                      <td className="table-td center">
+                        {currentPage * pageSize + index + 1}
+                      </td>
+                      <td className="table-td">
+                        <strong>{req.internName || "Chưa có thông tin"}</strong>
+                        {req.internEmail && (
+                          <div className="text-muted">{req.internEmail}</div>
+                        )}
+                      </td>
+                      <td className="table-td">
+                        <strong>{req.subject}</strong>
+                      </td>
+                      <td className="table-td">
+                        <div className="reason-text">
+                          {req.message?.length > 100
+                            ? req.message.substring(0, 100) + "..."
+                            : req.message}
+                        </div>
+                      </td>
+                      <td className="table-td">
+                        <span
+                          className={`priority-badge priority-${req.priority?.toLowerCase()}`}
+                        >
+                          {getPriorityLabel(req.priority)}
+                        </span>
+                      </td>
+                      <td className="table-td">
+                        {req.createdAt
+                          ? new Date(req.createdAt).toLocaleDateString(
+                              "vi-VN",
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )
+                          : "-"}
+                      </td>
+                      <td className="table-td">
+                        <RequestStatusBadge status={req.status} />
+                      </td>
+                      <td className="table-td">
+                        {req.attachmentFileId ? (
+                          <a
+                            href={req.attachmentFileId}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="attachment-link"
+                          >
+                            📎 Xem
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td className="table-td">
+                        <div className="action-buttons">
+                          <button
+                            className="btn btn-info btn-sm"
+                            onClick={() => setViewingRequest(req)}
+                          >
+                            Xem/Duyệt
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {totalItems === 0 ? 0 : currentPage * pageSize + 1}–
+                  {Math.min((currentPage + 1) * pageSize, totalItems)} trên{" "}
+                  {totalItems}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 0}
+                  >
+                    ‹ Trước
+                  </button>
+                  <span className="page-current">
+                    Trang {currentPage + 1} / {totalPages}
+                  </span>
+                  <button
+                    className="btn btn-sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages - 1}
+                  >
+                    Sau ›
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -1,0 +1,403 @@
+/* src/styles/cards-and-modals.css - Standardized Cards & Modals */
+
+/* ===== CARDS ===== */
+
+/* Base Card */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+/* Statistics Cards */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base) ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+.stat-total {
+  background: #e3f2fd;
+}
+
+.stat-pending-icon {
+  background: var(--warning-light);
+}
+
+.stat-approved-icon {
+  background: var(--success-light);
+}
+
+.stat-rejected-icon {
+  background: var(--danger-light);
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+  color: var(--primary);
+}
+
+.stat-pending-value {
+  color: var(--pending);
+}
+
+.stat-approved-value {
+  color: var(--approved);
+}
+
+.stat-rejected-value {
+  color: var(--rejected);
+}
+
+.stat-label {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Filter Card */
+.filter-card {
+  margin-bottom: var(--spacing-xl);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* Report Table Card */
+.report-table {
+  background: var(--bg-card);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== MODALS ===== */
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(4px);
+  animation: fadeIn var(--transition-base) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Box */
+.modal-box {
+  background: var(--bg-card);
+  padding: var(--spacing-3xl);
+  border-radius: var(--radius-xl);
+  width: 600px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: slideUp var(--transition-base) ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-box.review-modal {
+  max-width: 600px;
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.modal-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+.approve-icon {
+  background: var(--success-light);
+  color: var(--approved);
+}
+
+.reject-icon {
+  background: var(--danger-light);
+  color: var(--rejected);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Modal Content */
+.modal-content {
+  margin-bottom: var(--spacing-2xl);
+}
+
+/* Info Rows */
+.info-row {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* Review Details */
+.review-details dl {
+  margin: 0;
+  padding: var(--spacing-md);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.review-details dt {
+  font-weight: 600;
+  color: var(--text-label);
+  margin-bottom: 4px;
+}
+
+.review-details dd {
+  margin-left: 0;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.review-details dd:last-child {
+  margin-bottom: 0;
+}
+
+.review-description {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+  border: 1px dashed var(--border-color);
+  background-color: var(--bg-card);
+}
+
+/* ===== PAGE LAYOUT ===== */
+
+/* Page Container */
+.page-container,
+.attendance-report,
+.review-requests-container {
+  padding: var(--spacing-2xl);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 1px;
+}
+
+/* Alert */
+.alert {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.alert-danger {
+  background: var(--danger-light);
+  border-left: 4px solid var(--danger);
+  color: var(--danger);
+}
+
+.alert-success {
+  background: var(--success-light);
+  border-left: 4px solid var(--success);
+  color: var(--success);
+}
+
+.alert-warning {
+  background: var(--warning-light);
+  border-left: 4px solid var(--warning);
+  color: var(--warning);
+}
+
+.alert-info {
+  background: var(--info-light);
+  border-left: 4px solid var(--info);
+  color: var(--info);
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-box {
+    width: 90vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container,
+  .attendance-report,
+  .review-requests-container {
+    padding: var(--spacing-lg);
+  }
+
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .stat-card {
+    padding: var(--spacing-lg);
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+  }
+
+  .card {
+    padding: var(--spacing-lg);
+  }
+
+  .modal-box {
+    padding: var(--spacing-2xl) var(--spacing-lg);
+  }
+
+  .modal-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .info-row {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .info-label {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
+}

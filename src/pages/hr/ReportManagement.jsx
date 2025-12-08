@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Users,
   BookOpen,
@@ -6,7 +8,6 @@ import {
   Check,
   Star,
   Award,
-  Calendar,
   X,
   Plus,
   Trash2,
@@ -42,7 +43,6 @@ export default function ReportManagement() {
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const [selectedIntern, setSelectedIntern] = useState(null);
   const [copiedInternId, setCopiedInternId] = useState(null);
@@ -56,10 +56,12 @@ export default function ReportManagement() {
     overallScore: 0,
   });
 
+  // Load programs once
   useEffect(() => {
     loadPrograms();
   }, []);
 
+  // Auto load departments + projects when program changes
   useEffect(() => {
     if (selectedProgramId) {
       loadDepartments(selectedProgramId);
@@ -72,12 +74,14 @@ export default function ReportManagement() {
     }
   }, [selectedProgramId]);
 
+  // Load projects when department changes
   useEffect(() => {
     if (selectedProgramId && selectedDepartmentId) {
       loadProjects(selectedProgramId, selectedDepartmentId);
     }
   }, [selectedDepartmentId]);
 
+  // Load evaluations + reports when intern changes
   useEffect(() => {
     if (selectedIntern) {
       loadEvaluations(selectedIntern.id);
@@ -88,11 +92,15 @@ export default function ReportManagement() {
   const loadPrograms = async () => {
     try {
       setLoading(true);
-      setError("");
       const data = await getAllPrograms();
       setPrograms(data);
+
+      // 🔥 Auto chọn chương trình đầu tiên
+      if (data.length > 0) {
+        setSelectedProgramId(data[0].id);
+      }
     } catch (err) {
-      setError("Không thể tải danh sách chương trình");
+      toast.error("Không thể tải danh sách chương trình");
       console.error(err);
     } finally {
       setLoading(false);
@@ -102,11 +110,10 @@ export default function ReportManagement() {
   const loadDepartments = async (programId) => {
     try {
       setLoading(true);
-      setError("");
       const data = await getDepartmentsByProgram(programId);
       setDepartments(data);
     } catch (err) {
-      setError("Không thể tải danh sách phòng ban");
+      toast.error("Không thể tải danh sách phòng ban");
       console.error(err);
     } finally {
       setLoading(false);
@@ -116,10 +123,10 @@ export default function ReportManagement() {
   const loadProjects = async (programId, departmentId) => {
     try {
       setLoading(true);
-      setError("");
       const data = await filterProjects(programId, departmentId);
       setProjects(data);
 
+      // Flatten interns from projects
       const allInterns = [];
       data.forEach((project) => {
         if (project.internNames && Array.isArray(project.internNames)) {
@@ -134,9 +141,10 @@ export default function ReportManagement() {
           });
         }
       });
+
       setInterns(allInterns);
     } catch (err) {
-      setError("Không thể tải danh sách dự án");
+      toast.error("Không thể tải danh sách dự án");
       console.error(err);
     } finally {
       setLoading(false);
@@ -218,22 +226,22 @@ export default function ReportManagement() {
 
   const handleSubmitReport = async () => {
     if (!selectedIntern) {
-      alert("Vui lòng chọn thực tập sinh");
+      toast.error("Vui lòng chọn thực tập sinh");
       return;
     }
 
     if (!formData.summary.trim()) {
-      alert("Vui lòng nhập tóm tắt đánh giá");
+      toast.error("Vui lòng nhập tóm tắt đánh giá");
       return;
     }
 
     if (!formData.recommendations.trim()) {
-      alert("Vui lòng nhập đề xuất");
+      toast.error("Vui lòng nhập đề xuất");
       return;
     }
 
     if (formData.overallScore < 0 || formData.overallScore > 10) {
-      alert("Điểm tổng quát phải từ 0 đến 10");
+      toast.error("Điểm tổng quát phải từ 0 đến 10");
       return;
     }
 
@@ -248,17 +256,17 @@ export default function ReportManagement() {
 
       if (editingReport) {
         await updateReport(editingReport.reportId, payload);
-        alert("Cập nhật báo cáo thành công!");
+        toast.success("Cập nhật báo cáo thành công!");
       } else {
         await createReport(payload);
-        alert("Tạo báo cáo thành công!");
+        toast.success("Tạo báo cáo thành công!");
       }
 
       setShowForm(false);
       setEditingReport(null);
       loadReports(selectedIntern.id);
     } catch (err) {
-      alert(err.message || "Có lỗi xảy ra");
+      toast.error(err.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -270,10 +278,10 @@ export default function ReportManagement() {
     try {
       setLoading(true);
       await deleteReport(reportId);
-      alert("Xóa báo cáo thành công!");
+      toast.success("Xóa báo cáo thành công!");
       loadReports(selectedIntern.id);
     } catch (err) {
-      alert(err.message || "Có lỗi xảy ra");
+      toast.error(err.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -291,432 +299,464 @@ export default function ReportManagement() {
     return "poor";
   };
 
+  // Statistics
+  const stats = {
+    totalInterns: interns.length,
+    totalReports: reports.length,
+    totalEvaluations: evaluations.length,
+    avgScore:
+      reports.length > 0
+        ? (
+            reports.reduce((sum, r) => sum + r.overallScore, 0) / reports.length
+          ).toFixed(1)
+        : 0,
+  };
+
   return (
-    <div className="evaluation-page">
-      <div className="container">
-        {/* Header Section */}
-        <div className="header-card">
-          <div className="header-title">
-            <div className="header-icon">
-              <FileText />
+    <div className="page-container">
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Page Header */}
+      <div className="page-header">
+        <h1 className="page-title">Báo cáo Cuối kỳ Thực tập sinh</h1>
+      </div>
+
+      {/* Statistics */}
+      {selectedIntern && (
+        <div className="stats-row">
+          <div className="stat-card">
+            <div className="stat-icon stat-total">
+              <Users />
             </div>
-            <div className="header-text">
-              <h1>Báo Cáo Cuối Kỳ Thực Tập Sinh</h1>
-              <p>Xem đánh giá định kỳ và tạo báo cáo tổng kết</p>
+            <div className="stat-info">
+              <div className="stat-value">{stats.totalInterns}</div>
+              <div className="stat-label">Tổng TTS</div>
             </div>
           </div>
-
-          {error && (
-            <div className="error-message">
-              <X />
-              <span>{error}</span>
+          <div className="stat-card">
+            <div className="stat-icon stat-approved-icon">
+              <ClipboardList />
             </div>
-          )}
-
-          {/* Filter Section */}
-          <div className="filter-grid">
-            <div className="form-group">
-              <label className="form-label">
-                <BookOpen />
-                Chương trình <span className="required">*</span>
-              </label>
-              <select
-                value={selectedProgramId}
-                onChange={handleProgramChange}
-                className="form-select"
-                disabled={loading}
-              >
-                <option value="">-- Chọn chương trình --</option>
-                {programs.map((program) => (
-                  <option key={program.id} value={program.id}>
-                    {program.programName}
-                  </option>
-                ))}
-              </select>
+            <div className="stat-info">
+              <div className="stat-value stat-approved-value">
+                {stats.totalEvaluations}
+              </div>
+              <div className="stat-label">Đánh giá định kỳ</div>
             </div>
-
-            <div className="form-group">
-              <label className="form-label">
-                <Users />
-                Phòng ban (Tùy chọn)
-              </label>
-              <select
-                value={selectedDepartmentId}
-                onChange={handleDepartmentChange}
-                className="form-select"
-                disabled={loading || !selectedProgramId}
-              >
-                <option value="">-- Tất cả phòng ban --</option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.departmentName} (Sức chứa: {dept.capacity})
-                  </option>
-                ))}
-              </select>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon stat-pending-icon">
+              <FileText />
+            </div>
+            <div className="stat-info">
+              <div className="stat-value stat-pending-value">
+                {stats.totalReports}
+              </div>
+              <div className="stat-label">Báo cáo cuối kỳ</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon stat-total">
+              <TrendingUp />
+            </div>
+            <div className="stat-info">
+              <div className="stat-value">{stats.avgScore}</div>
+              <div className="stat-label">Điểm trung bình</div>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="loading-container">
-            <div className="spinner"></div>
-            <p className="loading-text">Đang tải dữ liệu...</p>
+      {/* Filters */}
+      <div className="card filters-card">
+        <div className="filters-grid-report">
+          <div className="form-group">
+            <label className="form-label">
+              Chương trình <span className="required">*</span>
+            </label>
+            <select
+              value={selectedProgramId}
+              onChange={handleProgramChange}
+              className="form-select"
+              disabled={loading}
+            >
+              {programs.map((program) => (
+                <option key={program.id} value={program.id}>
+                  {program.programName}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
 
-        {/* Interns Grid */}
-        {!loading && selectedProgramId && (
-          <div className="interns-card">
-            <div className="section-header">
-              <h2 className="section-title">
+          <div className="form-group">
+            <label className="form-label">Phòng ban</label>
+            <select
+              value={selectedDepartmentId}
+              onChange={handleDepartmentChange}
+              className="form-select"
+              disabled={loading || !selectedProgramId}
+            >
+              <option value="">-- Tất cả phòng ban --</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.departmentName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Interns Grid */}
+      {!loading && selectedProgramId && (
+        <div className="card">
+          <div className="section-header">
+            <h2 className="section-title">
+              Danh sách thực tập sinh
+              <span className="count-badge">{interns.length}</span>
+            </h2>
+          </div>
+
+          {interns.length === 0 ? (
+            <div className="empty">
+              <div className="empty-icon">
                 <Users />
-                Danh sách thực tập sinh
-                <span className="count-badge">{interns.length}</span>
-              </h2>
+              </div>
+              <div className="empty-text">Không có thực tập sinh nào</div>
             </div>
+          ) : (
+            <div className="interns-grid">
+              {interns.map((intern) => (
+                <div
+                  key={`${intern.id}-${intern.projectId}`}
+                  className={`intern-card ${
+                    selectedIntern?.id === intern.id ? "selected" : ""
+                  }`}
+                  onClick={() => handleSelectIntern(intern)}
+                >
+                  {selectedIntern?.id === intern.id && (
+                    <div className="selected-badge">
+                      <Check />
+                    </div>
+                  )}
 
-            {interns.length === 0 ? (
-              <div className="empty-state">
-                <Users />
-                <p>Không có thực tập sinh nào</p>
-                <small>Vui lòng chọn chương trình khác</small>
+                  <div className="intern-header">
+                    <div>
+                      <h3 className="intern-name">{intern.fullName}</h3>
+                      <div className="intern-id">
+                        <span>ID: {intern.id}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyInternId(intern.id);
+                          }}
+                          className={`copy-btn ${
+                            copiedInternId === intern.id ? "copied" : ""
+                          }`}
+                          title="Copy ID"
+                        >
+                          {copiedInternId === intern.id ? <Check /> : <Copy />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="intern-info">
+                    <div className="info-row">
+                      <BookOpen style={{ color: "#667eea" }} />
+                      <div>
+                        <span className="info-label">Dự án</span>
+                        <span className="info-value">
+                          {intern.projectTitle}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="info-row">
+                      <Star style={{ color: "#f59e0b" }} />
+                      <div>
+                        <span className="info-label">Mentor</span>
+                        <span className="info-value">
+                          {intern.mentorName || "Chưa có"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Report Section */}
+      {selectedIntern && (
+        <div className="card">
+          <div className="evaluation-header">
+            <div className="evaluation-title-group">
+              <div className="evaluation-icon">
+                <FileText />
+              </div>
+              <div className="evaluation-title-text">
+                <h2>{selectedIntern.fullName}</h2>
+                <p>Đánh giá và báo cáo tổng kết</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Evaluations */}
+          <div className="evaluations-reference">
+            <h3 className="history-title">
+              <ClipboardList />
+              Đánh giá định kỳ từ Mentor
+              <span className="info-badge">Tham khảo</span>
+            </h3>
+
+            {evaluations.length === 0 ? (
+              <div className="empty">
+                <div className="empty-icon">
+                  <ClipboardList />
+                </div>
+                <div className="empty-text">Chưa có đánh giá định kỳ</div>
               </div>
             ) : (
-              <div className="interns-grid">
-                {interns.map((intern) => (
+              <div className="history-list">
+                {evaluations.map((evaluation) => (
                   <div
-                    key={`${intern.id}-${intern.projectId}`}
-                    className={`intern-card ${
-                      selectedIntern?.id === intern.id ? "selected" : ""
-                    }`}
-                    onClick={() => handleSelectIntern(intern)}
+                    key={evaluation.evaluationId}
+                    className="history-item reference"
                   >
-                    {selectedIntern?.id === intern.id && (
-                      <div className="selected-badge">
-                        <Check />
-                      </div>
-                    )}
-
-                    <div className="intern-header">
+                    <div className="history-header">
                       <div>
-                        <h3 className="intern-name">{intern.fullName}</h3>
-                        <div className="intern-id">
-                          <span>ID: {intern.id}</span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCopyInternId(intern.id);
-                            }}
-                            className={`copy-btn ${
-                              copiedInternId === intern.id ? "copied" : ""
-                            }`}
-                            title="Copy ID"
-                          >
-                            {copiedInternId === intern.id ? (
-                              <Check />
-                            ) : (
-                              <Copy />
-                            )}
-                          </button>
+                        <div className="history-meta">
+                          <span className="cycle-badge">
+                            {evaluation.cycle}
+                          </span>
+                          <span className="period-text">
+                            Kỳ {evaluation.periodNo}
+                          </span>
                         </div>
+                        <p className="history-date">
+                          {new Date(evaluation.createdAt).toLocaleString(
+                            "vi-VN"
+                          )}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="intern-info">
-                      <div className="info-row">
-                        <BookOpen style={{ color: "#667eea" }} />
-                        <div>
-                          <span className="info-label">Dự án</span>
-                          <span className="info-value">
-                            {intern.projectTitle}
+                    {evaluation.comment && (
+                      <p className="history-comment">"{evaluation.comment}"</p>
+                    )}
+
+                    <div className="scores-list">
+                      {evaluation.scores.map((score, idx) => (
+                        <div key={idx} className="score-item">
+                          <div className="score-content">
+                            <span className="score-name">
+                              {score.criteriaName}
+                            </span>
+                            {score.comment && (
+                              <p className="score-comment">{score.comment}</p>
+                            )}
+                          </div>
+                          <span
+                            className={`score-value ${getScoreClass(
+                              score.score
+                            )}`}
+                          >
+                            {score.score}
                           </span>
                         </div>
-                      </div>
-                      <div className="info-row">
-                        <Star style={{ color: "#f59e0b" }} />
-                        <div>
-                          <span className="info-label">Mentor</span>
-                          <span className="info-value">
-                            {intern.mentorName || "Chưa có"}
-                          </span>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        )}
 
-        {/* Report Section */}
-        {selectedIntern && (
-          <div className="evaluation-section">
+          {/* Final Report Section */}
+          <div className="final-report-section">
             <div className="evaluation-header">
-              <div className="evaluation-title-group">
-                <div className="evaluation-icon">
-                  <FileText />
-                </div>
-                <div className="evaluation-title-text">
-                  <h2>{selectedIntern.fullName}</h2>
-                  <p>Đánh giá và báo cáo tổng kết</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Evaluations from Mentor (Read-only) */}
-            <div className="evaluations-reference">
               <h3 className="history-title">
-                <ClipboardList />
-                Đánh giá định kỳ từ Mentor
-                <span className="info-badge">Tham khảo</span>
+                <FileText />
+                Báo cáo cuối kỳ của HR
               </h3>
-              {evaluations.length === 0 ? (
-                <div className="empty-state">
-                  <ClipboardList />
-                  <p>Chưa có đánh giá định kỳ</p>
-                  <small>Mentor chưa tạo đánh giá cho thực tập sinh này</small>
-                </div>
-              ) : (
-                <div className="history-list">
-                  {evaluations.map((evaluation) => (
-                    <div
-                      key={evaluation.evaluationId}
-                      className="history-item reference"
-                    >
-                      <div className="history-header">
-                        <div>
-                          <div className="history-meta">
-                            <span className="cycle-badge">
-                              {evaluation.cycle}
-                            </span>
-                            <span className="period-text">
-                              Kỳ {evaluation.periodNo}
-                            </span>
-                          </div>
-                          <p className="history-date">
-                            {new Date(evaluation.createdAt).toLocaleString(
-                              "vi-VN"
-                            )}
-                          </p>
-                        </div>
-                      </div>
 
-                      {evaluation.comment && (
-                        <p className="history-comment">
-                          "{evaluation.comment}"
-                        </p>
-                      )}
-
-                      <div className="scores-list">
-                        {evaluation.scores.map((score, idx) => (
-                          <div key={idx} className="score-item">
-                            <div className="score-content">
-                              <span className="score-name">
-                                {score.criteriaName}
-                              </span>
-                              {score.comment && (
-                                <p className="score-comment">{score.comment}</p>
-                              )}
-                            </div>
-                            <span
-                              className={`score-value ${getScoreClass(
-                                score.score
-                              )}`}
-                            >
-                              {score.score}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {!showForm && (
+                <button onClick={handleNewReport} className="btn btn-primary">
+                  <Plus />
+                  Tạo báo cáo cuối kỳ
+                </button>
               )}
             </div>
 
-            {/* Final Report Section */}
-            <div className="final-report-section">
-              <div className="section-divider"></div>
-
-              <div className="evaluation-header">
-                <h3 className="history-title">
-                  <FileText />
-                  Báo cáo cuối kỳ của HR
+            {/* Report Form */}
+            {showForm && (
+              <div className="evaluation-form">
+                <h3 className="form-title">
+                  <Edit />
+                  {editingReport ? "Chỉnh sửa báo cáo" : "Tạo báo cáo cuối kỳ"}
                 </h3>
-                {!showForm && (
-                  <button onClick={handleNewReport} className="btn-primary">
-                    <Plus />
-                    Tạo báo cáo cuối kỳ
+
+                <div className="form-group">
+                  <label className="form-label">
+                    Điểm tổng quát <span className="required">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    value={formData.overallScore}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        overallScore: e.target.value,
+                      })
+                    }
+                    className="form-input"
+                    placeholder="Nhập điểm từ 0 đến 10"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">
+                    Tóm tắt đánh giá <span className="required">*</span>
+                  </label>
+                  <textarea
+                    value={formData.summary}
+                    onChange={(e) =>
+                      setFormData({ ...formData, summary: e.target.value })
+                    }
+                    className="form-textarea"
+                    rows="6"
+                    placeholder="Nhập tóm tắt về kỹ năng, thái độ làm việc..."
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">
+                    Đề xuất <span className="required">*</span>
+                  </label>
+                  <textarea
+                    value={formData.recommendations}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        recommendations: e.target.value,
+                      })
+                    }
+                    className="form-textarea"
+                    rows="4"
+                    placeholder="Nhập đề xuất về tuyển dụng, đào tạo thêm..."
+                  />
+                </div>
+
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    onClick={handleSubmitReport}
+                    disabled={loading}
+                    className="btn btn-success"
+                  >
+                    <Save />
+                    {editingReport ? "Cập nhật báo cáo" : "Lưu báo cáo"}
                   </button>
-                )}
+                  <button
+                    type="button"
+                    onClick={handleCancelForm}
+                    className="btn btn-outline"
+                  >
+                    <X />
+                    Hủy
+                  </button>
+                </div>
               </div>
+            )}
 
-              {/* Report Form */}
-              {showForm && (
-                <div className="evaluation-form">
-                  <h3 className="form-title">
-                    <Edit />
-                    {editingReport
-                      ? "Chỉnh sửa báo cáo"
-                      : "Tạo báo cáo cuối kỳ"}
-                  </h3>
-
-                  <div className="form-group">
-                    <label className="form-label">
-                      <TrendingUp />
-                      Điểm tổng quát <span className="required">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      step="0.1"
-                      value={formData.overallScore}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          overallScore: e.target.value,
-                        })
-                      }
-                      className="form-input"
-                      placeholder="Nhập điểm từ 0 đến 10"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">
-                      <MessageSquare />
-                      Tóm tắt đánh giá <span className="required">*</span>
-                    </label>
-                    <textarea
-                      value={formData.summary}
-                      onChange={(e) =>
-                        setFormData({ ...formData, summary: e.target.value })
-                      }
-                      className="form-textarea"
-                      rows="6"
-                      placeholder="Nhập tóm tắt về kỹ năng, thái độ làm việc, khả năng học hỏi..."
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">
-                      <Award />
-                      Đề xuất <span className="required">*</span>
-                    </label>
-                    <textarea
-                      value={formData.recommendations}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          recommendations: e.target.value,
-                        })
-                      }
-                      className="form-textarea"
-                      rows="4"
-                      placeholder="Nhập đề xuất về tuyển dụng, đào tạo thêm, phát triển..."
-                    />
-                  </div>
-
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      onClick={handleSubmitReport}
-                      disabled={loading}
-                      className="btn-success"
-                    >
-                      <Save />
-                      {editingReport ? "Cập nhật báo cáo" : "Lưu báo cáo"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCancelForm}
-                      className="btn-cancel"
-                    >
-                      <X />
-                      Hủy
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Report History */}
-              {reports.length === 0 ? (
-                <div className="empty-state">
+            {/* Report History */}
+            {!showForm && reports.length === 0 && (
+              <div className="empty">
+                <div className="empty-icon">
                   <FileText />
-                  <p>Chưa có báo cáo cuối kỳ</p>
-                  <small>
-                    Hãy tạo báo cáo cuối kỳ dựa trên các đánh giá định kỳ ở trên
-                  </small>
                 </div>
-              ) : (
-                <div className="history-list">
-                  {reports.map((report) => (
-                    <div key={report.reportId} className="history-item final">
-                      <div className="history-header">
-                        <div>
-                          <div className="report-meta">
-                            <span
-                              className={`score-badge ${getScoreClass(
-                                report.overallScore
-                              )}`}
-                            >
-                              <TrendingUp size={16} />
-                              Điểm: {report.overallScore}
-                            </span>
-                            <span className="hr-name">
-                              Người đánh giá: {report.hrName}
-                            </span>
-                          </div>
-                          <p className="history-date">
-                            {new Date(report.createdAt).toLocaleString("vi-VN")}
-                          </p>
-                        </div>
-                        <div className="history-actions">
-                          <button
-                            onClick={() => handleEditReport(report)}
-                            className="btn-icon edit"
-                            title="Chỉnh sửa"
-                          >
-                            <Edit />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteReport(report.reportId)}
-                            className="btn-icon delete"
-                            title="Xóa"
-                          >
-                            <Trash2 />
-                          </button>
-                        </div>
-                      </div>
+                <div className="empty-text">Chưa có báo cáo cuối kỳ</div>
+              </div>
+            )}
 
-                      <div className="report-section">
-                        <h4 className="section-label">
-                          <MessageSquare size={16} />
-                          Tóm tắt đánh giá:
-                        </h4>
-                        <p className="report-content">{report.summary}</p>
-                      </div>
-
-                      <div className="report-section">
-                        <h4 className="section-label">
-                          <Award size={16} />
-                          Đề xuất:
-                        </h4>
-                        <p className="report-content">
-                          {report.recommendations}
+            {!showForm && reports.length > 0 && (
+              <div className="history-list">
+                {reports.map((report) => (
+                  <div key={report.reportId} className="history-item final">
+                    <div className="history-header">
+                      <div>
+                        <div className="report-meta">
+                          <span
+                            className={`score-badge ${getScoreClass(
+                              report.overallScore
+                            )}`}
+                          >
+                            <TrendingUp size={16} />
+                            Điểm: {report.overallScore}
+                          </span>
+                          <span className="hr-name">
+                            Người đánh giá: {report.hrName}
+                          </span>
+                        </div>
+                        <p className="history-date">
+                          {new Date(report.createdAt).toLocaleString("vi-VN")}
                         </p>
                       </div>
+                      <div className="history-actions">
+                        <button
+                          onClick={() => handleEditReport(report)}
+                          className="btn-icon edit"
+                          title="Chỉnh sửa"
+                        >
+                          <Edit />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteReport(report.reportId)}
+                          className="btn-icon delete"
+                          title="Xóa"
+                        >
+                          <Trash2 />
+                        </button>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+
+                    <div className="report-section">
+                      <h4 className="section-label">
+                        <MessageSquare size={16} />
+                        Tóm tắt đánh giá:
+                      </h4>
+                      <p className="report-content">{report.summary}</p>
+                    </div>
+
+                    <div className="report-section">
+                      <h4 className="section-label">
+                        <Award size={16} />
+                        Đề xuất:
+                      </h4>
+                      <p className="report-content">{report.recommendations}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="card">
+          <div className="loading center">
+            <div className="spinner"></div>
+            <p>Đang tải dữ liệu...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

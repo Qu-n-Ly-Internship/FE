@@ -24,6 +24,7 @@ body {
   color: #222;
   margin: 0;
   padding: 0;
+  color-scheme: light; /* Force light mode */
 }
 
 /* Page Container */
@@ -286,18 +287,18 @@ body {
   display: flex;
   gap: 8px;
   justify-content: flex-start !important;
-  min-width: 140px; /* Đặt chiều rộng tối thiểu */
+  min-width: 140px;
 }
 
 .action-buttons .btn {
   padding: 6px 6px;
-  min-width: 80px; /* Đặt chiều rộng tối thiểu cho button */
-  white-space: nowrap; /* Ngăn text xuống dòng */
+  min-width: 80px;
+  white-space: nowrap;
 }
 
 /* Table cell containing actions */
 .table td:last-child {
-  min-width: 140px; /* Đảm bảo ô cuối cùng đủ rộng */
+  min-width: 140px;
   white-space: nowrap;
 }
 
@@ -728,114 +729,5 @@ body {
 
   .modal-title {
     font-size: 18px;
-  }
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #1a202c;
-    color: #e2e8f0;
-  }
-
-  .card,
-  .stat-card,
-  .modal-box {
-    background: #2d3748;
-  }
-
-  .page-title,
-  .modal-title {
-    color: #90cdf4;
-  }
-
-  .stat-label,
-  .info-label {
-    color: #a0aec0;
-  }
-
-  .table {
-    background: #2d3748;
-  }
-
-  .table thead {
-    background: linear-gradient(90deg, #374151 0%, #1f2937 100%);
-  }
-
-  .table-th {
-    color: #90cdf4;
-    border-bottom-color: #4a5568;
-  }
-
-  .table-td {
-    background: #2d3748;
-    border-bottom-color: #4a5568;
-    color: #e2e8f0;
-  }
-
-  .table tr:hover .table-td {
-    background: #374151;
-  }
-
-  .form-label {
-    color: #e2e8f0;
-  }
-
-  .form-input,
-  .form-select,
-  .form-textarea {
-    background: #374151;
-    border-color: #4a5568;
-    color: #e2e8f0;
-  }
-
-  .form-input:focus,
-  .form-select:focus,
-  .form-textarea:focus {
-    background: #2d3748;
-    border-color: #90cdf4;
-  }
-
-  .btn-outline {
-    background: #374151;
-    border-color: #4a5568;
-    color: #e2e8f0;
-  }
-
-  .btn-outline:hover {
-    background: #2d3748;
-    border-color: #90cdf4;
-  }
-
-  .btn-clear {
-    background: #374151;
-    border-color: #4a5568;
-    color: #e2e8f0;
-  }
-
-  .btn-clear:hover {
-    background: #2d3748;
-  }
-
-  .info-row {
-    background: #374151;
-  }
-
-  .info-value {
-    color: #e2e8f0;
-  }
-
-  .empty-text {
-    color: #a0aec0;
-  }
-
-  .pagination-info,
-  .page-current,
-  .text-muted {
-    color: #a0aec0;
-  }
-
-  .char-count {
-    color: #718096;
   }
 }

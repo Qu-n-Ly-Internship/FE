@@ -1,432 +1,163 @@
-/* InternshipProgramList Component Styles - Copied from global styles */
-:root {
-  --primary: #2b7cff;
-  --success: #34c759;
-  --danger: #ff3b30;
-  --warning: #ffd60a;
-  --info: #5ac8fa;
-  --bg-light: #f4f8fb;
-  --bg-card: #fff;
-  --border-radius: 10px;
-  --shadow: 0 4px 16px rgba(43, 124, 255, 0.08);
-  --font-main: "Segoe UI", "Roboto", Arial, sans-serif;
-}
+/* src/pages/hr/InternshipProgramList.css - Sử dụng CSS variables chuẩn */
 
-.input-error {
-  border-color: #dc3545 !important; /* Màu đỏ */
-}
+/* Import shared styles */
+@import "../../styles/variables.css";
+@import "../../styles/buttons.css";
+@import "../../styles/tables.css";
+@import "../../styles/forms.css";
+@import "../../styles/cards-and-modals.css";
 
-.error-message {
-  color: #dc3545; /* Màu đỏ */
-  font-size: 0.85rem;
-  margin-top: 4px;
-}
+/* Styles đặc thù cho InternshipProgramList */
 
-body {
-  font-family: var(--font-main);
-  background: var(--bg-light);
-  color: #222;
-}
-
-.page-container {
-  padding: 0;
-  background: transparent;
-  min-height: auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: 1px;
-}
-
-.card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  padding: 24px;
-  margin-bottom: 24px;
-  transition: box-shadow 0.2s;
-}
-.card:hover {
-  box-shadow: 0 8px 24px rgba(43, 124, 255, 0.15);
-}
-
-.table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-
-.table thead {
-  background: linear-gradient(90deg, #eaf3ff 0%, #f4f8fb 100%);
-}
-
-.table-th {
-  padding: 14px 12px;
-  text-align: left;
-  border-bottom: 2px solid #e3eaf2;
-  font-weight: 600;
-  color: var(--primary);
-  font-size: 15px;
-}
-
-.table-td {
-  padding: 12px;
-  border-bottom: 1px solid #e3eaf2;
-  font-size: 14px;
-  background: #fff;
-  transition: background 0.2s;
-}
-.table tr:hover .table-td {
-  background: #f0f6ff;
-}
-
-.btn {
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: var(--font-main);
-  font-weight: 500;
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-  box-shadow: 0 2px 8px rgba(43, 124, 255, 0.07);
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: #fff;
-}
-.btn-primary:hover {
-  background: #1761c7;
-}
-
-.btn-sm {
-  padding: 7px 16px;
-  font-size: 14px;
-  line-height: 1.2;
-  width: auto;
-  flex-shrink: 0;
-}
-
-.btn-success {
-  background: var(--success);
-  color: #fff;
-  padding: 5px 12px;
-  font-size: 13px;
-}
-.btn-success:hover {
-  background: #28a745;
-}
-
-/* 🔹 FIXED: Specific classes for program list action buttons */
+/* Program action buttons - Đặc thù cho trang này */
 .program-btn-info {
   background: var(--info);
   color: #fff;
-  padding: 7px 14px;
-  font-size: 13px;
-  min-width: 109px;
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  min-width: 95px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 500;
-  transition: background 0.18s;
+  transition: all var(--transition-fast);
   white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(90, 200, 250, 0.3);
 }
-.program-btn-info:hover {
-  background: #007aff;
+
+.program-btn-info:hover:not(:disabled) {
+  background: var(--info-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(90, 200, 250, 0.4);
 }
 
 .program-btn-warning {
   background: var(--warning);
-  color: #222;
-  padding: 7px 14px;
-  font-size: 13px;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  min-width: 60px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 500;
-  transition: background 0.18s;
-  white-space: nowrap t;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(255, 149, 0, 0.3);
 }
-.program-btn-warning:hover {
-  background: #ffe066;
+
+.program-btn-warning:hover:not(:disabled) {
+  background: var(--warning-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(255, 149, 0, 0.4);
 }
 
 .program-btn-danger {
   background: var(--danger);
   color: #fff;
-  padding: 7px 14px;
-  font-size: 13px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.18s;
-  white-space: nowrap;
-}
-.program-btn-danger:hover {
-  background: #e02020;
-}
-
-/* Keep old classes for backwards compatibility but with lower specificity */
-.table .btn-info {
-  background: var(--info);
-  color: #fff;
-  padding: 5px 12px;
-  font-size: 18px;
-}
-.btn-info:hover {
-  background: #007aff;
-}
-
-.table .btn-warning {
-  background: var(--warning);
-  color: #222;
-  padding: 5px 15px;
-  font-size: 17px;
-}
-.btn-warning:hover {
-  background: #ffe066;
-}
-
-.btn-outline-danger {
-  background: #fff;
-  color: var(--danger);
-  border: 1px solid #ffd6d6;
-  padding: 5px 12px;
-  font-size: 13px;
-}
-.btn-outline-danger:hover {
-  background: #ffeaea;
-}
-
-.clear-filters-btn {
-  background: #eaf3ff !important;
-  color: var(--primary);
-  padding: 7px 16px;
-  font-size: 14px;
-  border: 1px solid #d0d4d9;
-  border-radius: 6px;
-  font-weight: 500;
-  color: #0c0c0c !important;
-}
-.clear-filters-btn:hover {
-  background: #75aeff !important;
-  color: #ffffff !important;
-}
-
-.badge {
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  display: inline-block;
-  font-weight: 500;
-}
-
-.badge-success {
-  background: #eafbe7;
-  color: var(--success);
-}
-
-.badge-danger {
-  background: #ffeaea;
-  color: var(--danger);
-}
-
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  gap: 12px;
-}
-
-.pagination-info {
-  color: #555;
-  font-size: 14px;
-}
-
-.pagination-controls {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.page-btn {
-  min-width: 34px;
   padding: 6px 10px;
-  border: 1px solid #ddd;
-  background: #fff;
+  font-size: var(--font-size-sm);
+  min-width: 60px;
+  border: none;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  border-radius: 6px;
-}
-
-.page-btn.active {
-  border-color: #2b7cff;
-  background: #eaf2ff;
-  font-weight: 600;
-}
-
-.page-dots {
-  padding: 0 6px;
-  color: #777;
-}
-
-.table-td:first-child,
-.table-th:first-child {
-  text-align: center;
-  width: 60px;
-}
-
-/* Dark mode, scoped only to the clear filters button */
-@media (prefers-color-scheme: dark) {
-  .clear-filters-btn {
-    background: #232a34;
-    color: #eaf3ff;
-    border-color: #3a3d42;
-  }
-  .clear-filters-btn:hover {
-    background: #2b3442;
-  }
-}
-
-.center {
-  text-align: center;
-}
-
-.loading,
-.empty {
-  padding: 32px;
-  color: #888;
-  font-size: 16px;
-}
-
-/* Shared modal + form styles for list pages */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(43, 124, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-box {
-  background: var(--bg-card);
-  padding: 32px 24px;
-  border-radius: 16px;
-  width: 520px;
-  max-width: 95vw;
-  box-shadow: var(--shadow);
-}
-
-.modal-title {
-  margin: 0 0 18px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 15px;
-  color: #222;
   font-weight: 500;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.3);
 }
 
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #e3eaf2;
-  border-radius: 8px;
-  box-sizing: border-box;
-  font-size: 15px;
-  background: #f8fbff;
-  transition: border 0.18s;
+.program-btn-danger:hover:not(:disabled) {
+  background: var(--danger-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(255, 59, 48, 0.4);
 }
 
-.form-input:focus,
-.form-select:focus {
-  border-color: var(--primary);
-  outline: none;
+/* Table wrapper để handle scroll */
+.internship-table-wrapper {
+  overflow-x: auto;
+  margin: 0 -24px;
+  padding: 0 24px;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+/* Table column widths for Program List */
+.table-th:nth-child(1),
+.table-td:nth-child(1) {
+  text-align: center;
+  width: 50px;
+  min-width: 50px;
 }
 
-.form-actions {
-  display: flex !important;
-  gap: 10px;
-  justify-content: flex-end !important;
-  margin-top: 12px;
-}
-
-.btn-outline {
-  background: #fff;
-  border: 1px solid #e3eaf2;
-  color: var(--primary);
-  margin-top: 12px;
-}
-.btn-outline:hover {
-  background: #eaf3ff;
-  color: #1761c7;
-}
-
-/* Additional styles from InternshipList.css that might be used */
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.text-truncate {
+.table-th:nth-child(2),
+.table-td:nth-child(2) {
+  width: 180px;
+  min-width: 150px;
   max-width: 200px;
+}
+
+.table-th:nth-child(3),
+.table-td:nth-child(3) {
+  width: 110px;
+  min-width: 100px;
+}
+
+.table-th:nth-child(4),
+.table-td:nth-child(4) {
+  width: 110px;
+  min-width: 100px;
+}
+
+.table-th:nth-child(5),
+.table-td:nth-child(5) {
+  width: 200px;
+  min-width: 150px;
+  max-width: 250px;
+}
+
+.table-th:nth-child(6),
+.table-td:nth-child(6) {
+  width: 130px;
+  min-width: 120px;
+}
+
+/* Text truncate for description - Thêm tooltip hint */
+.text-truncate {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: help;
 }
 
+.text-truncate:hover {
+  overflow: visible;
+  white-space: normal;
+  word-break: break-word;
+  position: relative;
+  z-index: 1;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+}
+
+/* Text pre-wrap for modal description */
 .text-pre-wrap {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
+/* Detail value in modals */
 .detail-value {
-  padding: 8px 12px;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-top: 4px;
+  padding: var(--spacing-md);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-xs);
+  color: var(--text-primary);
 }
 
+/* Department list in view modal */
 .department-list {
   list-style: none;
   padding: 0;
@@ -434,50 +165,58 @@ body {
 }
 
 .department-item {
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  background-color: #f9f9f9;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--bg-input);
+}
+
+.department-item:last-child {
+  margin-bottom: 0;
 }
 
 .department-item strong {
   display: block;
-  margin-bottom: 4px;
-  color: #333;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
 }
 
 .text-sm {
-  color: #666;
-  font-size: 0.9em;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
 }
 
+/* Info message */
 .info-message {
-  color: #1976d2;
-  padding: 8px 12px;
-  background-color: #e3f2fd;
-  border: 1px solid #bbdefb;
-  border-radius: 4px;
-  margin: 8px 0;
+  color: var(--info);
+  padding: var(--spacing-md);
+  background-color: var(--info-light);
+  border: 1px solid rgba(90, 200, 250, 0.3);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-md) 0;
 }
 
+/* Section title in modals */
 .section-title {
-  margin-bottom: 5px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-md);
 }
 
 .section-title h3 {
   margin: 0;
-  font-size: 1.1em;
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
+/* Modal content scroll */
 .modal-content-scroll {
   max-height: 60vh;
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: var(--spacing-sm);
 }
 
 .modal-content-scroll::-webkit-scrollbar {
@@ -485,126 +224,120 @@ body {
 }
 
 .modal-content-scroll::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
 }
 
 .modal-content-scroll::-webkit-scrollbar-thumb {
   background: #c1c1c1;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .modal-content-scroll::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
-
-/* Tablet */
-@media (max-width: 992px) {
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .modal-box {
-    width: 480px;
-  }
+/* Action buttons container - Tối ưu cho không gian hẹp */
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
 }
 
-/* Mobile landscape */
-@media (max-width: 768px) {
-  .page-title {
-    font-size: 24px;
+.action-buttons button {
+  flex-shrink: 0;
+}
+
+/* Ant Design DatePicker override */
+.app-date-picker {
+  width: 100%;
+  height: 40px;
+  border-radius: var(--radius-md);
+}
+
+.app-date-picker .ant-picker-input input {
+  font-size: var(--font-size-md);
+}
+
+/* Filters grid responsive */
+.filters-grid-custom {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  align-items: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .table-th:nth-child(7),
+  .table-td:nth-child(7) {
+    min-width: 300px;
   }
-  .card {
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  .table {
-    font-size: 13px;
-  }
-  .table-th,
-  .table-td {
-    padding: 10px 8px;
-  }
-  .btn {
+
+  .program-btn-info,
+  .program-btn-warning,
+  .program-btn-danger {
+    min-width: auto;
     padding: 6px 12px;
-    font-size: 13px;
-  }
-  .btn-sm {
-    padding: 5px 12px;
-    font-size: 12px;
-  }
-  .program-btn-info,
-  .program-btn-warning,
-  .program-btn-danger {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-  }
-  .modal-box {
-    width: 95vw;
-    padding: 20px 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
-  .form-actions {
-    flex-direction: column-reverse;
-    gap: 8px;
-  }
-  .form-actions .btn {
-    width: 100%;
-  }
-  .action-buttons {
-    gap: 6px;
   }
 }
 
-/* Mobile portrait */
-@media (max-width: 480px) {
-  .page-title {
-    font-size: 20px;
+@media (max-width: 992px) {
+  .action-buttons {
+    gap: var(--spacing-xs);
   }
-  .card {
-    padding: 12px;
-    border-radius: 8px;
+
+  .text-truncate {
+    max-width: 180px;
   }
-  .table {
-    font-size: 12px;
-  }
-  .table-th,
-  .table-td {
-    padding: 8px 6px;
-  }
-  .btn {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
+}
+
+@media (max-width: 768px) {
   .program-btn-info,
   .program-btn-warning,
   .program-btn-danger {
-    padding: 5px 10px !important;
-    font-size: 11px !important;
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
   }
-  .modal-box {
-    width: 100vw;
-    padding: 16px 12px;
-    margin: 8px;
-  }
-  .modal-title {
-    font-size: 16px;
-  }
-  .form-input,
-  .form-select {
-    font-size: 14px;
-    padding: 8px 10px;
-  }
+
   .action-buttons {
     flex-direction: column;
     align-items: stretch;
-    gap: 6px;
+    gap: var(--spacing-xs);
   }
+
   .action-buttons button {
     width: 100%;
+  }
+
+  .text-truncate {
+    max-width: 150px;
+  }
+
+  .modal-content-scroll {
+    max-height: 50vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .program-btn-info,
+  .program-btn-warning,
+  .program-btn-danger {
+    padding: 5px 10px;
+    font-size: var(--font-size-xs);
+  }
+
+  .text-truncate {
+    max-width: 100px;
+  }
+
+  .department-item {
+    padding: var(--spacing-sm);
+  }
+
+  .section-title h3 {
+    font-size: var(--font-size-md);
   }
 }
