@@ -5,7 +5,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  font-family: "Segoe UI", "Roboto", Arial, sans-serif;
 }
 
 .layout-overlay {
@@ -14,11 +14,11 @@
   left: 0;
   width: 10%;
   height: 100%;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   z-index: 0;
   border-top-right-radius: 32px;
   border-bottom-right-radius: 32px;
-  box-shadow: 2px 0 16px rgba(43,124,255,0.07);
+  box-shadow: 2px 0 16px rgba(43, 124, 255, 0.07);
 }
 
 .layout-sidebar {
@@ -44,7 +44,7 @@
   background: #fff;
   border-radius: 18px;
   padding: 32px 28px;
-  box-shadow: 0 4px 24px rgba(43,124,255,0.08);
+  box-shadow: 0 4px 24px rgba(43, 124, 255, 0.08);
   min-height: calc(100vh - 64px);
   transition: box-shadow 0.2s;
   animation: fadeInLayout 0.8s;
@@ -53,12 +53,19 @@
 }
 
 @keyframes fadeInLayout {
-  from { opacity: 0; transform: translateY(24px);}
-  to { opacity: 1; transform: translateY(0);}
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 992px) {
-  .layout-main, .layout-main.collapsed {
+  .layout-main,
+  .layout-main.collapsed {
     margin-left: 0;
     padding: 18px 6px;
   }
