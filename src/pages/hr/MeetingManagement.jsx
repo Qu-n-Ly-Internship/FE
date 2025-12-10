@@ -170,18 +170,12 @@ export default function MeetingManagement() {
         </button>
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div
-          className="form-row"
-          style={{
-            padding: 16,
-            gap: 16,
-            alignItems: "flex-end",
-            flexWrap: "wrap",
-          }}
-        >
+      <div className="card filters-card">
+        <div className="filters-grid">
           <div className="form-group">
-            <label className="form-label">Tìm kiếm</label>
+            <label htmlFor="searchFilter" className="form-label">
+              Tìm kiếm
+            </label>
             <input
               className="form-input"
               placeholder="Tìm theo tiêu đề hoặc địa điểm"
@@ -205,7 +199,7 @@ export default function MeetingManagement() {
           <div className="form-group">
             <button
               type="button"
-              className="btn clear-filters-btn"
+              className="btn btn-clear"
               onClick={() => {
                 setSearchText("");
                 setStatusFilter("");

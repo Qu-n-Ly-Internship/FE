@@ -9,7 +9,7 @@
   --bg-card: #fff;
   --border-radius: 10px;
   --shadow: 0 4px 16px rgba(43, 124, 255, 0.08);
-  --font-main: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  --font-main: "Segoe UI", "Roboto", Arial, sans-serif;
 }
 
 body {
@@ -277,14 +277,13 @@ body {
   display: flex !important;
   gap: 10px;
   justify-content: flex-end !important;
-  margin-top: 12px;
+  margin-top: 0px;
 }
 
 .btn-outline {
   background: #fff;
   border: 1px solid #e3eaf2;
   color: var(--primary);
-  margin-top: 12px;
 }
 .btn-outline:hover {
   background: #eaf3ff;
@@ -316,7 +315,8 @@ body {
   .table {
     font-size: 13px;
   }
-  .table-th, .table-td {
+  .table-th,
+  .table-td {
     padding: 10px 8px;
   }
   .btn {
@@ -355,7 +355,8 @@ body {
   .table {
     font-size: 12px;
   }
-  .table-th, .table-td {
+  .table-th,
+  .table-td {
     padding: 8px 6px;
   }
   .btn {

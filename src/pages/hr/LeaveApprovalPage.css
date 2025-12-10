@@ -269,6 +269,7 @@ body {
   border: 1px solid #e3eaf2;
   color: #666;
   padding: 10px 24px;
+  margin: 0px;
 }
 
 .btn-outline:hover {
@@ -510,7 +511,7 @@ body {
 }
 
 .info-label {
-  font-weight: 600;
+  font-weight: 300;
   color: #666;
   min-width: 120px;
   flex-shrink: 0;
