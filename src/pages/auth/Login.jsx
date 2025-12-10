@@ -71,7 +71,7 @@ export default function Login() {
 
   function loginWithGoogle() {
 //     window.location.href = "http://codeft.duckdns.org:8090/oauth2/authorization/google";
-    window.location.href = "http://codeft.duckdns.org:8090/oauth2/authorization/google";
+    window.location.href = "http://localhost:8090/oauth2/authorization/google";
   }
 
   if (!hasHydrated) {
