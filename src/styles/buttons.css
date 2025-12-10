@@ -17,6 +17,7 @@
   text-align: center;
   white-space: nowrap;
   user-select: none;
+  margin-top: 0px;
 }
 
 .btn:disabled {
@@ -136,6 +137,7 @@
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
+  margin: 0px;
 }
 
 .btn-outline:hover:not(:disabled) {
@@ -221,6 +223,7 @@
   gap: var(--spacing-sm);
   justify-content: flex-start;
   flex-wrap: wrap;
+  margin-top: 0px;
 }
 
 .action-buttons .btn {

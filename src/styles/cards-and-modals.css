@@ -206,6 +206,24 @@
   margin-bottom: var(--spacing-2xl);
 }
 
+/* Modal Close Button */
+.modal-close-btn {
+  position: absolute;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color var(--transition-base) ease;
+}
+.modal-close-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Info Rows */
 .info-row {
   display: flex;

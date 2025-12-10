@@ -318,7 +318,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* Logout */}
       <div className="sidebar-logout">
         <button className="sidebar-logout-btn" onClick={handleLogout}>
-          {collapsed ? <TbLogout2 /> : "Đăng xuất"}
+          {collapsed ? <TbLogout2 strokeWidth={4} size={15} /> : "Đăng xuất"}
         </button>
       </div>
     </div>

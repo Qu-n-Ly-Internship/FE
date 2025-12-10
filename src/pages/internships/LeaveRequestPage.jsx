@@ -1,3 +1,4 @@
+// src/pages/internships/LeaveRequestPage.jsx - Chuẩn hóa
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { DatePicker } from "antd";
@@ -20,15 +21,12 @@ export default function LeaveRequestPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const currentUser = useAuthStore((state) => state.user);
-
-  // ✅ STATE CHO THÔNG BÁO INLINE
   const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     loadLeaveRequests();
   }, []);
 
-  // ✅ AUTO HIDE NOTIFICATION AFTER 5 SECONDS
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => {
@@ -44,95 +42,54 @@ export default function LeaveRequestPage() {
       return;
     }
 
-    console.log("=== LOADING LEAVE REQUESTS ===");
-    console.log("Current user email:", currentUser.email);
-    console.log("Current user ID:", currentUser.id);
-
     setLoading(true);
     try {
       const response = await getLeaveRequests(currentUser.email);
 
-      console.log("Response from API:", response);
-
-      let userRequests = Array.isArray(response.data)
-        ? response.data
-        : [];
+      let userRequests = Array.isArray(response.data) ? response.data : [];
 
       const currentEmail = currentUser.email.toLowerCase();
-      userRequests = userRequests.filter(req => {
-        const internEmail = (req.internEmail || '').toLowerCase();
-        const match = internEmail === currentEmail;
-        console.log(`Checking request ${req.id}: ${req.internEmail} === ${currentUser.email}? ${match}`);
-        return match;
+      userRequests = userRequests.filter((req) => {
+        const internEmail = (req.internEmail || "").toLowerCase();
+        return internEmail === currentEmail;
       });
-
-      console.log("Final filtered requests:", userRequests);
-      console.log("Total requests:", userRequests.length);
 
       setRequests(userRequests);
     } catch (error) {
       console.error("Error loading leave requests:", error);
-
-      // ✅ HIỂN THỊ THÔNG BÁO LỖI
       setNotification({
-        type: 'error',
-        message: 'Không thể tải danh sách nghỉ phép',
-        details: error?.message || 'Vui lòng thử lại sau'
+        type: "error",
+        message: "Không thể tải danh sách nghỉ phép",
+        details: error?.message || "Vui lòng thử lại sau",
       });
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleCancelRequest(requestId) {
-    if (!window.confirm("Bạn có chắc muốn hủy yêu cầu này?")) return;
-
-    try {
-      await cancelLeaveRequest(requestId);
-
-      // ✅ HIỂN THỊ THÔNG BÁO THÀNH CÔNG
-      setNotification({
-        type: 'success',
-        message: 'Đã hủy yêu cầu nghỉ phép',
-        details: 'Yêu cầu của bạn đã được hủy thành công'
-      });
-
-      await loadLeaveRequests();
-    } catch (error) {
-      console.error("Error canceling request:", error);
-
-      // ✅ HIỂN THỊ THÔNG BÁO LỖI
-      setNotification({
-        type: 'error',
-        message: 'Không thể hủy yêu cầu',
-        details: error?.response?.data?.message || 'Vui lòng thử lại sau'
-      });
-    }
-  }
-
-  // ✅ HÀM TẠO YÊU CẦU MỚI
   async function handleCreateRequest(data) {
     try {
       await createLeaveRequest(data);
 
-      // ✅ HIỂN THỊ THÔNG BÁO THÀNH CÔNG
       setNotification({
-        type: 'success',
-        message: 'Gửi yêu cầu nghỉ phép thành công! ',
-        details: `Từ ${dayjs(data.startDate).format("DD/MM/YYYY")} đến ${dayjs(data.endDate).format("DD/MM/YYYY")}`
+        type: "success",
+        message: "Gửi yêu cầu nghỉ phép thành công! 🎉",
+        details: `Từ ${dayjs(data.startDate).format("DD/MM/YYYY")} đến ${dayjs(
+          data.endDate
+        ).format("DD/MM/YYYY")}`,
       });
 
       setShowCreate(false);
       await loadLeaveRequests();
-
     } catch (error) {
       console.error("Error creating leave request:", error);
-
-      // ✅ HIỂN THỊ THÔNG BÁO LỖI
       setNotification({
-        type: 'error',
-        message: 'Tạo yêu cầu thất bại',
-        details: error?.response?.data?.message || error?.message || 'Vui lòng kiểm tra lại thông tin'
+        type: "error",
+        message: "Tạo yêu cầu thất bại",
+        details:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Vui lòng kiểm tra lại thông tin",
       });
     }
   }
@@ -168,7 +125,11 @@ export default function LeaveRequestPage() {
   const pageItems = requests.slice(startIndex, startIndex + pageSize);
 
   if (loading) {
-    return <div className="loading center">Đang tải...</div>;
+    return (
+      <div className="page-container">
+        <div className="loading center">Đang tải...</div>
+      </div>
+    );
   }
 
   return (
@@ -176,16 +137,13 @@ export default function LeaveRequestPage() {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="page-header">
-        <h1 className="page-title">Đăng ký nghỉ phép</h1>
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={() => setShowCreate(true)}
-        >
-          + Tạo yêu cầu mới
+        <h1 className="page-title">📋 Đăng ký nghỉ phép</h1>
+        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+          ➕ Tạo yêu cầu mới
         </button>
       </div>
 
-      {/* ✅ INLINE NOTIFICATION */}
+      {/* Inline Notification */}
       {notification && (
         <InlineNotification
           type={notification.type}
@@ -197,29 +155,41 @@ export default function LeaveRequestPage() {
 
       {/* Statistics Cards */}
       <div className="stats-row">
-        <div className="stat-card stat-pending">
-          <div className="stat-icon">⏳</div>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">⏳</div>
           <div className="stat-info">
-            <div className="stat-value">
-              {requests.filter((r) => r.status === "PENDING" || r.status === "pending").length}
+            <div className="stat-value stat-pending-value">
+              {
+                requests.filter(
+                  (r) => r.status === "PENDING" || r.status === "pending"
+                ).length
+              }
             </div>
             <div className="stat-label">Đang chờ</div>
           </div>
         </div>
-        <div className="stat-card stat-approved">
-          <div className="stat-icon">✓</div>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">✓</div>
           <div className="stat-info">
-            <div className="stat-value">
-              {requests.filter((r) => r.status === "APPROVED" || r.status === "approved").length}
+            <div className="stat-value stat-approved-value">
+              {
+                requests.filter(
+                  (r) => r.status === "APPROVED" || r.status === "approved"
+                ).length
+              }
             </div>
             <div className="stat-label">Đã duyệt</div>
           </div>
         </div>
-        <div className="stat-card stat-rejected">
-          <div className="stat-icon">✕</div>
+        <div className="stat-card">
+          <div className="stat-icon stat-rejected-icon">✕</div>
           <div className="stat-info">
-            <div className="stat-value">
-              {requests.filter((r) => r.status === "REJECTED" || r.status === "rejected").length}
+            <div className="stat-value stat-rejected-value">
+              {
+                requests.filter(
+                  (r) => r.status === "REJECTED" || r.status === "rejected"
+                ).length
+              }
             </div>
             <div className="stat-label">Từ chối</div>
           </div>
@@ -250,7 +220,7 @@ export default function LeaveRequestPage() {
                     <th className="table-th">Số ngày</th>
                     <th className="table-th">Lý do</th>
                     <th className="table-th">Trạng thái</th>
-                    <th className="table-th">Lý do từ chối/duyệt</th>
+                    <th className="table-th">Phản hồi</th>
                     <th className="table-th">Ngày tạo</th>
                   </tr>
                 </thead>
@@ -261,19 +231,27 @@ export default function LeaveRequestPage() {
                         {startIndex + index + 1}
                       </td>
                       <td className="table-td">
-                        {dayjs(request.startDate).format("DD/MM/YYYY")} - {dayjs(request.endDate).format("DD/MM/YYYY")}
+                        {dayjs(request.startDate).format("DD/MM/YYYY")} -{" "}
+                        {dayjs(request.endDate).format("DD/MM/YYYY")}
                       </td>
                       <td className="table-td center">
-                        {request.leaveDays || calculateDays(request.startDate, request.endDate)} ngày
+                        {request.leaveDays ||
+                          calculateDays(
+                            request.startDate,
+                            request.endDate
+                          )}{" "}
+                        ngày
                       </td>
                       <td className="table-td">
                         <div className="reason-text">{request.reason}</div>
                       </td>
-                      <td className="table-td">
+                      <td className="table-td center">
                         {getStatusBadge(request.status)}
                       </td>
                       <td className="table-td">
-                        {request.approvalReason || request.rejectionReason || '-'}
+                        {request.approvalReason ||
+                          request.rejectionReason ||
+                          "-"}
                       </td>
                       <td className="table-td">
                         {dayjs(request.createdAt).format("DD/MM/YYYY HH:mm")}
@@ -294,7 +272,7 @@ export default function LeaveRequestPage() {
                 </div>
                 <div className="pagination-controls">
                   <button
-                    className="btn btn-sm"
+                    className="btn btn-sm btn-outline"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   >
@@ -304,7 +282,7 @@ export default function LeaveRequestPage() {
                     Trang {currentPage} / {totalPages}
                   </span>
                   <button
-                    className="btn btn-sm"
+                    className="btn btn-sm btn-outline"
                     disabled={currentPage === totalPages}
                     onClick={() =>
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
@@ -331,109 +309,25 @@ export default function LeaveRequestPage() {
   );
 }
 
-// ✅ COMPONENT THÔNG BÁO INLINE (GIỐNG HR PAGE)
+// Inline Notification Component
 function InlineNotification({ type, message, details, onClose }) {
   const icons = {
-    success: '✅',
-    error: '❌',
-    warning: '⚠️',
-    info: 'ℹ️'
+    success: "✅",
+    error: "❌",
+    warning: "⚠️",
+    info: "ℹ️",
   };
-
-  const colors = {
-    success: {
-      bg: '#d1fae5',
-      border: '#10b981',
-      text: '#065f46'
-    },
-    error: {
-      bg: '#fee2e2',
-      border: '#ef4444',
-      text: '#991b1b'
-    },
-    warning: {
-      bg: '#fef3c7',
-      border: '#f59e0b',
-      text: '#92400e'
-    },
-    info: {
-      bg: '#dbeafe',
-      border: '#3b82f6',
-      text: '#1e40af'
-    }
-  };
-
-  const style = colors[type] || colors.info;
 
   return (
-    <div
-      style={{
-        backgroundColor: style.bg,
-        borderLeft: `4px solid ${style.border}`,
-        padding: '16px 20px',
-        borderRadius: '8px',
-        marginBottom: '24px',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        animation: 'slideDown 0.3s ease-out'
-      }}
-    >
-      <div style={{ fontSize: '24px', flexShrink: 0 }}>
-        {icons[type]}
+    <div className={`inline-notification ${type}`}>
+      <div className="notification-icon">{icons[type]}</div>
+      <div className="notification-content">
+        <div className="notification-title">{message}</div>
+        {details && <div className="notification-details">{details}</div>}
       </div>
-      <div style={{ flex: 1 }}>
-        <div style={{
-          fontWeight: '600',
-          color: style.text,
-          fontSize: '16px',
-          marginBottom: '4px'
-        }}>
-          {message}
-        </div>
-        {details && (
-          <div style={{
-            color: style.text,
-            fontSize: '14px',
-            opacity: 0.8
-          }}>
-            {details}
-          </div>
-        )}
-      </div>
-      <button
-        onClick={onClose}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: style.text,
-          cursor: 'pointer',
-          fontSize: '20px',
-          padding: '0',
-          lineHeight: '1',
-          opacity: 0.6,
-          transition: 'opacity 0.2s'
-        }}
-        onMouseEnter={(e) => e.target.style.opacity = '1'}
-        onMouseLeave={(e) => e.target.style.opacity = '0.6'}
-      >
+      <button className="notification-close" onClick={onClose}>
         ×
       </button>
-      <style>
-        {`
-          @keyframes slideDown {
-            from {
-              opacity: 0;
-              transform: translateY(-20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}
-      </style>
     </div>
   );
 }
@@ -467,7 +361,7 @@ function CreateLeaveRequestModal({ currentUser, onClose, onCreate }) {
     }
 
     if (!currentUser?.email) {
-      toast.error("Không xác định được người dùng. Vui lòng đăng nhập lại.");
+      toast.error("Không xác định được người dùng. Vui lòng đăng nhập lại");
       return;
     }
 
@@ -489,69 +383,82 @@ function CreateLeaveRequestModal({ currentUser, onClose, onCreate }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-box">
-        <h2 className="modal-title">Tạo yêu cầu nghỉ phép</h2>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Tạo yêu cầu nghỉ phép</h2>
+          <button className="modal-close-btn btn- " onClick={onClose}>
+            ✕
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">
-              Thời gian nghỉ <span className="required">*</span>
-            </label>
-            <RangePicker
-              format="DD/MM/YYYY"
-              value={dateRange}
-              onChange={handleInputChange(setDateRange, "dateRange")}
-              className="form-date-range"
-              status={validationErrors.dateRange ? "error" : undefined}
-              placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
-              disabledDate={(current) => {
-                return current && current < dayjs().startOf("day");
-              }}
-            />
-            {validationErrors.dateRange && (
-              <div className="error-message">{validationErrors.dateRange}</div>
-            )}
-            {dateRange && dateRange[0] && dateRange[1] && (
-              <div className="date-info">
-                Tổng số ngày nghỉ:{" "}
-                <strong>
-                  {dateRange[1].diff(dateRange[0], "day") + 1} ngày
-                </strong>
-              </div>
-            )}
-          </div>
+        <div className="modal-content">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">
+                Thời gian nghỉ <span className="required">*</span>
+              </label>
+              <RangePicker
+                format="DD/MM/YYYY"
+                value={dateRange}
+                onChange={handleInputChange(setDateRange, "dateRange")}
+                className="form-date-range"
+                status={validationErrors.dateRange ? "error" : undefined}
+                placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
+                disabledDate={(current) => {
+                  return current && current < dayjs().startOf("day");
+                }}
+              />
+              {validationErrors.dateRange && (
+                <div className="error-message">
+                  {validationErrors.dateRange}
+                </div>
+              )}
+              {dateRange && dateRange[0] && dateRange[1] && (
+                <div className="date-info">
+                  Tổng số ngày nghỉ:{" "}
+                  <strong>
+                    {dateRange[1].diff(dateRange[0], "day") + 1} ngày
+                  </strong>
+                </div>
+              )}
+            </div>
 
-          <div className="form-group">
-            <label className="form-label">
-              Lý do nghỉ <span className="required">*</span>
-            </label>
-            <textarea
-              className={`form-textarea ${
-                validationErrors.reason ? "input-error" : ""
-              }`}
-              value={reason}
-              onChange={(e) =>
-                handleInputChange(setReason, "reason")(e.target.value)
-              }
-              placeholder="Nhập lý do nghỉ phép của bạn (tối thiểu 10 ký tự)"
-              rows={4}
-            />
-            <div className="char-count">{reason.length} / 500 ký tự</div>
-            {validationErrors.reason && (
-              <div className="error-message">{validationErrors.reason}</div>
-            )}
-          </div>
+            <div className="form-group">
+              <label className="form-label">
+                Lý do nghỉ <span className="required">*</span>
+              </label>
+              <textarea
+                className={`form-textarea ${
+                  validationErrors.reason ? "input-error" : ""
+                }`}
+                value={reason}
+                onChange={(e) =>
+                  handleInputChange(setReason, "reason")(e.target.value)
+                }
+                placeholder="Nhập lý do nghỉ phép của bạn (tối thiểu 10 ký tự)"
+                rows={4}
+              />
+              <div className="char-count">{reason.length} / 500 ký tự</div>
+              {validationErrors.reason && (
+                <div className="error-message">{validationErrors.reason}</div>
+              )}
+            </div>
 
-          <div className="form-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>
-              Hủy
-            </button>
-            <button type="submit" className="btn btn-primary">
-              Gửi yêu cầu
-            </button>
-          </div>
-        </form>
+            <div className="form-actions">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={onClose}
+              >
+                Hủy
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Gửi yêu cầu
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

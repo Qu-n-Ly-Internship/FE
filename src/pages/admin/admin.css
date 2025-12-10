@@ -303,7 +303,7 @@ th:nth-child(4) {
   display: flex;
   gap: 12px;
   justify-content: flex-end !important;
-  margin-top: 12px;
+  margin-top: 0px;
   align-items: center;
 }
 
@@ -341,7 +341,7 @@ th:nth-child(4) {
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
-  margin-top: 12px;
+  margin-top: 0px;
 }
 
 .btn-primary:hover {

@@ -292,7 +292,7 @@
   flex: 1;
 }
 .du-alert {
-  margin-top: 12px;
+  margin-top: 0px;
   padding: 12px;
   border-radius: 4px;
   font-size: 14px;
@@ -493,7 +493,8 @@
     padding: 6px 12px;
     font-size: 13px;
   }
-  .input, .p-select {
+  .input,
+  .p-select {
     font-size: 14px;
     padding: 8px 10px;
   }

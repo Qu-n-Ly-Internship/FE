@@ -263,7 +263,7 @@ export default function InternshipProgramList() {
                     <td className="table-td">
                       <div className="action-buttons">
                         <button
-                          className="program-btn-info"
+                          className="program-btn-info btn"
                           onClick={() =>
                             navigate(`/hr/departments/${program.id}`)
                           }
@@ -272,14 +272,14 @@ export default function InternshipProgramList() {
                           Chi tiết P.Ban
                         </button>
                         <button
-                          className="program-btn-warning"
+                          className="program-btn-warning btn"
                           onClick={() => setEditing(program)}
                           title="Chỉnh sửa chương trình"
                         >
                           Sửa
                         </button>
                         <button
-                          className="program-btn-danger"
+                          className="program-btn-danger  btn"
                           onClick={() => handleDeleteProgram(program.id)}
                           title="Xóa chương trình"
                         >

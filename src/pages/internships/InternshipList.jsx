@@ -175,7 +175,7 @@ export default function InternshipList() {
           <div className="form-group">
             <button
               type="button"
-              className="btn clear-filters-btn"
+              className=" clear-filters-btn"
               onClick={() => {
                 setSearchText("");
                 setSchoolFilter("");
@@ -188,119 +188,119 @@ export default function InternshipList() {
         </div>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto', padding: '0 1rem' }}>
-          <table className="table" style={{ minWidth: '1000px' }}>
-          <thead>
-            <tr>
-              <th className="table-th">STT</th>
-              <th className="table-th">Vị trí</th>
-              <th className="table-th">Tên sinh viên</th>
-              <th className="table-th">Email</th>
-              <th className="table-th">Trường</th>
-              <th className="table-th">Ngành</th>
-              <th className="table-th">Trạng thái</th>
-              <th className="table-th">Thời gian</th>
-              <th className="table-th">Mentor</th>
-              <th className="table-th">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageItems.length === 0 ? (
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        <div style={{ overflowX: "auto", padding: "0 1rem" }}>
+          <table className="table" style={{ minWidth: "1000px" }}>
+            <thead>
               <tr>
-                <td className="table-td center" colSpan={10}>
-                  Không tìm thấy thực tập sinh.
-                </td>
+                <th className="table-th">STT</th>
+                <th className="table-th">Vị trí</th>
+                <th className="table-th">Tên sinh viên</th>
+                <th className="table-th">Email</th>
+                <th className="table-th">Trường</th>
+                <th className="table-th">Ngành</th>
+                <th className="table-th">Trạng thái</th>
+                <th className="table-th">Thời gian</th>
+                <th className="table-th">Mentor</th>
+                <th className="table-th">Hành động</th>
               </tr>
-            ) : (
-              pageItems.map((internship, index) => (
-                <tr key={internship.intern_id}>
-                  <td className="table-td">{startIndex + index + 1}</td>
-                  <td className="table-td">{internship.title}</td>
-                  <td className="table-td">{internship.student}</td>
-                  <td className="table-td">{internship.studentEmail}</td>
-                  <td className="table-td">{internship.school || "-"}</td>
-                  <td className="table-td">{internship.major || "-"}</td>
-                  <td className="table-td">
-                    <span
-                      className={`badge ${
-                        internship.status === "active"
-                          ? "badge-success"
-                          : "badge-danger"
-                      }`}
-                    >
-                      {internship.status === "active"
-                        ? "Đang thực tập"
-                        : "Hoàn thành"}
-                    </span>
-                  </td>
-                  <td className="table-td">
-                    {internship.startDate} - {internship.endDate}
-                  </td>
-                  <td className="table-td">{internship.mentorName || "-"}</td>
-                  <td className="table-td">
-                    <button
-                      className="btn btn-success"
-                      style={{ marginRight: 8, marginBottom: 4 }}
-                      onClick={() => setViewing(internship)}
-                    >
-                      Xem
-                    </button>
-                    <button
-                      className="btn btn-warning"
-                      style={{ marginRight: 8, marginBottom: 4 }}
-                      onClick={() => setEditing(internship)}
-                    >
-                      Sửa
-                    </button>
-                    {internship.status === "active" && (
-                      <button
-                        className="btn btn-info"
-                        style={{ marginRight: 8, marginBottom: 4 }}
-                        onClick={async () => {
-                          if (
-                            window.confirm(
-                              "Bạn có chắc muốn đánh dấu hoàn thành?"
-                            )
-                          ) {
-                            try {
-                              await updateInternship(internship.intern_id, {
-                                title: internship.title,
-                                student: internship.student,
-                                studentEmail: internship.studentEmail,
-                                school: internship.school,
-                                major: internship.major,
-                                status: "completed",
-                                startDate: internship.startDate,
-                                endDate: dayjs().format("YYYY-MM-DD"),
-                              });
-
-                              toast.success(
-                                "Đã cập nhật trạng thái thành 'Hoàn thành'"
-                              );
-                              loadInternships();
-                            } catch (error) {
-                              console.error(
-                                "Error updating internship status:",
-                                error
-                              );
-                              toast.error(
-                                error.response?.data?.message ||
-                                  "Cập nhật thất bại"
-                              );
-                            }
-                          }
-                        }}
-                      >
-                        Hoàn thành
-                      </button>
-                    )}
+            </thead>
+            <tbody>
+              {pageItems.length === 0 ? (
+                <tr>
+                  <td className="table-td center" colSpan={10}>
+                    Không tìm thấy thực tập sinh.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                pageItems.map((internship, index) => (
+                  <tr key={internship.intern_id}>
+                    <td className="table-td">{startIndex + index + 1}</td>
+                    <td className="table-td">{internship.title}</td>
+                    <td className="table-td">{internship.student}</td>
+                    <td className="table-td">{internship.studentEmail}</td>
+                    <td className="table-td">{internship.school || "-"}</td>
+                    <td className="table-td">{internship.major || "-"}</td>
+                    <td className="table-td">
+                      <span
+                        className={`badge ${
+                          internship.status === "active"
+                            ? "badge-success"
+                            : "badge-danger"
+                        }`}
+                      >
+                        {internship.status === "active"
+                          ? "Đang thực tập"
+                          : "Hoàn thành"}
+                      </span>
+                    </td>
+                    <td className="table-td">
+                      {internship.startDate} - {internship.endDate}
+                    </td>
+                    <td className="table-td">{internship.mentorName || "-"}</td>
+                    <td className="table-td">
+                      <button
+                        className="btn btn-success"
+                        style={{ marginRight: 8, marginBottom: 4 }}
+                        onClick={() => setViewing(internship)}
+                      >
+                        Xem
+                      </button>
+                      <button
+                        className="btn btn-warning"
+                        style={{ marginRight: 8, marginBottom: 4 }}
+                        onClick={() => setEditing(internship)}
+                      >
+                        Sửa
+                      </button>
+                      {internship.status === "active" && (
+                        <button
+                          className="btn btn-info"
+                          style={{ marginRight: 8, marginBottom: 4 }}
+                          onClick={async () => {
+                            if (
+                              window.confirm(
+                                "Bạn có chắc muốn đánh dấu hoàn thành?"
+                              )
+                            ) {
+                              try {
+                                await updateInternship(internship.intern_id, {
+                                  title: internship.title,
+                                  student: internship.student,
+                                  studentEmail: internship.studentEmail,
+                                  school: internship.school,
+                                  major: internship.major,
+                                  status: "completed",
+                                  startDate: internship.startDate,
+                                  endDate: dayjs().format("YYYY-MM-DD"),
+                                });
+
+                                toast.success(
+                                  "Đã cập nhật trạng thái thành 'Hoàn thành'"
+                                );
+                                loadInternships();
+                              } catch (error) {
+                                console.error(
+                                  "Error updating internship status:",
+                                  error
+                                );
+                                toast.error(
+                                  error.response?.data?.message ||
+                                    "Cập nhật thất bại"
+                                );
+                              }
+                            }
+                          }}
+                        >
+                          Hoàn thành
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
         <div className="pagination">
           <div className="pagination-info">

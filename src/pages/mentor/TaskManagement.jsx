@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import InternSelectionModal from "../../components/common/InternSelectionModal";
 import { assignTask, getAssignedTasks } from "../../services/taskService";
 import "./TaskManagement.css";
 
-// import vi locale if you want month names in Vietnamese
+// Import Vietnamese locale
 import "dayjs/locale/vi";
 dayjs.locale("vi");
 
@@ -14,6 +15,7 @@ const TaskManagement = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showInternModal, setShowInternModal] = useState(false);
   const [selectedIntern, setSelectedIntern] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -23,7 +25,6 @@ const TaskManagement = () => {
     internId: "",
   });
 
-  // Load tasks when component mounts
   useEffect(() => {
     loadTasks();
   }, []);
@@ -34,13 +35,11 @@ const TaskManagement = () => {
       const data = await getAssignedTasks();
       console.log("DEBUG: raw assigned tasks from API:", data);
 
-      // Normalize each task object so the rest of the component can rely on a single shape
+      // Normalize task data
       const normalized = (data || []).map((t) => {
-        // try common variants for fields
         const id = t.id || t.taskId || t.task_id;
         const title = t.title || t.name || "";
         const description = t.description || t.desc || "";
-        // possible date fields
         const duedate =
           t.duedate ||
           t.due_date ||
@@ -105,11 +104,36 @@ const TaskManagement = () => {
       ...prev,
       internId: intern.intern_id || intern.id,
     }));
+    setShowInternModal(false);
+  };
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+    setFormData({
+      title: "",
+      description: "",
+      due_date: "",
+      priority: "",
+      internId: "",
+    });
+    setSelectedIntern(null);
+  };
+
+  const handleCloseModal = () => {
     setShowModal(false);
+    setFormData({
+      title: "",
+      description: "",
+      due_date: "",
+      priority: "",
+      internId: "",
+    });
+    setSelectedIntern(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (
       !formData.title ||
       !formData.description ||
@@ -122,15 +146,8 @@ const TaskManagement = () => {
 
     try {
       await assignTask(formData);
-      toast.success("Giao nhiệm vụ thành công!");
-      setFormData({
-        title: "",
-        description: "",
-        due_date: "",
-        internId: "",
-        priority: "",
-      });
-      setSelectedIntern(null);
+      toast.success("Giao nhiệm vụ thành công! 🎉");
+      handleCloseModal();
       loadTasks();
     } catch (error) {
       console.error("Error assigning task:", error);
@@ -140,11 +157,9 @@ const TaskManagement = () => {
     }
   };
 
-  // Robust date formatter: accepts multiple input formats and returns friendly string or '-'
   const formatDate = (dateInput) => {
     if (!dateInput) return "-";
 
-    // if the backend already sent an object (unlikely) try to handle
     if (typeof dateInput === "object" && dateInput instanceof Date) {
       if (isNaN(dateInput.getTime())) return "-";
       return dateInput.toLocaleDateString("vi-VN", {
@@ -154,25 +169,11 @@ const TaskManagement = () => {
       });
     }
 
-    // Try dayjs parsing with several accepted formats
-    const candidates = [
-      dateInput, // e.g. "2025-10-31" or "2025-10-31T14:30"
-      // maybe backend sends "/Date(...)/" or ISO variants - dayjs usually handles ISO
-    ];
-
-    for (const c of candidates) {
-      const d = dayjs(c);
-      if (d.isValid()) {
-        // show e.g. "31 tháng 10, 2025" or "31/10/2025"
-        try {
-          return d.format("D MMMM, YYYY"); // "31 tháng 10, 2025" in vi locale
-        } catch (e) {
-          return d.format("DD/MM/YYYY");
-        }
-      }
+    const d = dayjs(dateInput);
+    if (d.isValid()) {
+      return d.format("D MMMM, YYYY");
     }
 
-    // fallback: try native Date
     const native = new Date(dateInput);
     if (!isNaN(native.getTime())) {
       return native.toLocaleDateString("vi-VN", {
@@ -182,13 +183,10 @@ const TaskManagement = () => {
       });
     }
 
-    // if nothing works, show raw string so you can inspect it
     return String(dateInput);
   };
 
-  // ✅ Gộp cả kiểm tra Overdue vào đây, không đổi UI
   const getStatusBadge = (task) => {
-    // Kiểm tra nếu task quá hạn
     const due = new Date(task.duedate || task.dueDate);
     const now = new Date();
     let effectiveStatus = task.status;
@@ -202,97 +200,151 @@ const TaskManagement = () => {
       effectiveStatus = "OVERDUE";
     }
 
-    // Map theo class CSS sẵn có
     const statusMap = {
-      PENDING: { class: "status-pending", label: "Chờ xử lý" },
-      NEW: { class: "status-pending", label: "Chưa bắt đầu" },
-      IN_PROGRESS: { class: "status-in-progress", label: "Đang thực hiện" },
-      COMPLETED: { class: "status-completed", label: "Đã hoàn thành" },
-      OVERDUE: { class: "status-overdue", label: "Overdue" }, // ✅ hiển thị tiếng Anh
+      PENDING: { class: "badge-pending", label: "Chờ xử lý" },
+      NEW: { class: "badge-pending", label: "Chưa bắt đầu" },
+      IN_PROGRESS: { class: "badge-approved", label: "Đang thực hiện" },
+      COMPLETED: { class: "badge-completed", label: "Đã hoàn thành" },
+      OVERDUE: { class: "badge-rejected", label: "Quá hạn" },
     };
 
     const statusInfo = statusMap[effectiveStatus] || {
-      class: "status-default",
+      class: "badge",
       label: effectiveStatus || "-",
     };
 
     return (
-      <span className={`status-badge ${statusInfo.class}`}>
-        {statusInfo.label}
-      </span>
+      <span className={`badge ${statusInfo.class}`}>{statusInfo.label}</span>
     );
   };
 
-  // Handle modal open/close
-  const [showTaskModal, setShowTaskModal] = useState(false);
-
-  const handleOpenTaskModal = () => {
-    setShowTaskModal(true);
-  };
-
-  const handleCloseTaskModal = () => {
-    setShowTaskModal(false);
-    // Reset form when closing
-    setFormData({
-      title: "",
-      description: "",
-      due_date: "",
-      priority: "",
-      internId: "",
-    });
-    setSelectedIntern(null);
-  };
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Check for required fields before submitting
-      if (
-        !formData.title ||
-        !formData.description ||
-        !formData.due_date ||
-        !formData.internId
-      ) {
-        toast.error("Vui lòng điền đầy đủ thông tin");
-        return; // Don't proceed further if validation fails
-      }
-
-      await handleSubmit(e);
-      // Only close the modal if submission was successful
-      handleCloseTaskModal();
-    } catch (error) {
-      console.error("Error submitting task:", error);
-      // Error message is already shown in handleSubmit
-    }
-  };
-
   return (
-    <div className="task-management">
+    <div className="page-container">
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Page Header */}
       <div className="page-header">
-        <h1>Quản lý nhiệm vụ</h1>
-        <button className="btn btn-primary" onClick={handleOpenTaskModal}>
-          Giao nhiệm vụ mới
+        <h1 className="page-title">Quản lý Nhiệm vụ</h1>
+        <button className="btn btn-primary" onClick={handleOpenModal}>
+          ➕ Giao nhiệm vụ mới
         </button>
       </div>
 
+      {/* Statistics Cards */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">📋</div>
+          <div className="stat-info">
+            <div className="stat-value">{tasks.length}</div>
+            <div className="stat-label">Tổng nhiệm vụ</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">⏳</div>
+          <div className="stat-info">
+            <div className="stat-value stat-pending-value">
+              {
+                tasks.filter(
+                  (t) => t.status === "PENDING" || t.status === "NEW"
+                ).length
+              }
+            </div>
+            <div className="stat-label">Chờ xử lý</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">✓</div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {tasks.filter((t) => t.status === "IN_PROGRESS").length}
+            </div>
+            <div className="stat-label">Đang thực hiện</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">✅</div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {tasks.filter((t) => t.status === "COMPLETED").length}
+            </div>
+            <div className="stat-label">Đã hoàn thành</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Task List */}
+      <div className="card">
+        <h2
+          style={{
+            marginBottom: "var(--spacing-xl)",
+            fontSize: "var(--font-size-xl)",
+          }}
+        >
+          Danh sách nhiệm vụ đã giao
+        </h2>
+        {loading ? (
+          <div className="loading center">Đang tải dữ liệu...</div>
+        ) : tasks.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">📋</div>
+            <div className="empty-text">Chưa có nhiệm vụ nào được giao</div>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="table-th">Tiêu đề</th>
+                  <th className="table-th">Thực tập sinh</th>
+                  <th className="table-th">Hạn chót</th>
+                  <th className="table-th">Trạng thái</th>
+                  <th className="table-th">Ngày giao</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((task) => (
+                  <tr key={task.id}>
+                    <td className="table-td">
+                      <div className="task-title">{task.title}</div>
+                      <div className="task-description">{task.description}</div>
+                    </td>
+                    <td className="table-td">
+                      <div className="intern-info">
+                        <div className="intern-name">{task.internName}</div>
+                        <div className="intern-email">{task.internEmail}</div>
+                      </div>
+                    </td>
+                    <td className="table-td">{formatDate(task.duedate)}</td>
+                    <td className="table-td center">{getStatusBadge(task)}</td>
+                    <td className="table-td">{formatDate(task.assignedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Task Assignment Modal */}
-      {showTaskModal && (
-        <div className="modal">
-          <div className="modal-content">
+      {showModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Giao nhiệm vụ mới</h2>
-              <button className="modal-close" onClick={handleCloseTaskModal}>
-                &times;
+              <button className="modal-close-btn" onClick={handleCloseModal}>
+                ✕
               </button>
             </div>
-            <div className="modal-body">
-              <form onSubmit={handleFormSubmit} className="task-form">
+
+            <div className="modal-content">
+              <form onSubmit={handleSubmit} className="task-form" noValidate>
                 <div className="form-group">
-                  <label>Chọn thực tập sinh</label>
+                  <label className="form-label">
+                    Chọn thực tập sinh <span className="required">*</span>
+                  </label>
                   <div
                     className="intern-selector"
-                    onClick={() => setShowModal(true)}
-                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowInternModal(true)}
                   >
                     {selectedIntern ? (
                       <div className="selected-intern">
@@ -310,41 +362,47 @@ const TaskManagement = () => {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="title">Tiêu đề nhiệm vụ</label>
+                  <label htmlFor="title" className="form-label">
+                    Tiêu đề nhiệm vụ <span className="required">*</span>
+                  </label>
                   <input
                     type="text"
                     id="title"
                     name="title"
+                    className="form-input"
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="Nhập tiêu đề nhiệm vụ"
-                    className="form-control"
                     required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="description">Mô tả chi tiết</label>
+                  <label htmlFor="description" className="form-label">
+                    Mô tả chi tiết <span className="required">*</span>
+                  </label>
                   <textarea
                     id="description"
                     name="description"
+                    className="form-textarea"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows="4"
                     placeholder="Mô tả chi tiết nhiệm vụ..."
-                    className="form-control"
                     required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="priority">Độ ưu tiên</label>
+                  <label htmlFor="priority" className="form-label">
+                    Độ ưu tiên <span className="required">*</span>
+                  </label>
                   <select
                     id="priority"
                     name="priority"
+                    className="form-select"
                     value={formData.priority || ""}
                     onChange={handleInputChange}
-                    className="form-control"
                     required
                   >
                     <option value="">-- Chọn độ ưu tiên --</option>
@@ -355,14 +413,15 @@ const TaskManagement = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Hạn chót</label>
+                  <label className="form-label">
+                    Hạn chót <span className="required">*</span>
+                  </label>
                   <DatePicker
                     showTime
                     format="DD/MM/YYYY HH:mm"
-                    className="date-picker"
                     placeholder="Chọn thời hạn"
                     value={formData.due_date ? dayjs(formData.due_date) : null}
-                    onChange={(date, dateString) => {
+                    onChange={(date) => {
                       setFormData((prev) => ({
                         ...prev,
                         due_date: date ? date.format("YYYY-MM-DDTHH:mm") : "",
@@ -375,8 +434,8 @@ const TaskManagement = () => {
                 <div className="form-actions">
                   <button
                     type="button"
-                    className="btn btn-secondary"
-                    onClick={handleCloseTaskModal}
+                    className="btn btn-outline"
+                    onClick={handleCloseModal}
                   >
                     Hủy
                   </button>
@@ -390,51 +449,24 @@ const TaskManagement = () => {
         </div>
       )}
 
-      <div className="task-list-container">
-        <h2>Danh sách nhiệm vụ đã giao</h2>
-        {loading ? (
-          <div className="loading">Đang tải...</div>
-        ) : tasks.length === 0 ? (
-          <div className="no-tasks">Chưa có nhiệm vụ nào được giao</div>
-        ) : (
-          <table className="task-table">
-            <thead>
-              <tr>
-                <th>Tiêu đề</th>
-                <th>Thực tập sinh</th>
-                <th>Hạn chót</th>
-                <th>Trạng thái</th>
-                <th>Ngày giao</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((task) => (
-                <tr key={task.id}>
-                  <td>
-                    <div className="task-title">{task.title}</div>
-                    <div className="task-description">{task.description}</div>
-                  </td>
-                  <td>
-                    <div className="intern-info">
-                      <div className="intern-name">{task.internName}</div>
-                      <div className="intern-email">{task.internEmail}</div>
-                    </div>
-                  </td>
-                  <td>{formatDate(task.duedate)}</td>
-                  <td>{getStatusBadge(task)}</td>
-                  <td>{formatDate(task.assignedAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {showModal && (
-        <InternSelectionModal
-          onClose={() => setShowModal(false)}
-          onSelect={handleSelectIntern}
-        />
+      {/* Intern Selection Modal */}
+      {showInternModal && (
+        <div
+          className="modal-overlay"
+          style={{ zIndex: 1100 }}
+          onClick={() => setShowInternModal(false)}
+        >
+          <div
+            className="modal-box"
+            style={{ zIndex: 1101 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <InternSelectionModal
+              onClose={() => setShowInternModal(false)}
+              onSelect={handleSelectIntern}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

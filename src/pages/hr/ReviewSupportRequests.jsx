@@ -214,9 +214,7 @@ export default function ReviewSupportRequests() {
       <div className="card filters-card">
         <div className="filters-grid">
           <div className="form-group">
-            <label htmlFor="searchFilter" className="form-label">
-              Tìm kiếm:
-            </label>
+            <label className="form-label">Tìm kiếm:</label>
             <input
               id="searchFilter"
               type="text"
@@ -284,13 +282,7 @@ export default function ReviewSupportRequests() {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: "16px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
+        <div className="form-group">
           <button className="btn btn-clear" onClick={clearFilters}>
             Xóa bộ lọc
           </button>
