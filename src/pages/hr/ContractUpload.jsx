@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { uploadToCloud } from "../../services/documentService";
 import { useAuthStore } from "../../store/authStore";
 import InternSelectionModal from "../../components/common/InternSelectionModal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./ContractUpload.css";
 
 export default function UploadContractForm() {
@@ -13,16 +15,12 @@ export default function UploadContractForm() {
   const [showModal, setShowModal] = useState(false);
   const [selectedIntern, setSelectedIntern] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [uploadError, setUploadError] = useState("");
 
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
       setFileName(selectedFile.name);
-      setUploadSuccess(false);
-      setUploadError("");
     }
   };
 
@@ -43,74 +41,55 @@ export default function UploadContractForm() {
     if (droppedFile) {
       setFile(droppedFile);
       setFileName(droppedFile.name);
-      setUploadSuccess(false);
-      setUploadError("");
     }
   };
 
   const clearFile = () => {
     setFileName("");
     setFile(null);
-    setUploadSuccess(false);
-    setUploadError("");
   };
 
   const handleUpload = async () => {
     if (!selectedIntern || !file) return;
 
     setUploading(true);
-    setUploadError("");
-    setUploadSuccess(false);
 
     try {
-      // Lấy hrId từ user object (user.id từ auth store)
       const hrId = user?.id;
-
-      // Lấy internId - cố gắng từ nhiều key khác nhau
       const internId =
         selectedIntern?.intern_id ||
         selectedIntern?.internProfileId ||
         selectedIntern?.id;
 
-      console.log("=== DEBUG INFO ===");
-      console.log("Selected Intern:", selectedIntern);
-      console.log("Intern ID:", internId);
-      console.log("Intern object keys:", Object.keys(selectedIntern));
-      console.log("HR ID:", hrId);
-      console.log("File:", file);
-      console.log("==================");
-
       if (!hrId || hrId === "undefined" || hrId === undefined) {
-        setUploadError("Không tìm thấy thông tin HR. Vui lòng đăng nhập lại!");
+        toast.error("Không tìm thấy thông tin HR. Vui lòng đăng nhập lại!");
         setUploading(false);
         return;
       }
 
       if (!internId || internId === "undefined" || internId === undefined) {
-        setUploadError("Không tìm thấy ID thực tập sinh!");
+        toast.error("Không tìm thấy ID thực tập sinh!");
         setUploading(false);
         return;
       }
 
       const response = await uploadToCloud({
-        internProfileId: internId, // ← Sử dụng internId từ object
+        internProfileId: internId,
         file: file,
         hrId: Number(hrId),
       });
 
       console.log("Upload success:", response);
-      setUploadSuccess(true);
+      toast.success("✓ Upload thành công!");
 
-      // Reset form sau 2 giây
       setTimeout(() => {
         setFile(null);
         setFileName("");
         setSelectedIntern(null);
-        setUploadSuccess(false);
       }, 2000);
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadError(
+      toast.error(
         error.response?.data?.message || "Upload thất bại. Vui lòng thử lại!"
       );
     } finally {
@@ -351,40 +330,6 @@ export default function UploadContractForm() {
           >
             {uploading ? "Đang tải lên..." : "[Upload] Upload File"}
           </button>
-
-          {/* Success Message */}
-          {uploadSuccess && (
-            <div
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#d1fae5",
-                border: "1px solid #10b981",
-                borderRadius: "8px",
-                color: "#065f46",
-                fontSize: "14px",
-                textAlign: "center",
-              }}
-            >
-              ✓ Upload thành công!
-            </div>
-          )}
-
-          {/* Error Message */}
-          {uploadError && (
-            <div
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#fee2e2",
-                border: "1px solid #ef4444",
-                borderRadius: "8px",
-                color: "#991b1b",
-                fontSize: "14px",
-                textAlign: "center",
-              }}
-            >
-              ✗ {uploadError}
-            </div>
-          )}
         </div>
       </div>
 
@@ -397,6 +342,17 @@ export default function UploadContractForm() {
           }}
         />
       )}
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
     </div>
   );
 }
