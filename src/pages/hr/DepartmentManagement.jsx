@@ -1,9 +1,13 @@
-DepartmentModal; // src/pages/hr/DepartmentManagement.jsx
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useParams, useNavigate } from "react-router-dom";
+import "../../styles/variables.css";
+import "../../styles/buttons.css";
+import "../../styles/cards-and-modals.css";
+import "../../styles/forms.css";
+import "./DepartmentManagement.css";
 import {
   getDepartmentsByProgram,
   createDepartment,
@@ -14,10 +18,7 @@ import {
   updateMentorDepartment,
   removeMentorFromDepartment,
 } from "../../services/departmentService";
-
-import { getMentors } from "../../services/mentorService";
 import MentorSelectionModal from "../../components/common/MentorSelectionModal";
-
 import "./DepartmentManagement.css";
 
 export default function DepartmentManagement() {
@@ -174,7 +175,10 @@ export default function DepartmentManagement() {
 
   if (loading) {
     return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>Đang tải...</div>
+      <div className="loading-container">
+        <div className="spinner-large"></div>
+        <p>Đang tải dữ liệu...</p>
+      </div>
     );
   }
 
@@ -183,18 +187,17 @@ export default function DepartmentManagement() {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="page-header">
-        <div>
+        <div className="header-left">
           <button
-            className="btn btn-outline btn-sm"
+            className="btn btn-outline btn-back"
             onClick={() => navigate("/hr/internship-programs")}
-            style={{ marginBottom: 8 }}
           >
-            ← Quay lại danh sách chương trình
+            ← Quay lại
           </button>
           <h1 className="page-title">Quản lý Phòng ban & Mentor</h1>
         </div>
         <button
-          className="btn btn-primary btn-sm"
+          className="btn btn-primary"
           onClick={() => setShowCreateModal(true)}
         >
           + Thêm phòng ban
@@ -202,10 +205,11 @@ export default function DepartmentManagement() {
       </div>
 
       <div className="card">
-        <div className="card-padding">
+        <div className="form-group">
+          <label className="form-label">Tìm kiếm</label>
           <input
             type="text"
-            className="search-input"
+            className="form-input"
             placeholder="🔍 Tìm kiếm theo tên phòng ban..."
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
@@ -215,90 +219,97 @@ export default function DepartmentManagement() {
 
       <div className="card">
         {filteredDepartments.length === 0 ? (
-          <div style={{ padding: "2rem", textAlign: "center", color: "#666" }}>
+          <div className="empty-state">
             {filterText
               ? "Không tìm thấy phòng ban nào."
               : "Chưa có phòng ban nào trong chương trình này."}
           </div>
         ) : (
-          <table className="dept-table">
-            <thead>
-              <tr>
-                <th>STT</th>
-                <th>Tên phòng ban</th>
-                <th>Mentor</th>
-                <th>Sức chứa</th>
-                <th>Người tạo</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDepartments.map((dept, index) => (
-                <tr key={dept.id}>
-                  <td>{index + 1}</td>
-                  <td>
-                    <strong>{dept.departmentName}</strong>
-                  </td>
-                  <td>
-                    {dept.mentors?.length > 0 ? (
-                      dept.mentors.map((m) => (
-                        <div key={m.id} className="mentor-item">
-                          <span>👨‍🏫 {m.name || m.fullName}</span>
-                          <div>
-                            <button
-                              className="btn btn-outline btn-xs"
-                              onClick={() => {
-                                setSelectedMentor(m);
-                                setShowMoveMentorModal(true);
-                              }}
-                              title="Chuyển sang phòng ban khác"
-                            >
-                              🔄
-                            </button>
-                            <button
-                              className="btn btn-outline btn-xs"
-                              style={{ marginLeft: 4 }}
-                              onClick={() => handleRemoveMentor(m.id)}
-                              title="Xóa khỏi phòng ban"
-                            >
-                              ❌
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <em style={{ color: "#999" }}>(Chưa có mentor)</em>
-                    )}
-                    <button
-                      className="btn btn-primary mentor-button"
-                      onClick={() => {
-                        setSelectedDepartmentId(dept.id);
-                        setShowAddMentorModal(true);
-                      }}
-                    >
-                      Thêm mentor
-                    </button>
-                  </td>
-                  <td>{dept.capacity ?? "—"}</td>
-                  <td>{dept.hrName || "Không rõ"}</td>
-                  <td>
-                    <button
-                      className="btn btn-warning btn-sm"
-                      onClick={() => setEditingDepartment(dept)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDeleteDepartment(dept.id)}
-                    >
-                      Xóa
-                    </button>
-                  </td>
+          <div className="table-responsive">
+            <table className="dept-table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Tên phòng ban</th>
+                  <th>Mentor</th>
+                  <th>Sức chứa</th>
+                  <th>Người tạo</th>
+                  <th>Hành động</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredDepartments.map((dept, index) => (
+                  <tr key={dept.id}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <strong>{dept.departmentName}</strong>
+                    </td>
+                    <td>
+                      <div className="mentor-list">
+                        {dept.mentors?.length > 0 ? (
+                          dept.mentors.map((m) => (
+                            <div key={m.id} className="mentor-item">
+                              <span className="mentor-name">
+                                👨‍🏫 {m.name || m.fullName}
+                              </span>
+                              <div className="mentor-actions">
+                                <button
+                                  className="btn btn-icon btn-move"
+                                  onClick={() => {
+                                    setSelectedMentor(m);
+                                    setShowMoveMentorModal(true);
+                                  }}
+                                  title="Chuyển sang phòng ban khác"
+                                >
+                                  🔄
+                                </button>
+                                <button
+                                  className="btn btn-icon btn-remove"
+                                  onClick={() => handleRemoveMentor(m.id)}
+                                  title="Xóa khỏi phòng ban"
+                                >
+                                  ❌
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <em className="no-mentor">Chưa có mentor</em>
+                        )}
+                        <button
+                          className="btn btn-primary btn-add-mentor"
+                          onClick={() => {
+                            setSelectedDepartmentId(dept.id);
+                            setShowAddMentorModal(true);
+                          }}
+                        >
+                          + Thêm mentor
+                        </button>
+                      </div>
+                    </td>
+                    <td>{dept.capacity ?? "—"}</td>
+                    <td>{dept.hrName || "Không rõ"}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          className="btn btn-warning btn-sm"
+                          onClick={() => setEditingDepartment(dept)}
+                        >
+                          ✏️ Sửa
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDeleteDepartment(dept.id)}
+                        >
+                          🗑️ Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -327,8 +338,6 @@ export default function DepartmentManagement() {
           }}
           onSelect={(mentor) => {
             handleAddMentor(selectedDepartmentId, mentor.id);
-            setShowAddMentorModal(false);
-            setSelectedDepartmentId(null);
           }}
         />
       )}
@@ -358,7 +367,9 @@ function DepartmentModal({ department, onClose, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name.trim()) return toast.error("Tên phòng ban không được để trống.");
+    if (!name.trim()) {
+      return toast.error("Tên phòng ban không được để trống.");
+    }
 
     try {
       setIsSubmitting(true);
@@ -377,36 +388,39 @@ function DepartmentModal({ department, onClose, onSave }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         <h2 className="modal-title">
-          {department ? " Sửa phòng ban" : " Tạo phòng ban mới"}
+          {department ? "✏️ Sửa phòng ban" : "➕ Tạo phòng ban mới"}
         </h2>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Tên phòng ban *</label>
+            <label className="form-label">Tên phòng ban *</label>
             <input
               type="text"
               className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isSubmitting}
+              placeholder="Nhập tên phòng ban..."
             />
           </div>
 
           <div className="form-group">
-            <label>Sức chứa</label>
+            <label className="form-label">Sức chứa</label>
             <input
               type="number"
               className="form-input"
               value={capacity}
               onChange={(e) => setCapacity(e.target.value)}
               disabled={isSubmitting}
+              placeholder="Nhập số lượng tối đa..."
+              min="1"
             />
           </div>
 
           <div className="form-actions">
             <button
               type="button"
-              className="btn-outline"
+              className="btn btn-outline"
               onClick={onClose}
               disabled={isSubmitting}
             >
@@ -414,10 +428,10 @@ function DepartmentModal({ department, onClose, onSave }) {
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              className="btn btn-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Đang xử lý..." : " Lưu"}
+              {isSubmitting ? "Đang xử lý..." : "💾 Lưu"}
             </button>
           </div>
         </form>
@@ -425,117 +439,14 @@ function DepartmentModal({ department, onClose, onSave }) {
     </div>
   );
 }
+
 DepartmentModal.propTypes = {
   department: PropTypes.object,
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
 };
 
-// ===================== AddMentorModal =====================
-function AddMentorModal({ departmentId, onClose, onAdd }) {
-  const [mentorId, setMentorId] = useState("");
-  const [availableMentors, setAvailableMentors] = useState([]);
-  const [loadingMentors, setLoadingMentors] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Lấy danh sách mentor khi modal mở
-  useEffect(() => {
-    async function fetchMentors() {
-      setLoadingMentors(true);
-      try {
-        const response = await getMentors();
-        // Handle nếu API trả về mảng hoặc object có content
-        const mentors = Array.isArray(response)
-          ? response
-          : response.content || [];
-
-        setAvailableMentors(
-          mentors.map((m) => ({
-            id: m.id,
-            name: m.name || m.fullName || "Unknown",
-            email: m.email || "N/A",
-          }))
-        );
-      } catch (error) {
-        console.error("Failed to fetch mentors:", error);
-        toast.error("Không thể tải danh sách mentor.");
-      } finally {
-        setLoadingMentors(false);
-      }
-    }
-    fetchMentors();
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!mentorId) {
-      return toast.error("Vui lòng chọn một mentor.");
-    }
-
-    try {
-      setIsSubmitting(true);
-      // mentorId đã là ID của mentor được chọn
-      await onAdd(departmentId, mentorId);
-    } catch (error) {
-      console.error("Add mentor error:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <h2 className="modal-title">Thêm mentor vào phòng ban</h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Chọn Mentor *</label>
-            {loadingMentors ? (
-              <div className="loading-text">Đang tải danh sách mentor...</div>
-            ) : (
-              <select
-                className="form-input"
-                value={mentorId}
-                onChange={(e) => setMentorId(e.target.value)}
-                disabled={isSubmitting}
-              >
-                <option value="">-- Chọn mentor --</option>
-                {availableMentors.map((mentor) => (
-                  <option key={mentor.id} value={mentor.id}>
-                    {mentor.name} - {mentor.email}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="form-actions">
-            <button
-              type="button"
-              className="btn-outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Đang xử lý..." : "Thêm"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-
-
+// ===================== MoveMentorModal =====================
 function MoveMentorModal({ mentor, departments, onClose, onMove }) {
   const [newDepartmentId, setNewDepartmentId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -568,7 +479,7 @@ function MoveMentorModal({ mentor, departments, onClose, onMove }) {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Chọn phòng ban đích *</label>
+            <label className="form-label">Chọn phòng ban đích *</label>
             <select
               className="form-input"
               value={newDepartmentId}
@@ -587,7 +498,7 @@ function MoveMentorModal({ mentor, departments, onClose, onMove }) {
           <div className="form-actions">
             <button
               type="button"
-              className="btn-outline"
+              className="btn btn-outline"
               onClick={onClose}
               disabled={isSubmitting}
             >
@@ -595,7 +506,7 @@ function MoveMentorModal({ mentor, departments, onClose, onMove }) {
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              className="btn btn-primary"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Đang xử lý..." : "🔄 Chuyển"}
@@ -606,6 +517,7 @@ function MoveMentorModal({ mentor, departments, onClose, onMove }) {
     </div>
   );
 }
+
 MoveMentorModal.propTypes = {
   mentor: PropTypes.object.isRequired,
   departments: PropTypes.array.isRequired,

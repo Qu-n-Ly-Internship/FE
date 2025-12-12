@@ -147,7 +147,7 @@
 /* Filters Grid (for multiple columns) */
 .filters-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--spacing-lg);
   align-items: end;
 }
@@ -237,7 +237,7 @@
 /* Responsive Design */
 @media (max-width: 1400px) {
   .filters-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 

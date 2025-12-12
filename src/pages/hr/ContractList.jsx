@@ -137,7 +137,7 @@ export default function AllContracts() {
                 </div>
                 <div className="pagination-controls">
                   <button
-                    className="btn btn-sm"
+                    className="btn btn-sm btn-secondary"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   >
@@ -163,7 +163,7 @@ export default function AllContracts() {
                   )}
 
                   <button
-                    className="btn btn-sm"
+                    className="btn btn-sm btn-secondary"
                     disabled={currentPage === totalPages}
                     onClick={() =>
                       setCurrentPage((p) => Math.min(totalPages, p + 1))

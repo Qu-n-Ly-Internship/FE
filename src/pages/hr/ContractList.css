@@ -42,7 +42,6 @@
 .table-td:nth-child(5) {
   width: 12%;
   min-width: 100px;
-  text-align: center;
 }
 
 .table-th:nth-child(6),

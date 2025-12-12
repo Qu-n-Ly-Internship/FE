@@ -2,7 +2,8 @@ import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8090/api",
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL || "http://codeft.duckdns.org:8090/api",
   withCredentials: true, // Cho phép gửi cookies cho OAuth session
   timeout: 15000, // Timeout sau 15 giây
   headers: {

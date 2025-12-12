@@ -10,68 +10,6 @@
 /* Styles đặc thù cho InternshipProgramList */
 
 /* Program action buttons - Đặc thù cho trang này */
-.program-btn-info {
-  background: var(--info);
-  color: #fff;
-  padding: 6px 10px;
-  font-size: var(--font-size-sm);
-  min-width: 95px;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(90, 200, 250, 0.3);
-}
-
-.program-btn-info:hover:not(:disabled) {
-  background: var(--info-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(90, 200, 250, 0.4);
-}
-
-.program-btn-warning {
-  background: var(--warning);
-  color: #fff;
-  padding: 6px 10px;
-  font-size: var(--font-size-sm);
-  min-width: 60px;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(255, 149, 0, 0.3);
-}
-
-.program-btn-warning:hover:not(:disabled) {
-  background: var(--warning-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(255, 149, 0, 0.4);
-}
-
-.program-btn-danger {
-  background: var(--danger);
-  color: #fff;
-  padding: 6px 10px;
-  font-size: var(--font-size-sm);
-  min-width: 60px;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.3);
-}
-
-.program-btn-danger:hover:not(:disabled) {
-  background: var(--danger-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(255, 59, 48, 0.4);
-}
 
 /* Table wrapper để handle scroll */
 .internship-table-wrapper {
@@ -109,9 +47,9 @@
 
 .table-th:nth-child(5),
 .table-td:nth-child(5) {
-  width: 200px;
-  min-width: 150px;
-  max-width: 250px;
+  width: 130px;
+  min-width: 120px;
+  max-width: 150px;
 }
 
 .table-th:nth-child(6),
@@ -237,15 +175,6 @@
   background: #a8a8a8;
 }
 
-/* Action buttons container - Tối ưu cho không gian hẹp */
-.action-buttons {
-  display: flex;
-  gap: 6px;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: flex-start;
-}
-
 .action-buttons button {
   flex-shrink: 0;
 }
@@ -271,16 +200,9 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .table-th:nth-child(7),
-  .table-td:nth-child(7) {
+  .table-th:nth-child(6),
+  .table-td:nth-child(6) {
     min-width: 300px;
-  }
-
-  .program-btn-info,
-  .program-btn-warning,
-  .program-btn-danger {
-    min-width: auto;
-    padding: 6px 12px;
   }
 }
 
@@ -295,13 +217,6 @@
 }
 
 @media (max-width: 768px) {
-  .program-btn-info,
-  .program-btn-warning,
-  .program-btn-danger {
-    padding: 6px 12px;
-    font-size: var(--font-size-sm);
-  }
-
   .action-buttons {
     flex-direction: column;
     align-items: stretch;
@@ -322,13 +237,6 @@
 }
 
 @media (max-width: 480px) {
-  .program-btn-info,
-  .program-btn-warning,
-  .program-btn-danger {
-    padding: 5px 10px;
-    font-size: var(--font-size-xs);
-  }
-
   .text-truncate {
     max-width: 100px;
   }

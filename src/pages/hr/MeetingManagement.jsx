@@ -1,22 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { DatePicker } from "antd";
+import { DatePicker, Select } from "antd";
 import dayjs from "dayjs";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./MeetingManagement.css";
-
-import InternSelectionModal from "../../components/common/InternSelectionModal";
 import {
   getMeetings,
   createMeeting,
   updateMeeting,
   deleteMeeting,
 } from "../../services/meetingService";
+import apiClient from "../../services/apiClient";
 
 function formatDateTime(dateTimeString) {
   if (!dateTimeString) return "";
   return dayjs(dateTimeString).format("DD/MM/YYYY HH:mm");
 }
+
+const getStatusBadge = (status) => {
+  const statusMap = {
+    SCHEDULED: { label: "Đã lên lịch", class: "badge-primary" },
+    COMPLETED: { label: "Đã hoàn thành", class: "badge-success" },
+    CANCELLED: { label: "Đã hủy", class: "badge-danger" },
+    "Đã tạo lịch": { label: "Đã tạo lịch", class: "badge-primary" },
+  };
+  const info = statusMap[status] || { label: status, class: "" };
+  return <span className={`badge ${info.class}`}>{info.label}</span>;
+};
 
 export default function MeetingManagement() {
   const [meetings, setMeetings] = useState([]);
@@ -26,7 +36,6 @@ export default function MeetingManagement() {
   const [viewingMeeting, setViewingMeeting] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 15;
 
@@ -34,15 +43,18 @@ export default function MeetingManagement() {
     loadMeetings();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchText, statusFilter]);
+
   const loadMeetings = async () => {
     try {
       setLoading(true);
       const data = await getMeetings();
-      console.log("Loaded meetings:", data);
       setMeetings(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to load meetings:", error);
-      toast.error("Không thể tải danh sách lịch họp!");
+      toast.error(error.message || "Không thể tải danh sách lịch họp!");
       setMeetings([]);
     } finally {
       setLoading(false);
@@ -51,86 +63,57 @@ export default function MeetingManagement() {
 
   const handleCreateMeeting = async (newMeeting) => {
     try {
-      const response = await createMeeting(newMeeting);
-      console.log("Create response:", response);
-
-      if (response.success || response.meetingId) {
-        toast.success(
-          "Tạo lịch họp thành công! 🎉 Email đã được gửi tới thực tập sinh."
-        );
-        await loadMeetings();
-        setShowCreateModal(false);
-      } else {
-        toast.error(response.message || "Tạo lịch họp thất bại!");
-      }
+      await createMeeting(newMeeting);
+      toast.success("Tạo lịch họp thành công! 🎉");
+      await loadMeetings();
+      setShowCreateModal(false);
     } catch (error) {
       console.error("Failed to create meeting:", error);
-      const errorMessage =
-        error.response?.data?.message || "Tạo lịch họp thất bại!";
-      toast.error(errorMessage);
+      toast.error(error.message || "Tạo lịch họp thất bại!");
     }
   };
 
   const handleUpdateMeeting = async (updatedMeeting) => {
     try {
-      const response = await updateMeeting(
-        editingMeeting.meetingId,
-        updatedMeeting
-      );
-
-      if (response.success) {
-        toast.success(
-          "Cập nhật lịch họp thành công! ✅ Email thông báo đã được gửi."
-        );
-        await loadMeetings();
-        setEditingMeeting(null);
-      } else {
-        toast.error(response.message || "Cập nhật lịch họp thất bại!");
-      }
+      await updateMeeting(editingMeeting.id, updatedMeeting);
+      toast.success("Cập nhật lịch họp thành công! ✅");
+      await loadMeetings();
+      setEditingMeeting(null);
     } catch (error) {
       console.error("Failed to update meeting:", error);
-      toast.error(
-        error.response?.data?.message || "Cập nhật lịch họp thất bại!"
-      );
+      toast.error(error.message || "Cập nhật lịch họp thất bại!");
     }
   };
 
   const handleDeleteMeeting = async (meetingId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa lịch họp này?")) {
-      return;
-    }
+    if (!window.confirm("Bạn có chắc chắn muốn xóa lịch họp này?")) return;
 
     try {
-      const response = await deleteMeeting(meetingId);
-      if (response.success) {
-        toast.success("Xóa lịch họp thành công!");
-        await loadMeetings();
-      }
+      await deleteMeeting(meetingId);
+      toast.success("Xóa lịch họp thành công!");
+      await loadMeetings();
     } catch (error) {
       console.error("Failed to delete meeting:", error);
-      toast.error(error.response?.data?.message || "Xóa lịch họp thất bại!");
+      toast.error(error.message || "Xóa lịch họp thất bại!");
     }
   };
 
   const filteredMeetings = meetings.filter((meeting) => {
     const matchesSearch = searchText
       ? meeting.title?.toLowerCase().includes(searchText.toLowerCase()) ||
-        meeting.location?.toLowerCase().includes(searchText.toLowerCase())
+        meeting.location?.toLowerCase().includes(searchText.toLowerCase()) ||
+        meeting.programTitle?.toLowerCase().includes(searchText.toLowerCase())
       : true;
     const matchesStatus = statusFilter ? meeting.status === statusFilter : true;
     return matchesSearch && matchesStatus;
   });
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchText, statusFilter]);
 
   const totalItems = filteredMeetings.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const startIndex = (currentPage - 1) * pageSize;
   const pageItems = filteredMeetings.slice(startIndex, startIndex + pageSize);
 
-  function getPageNumbers() {
+  const getPageNumbers = () => {
     const pages = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -144,16 +127,6 @@ export default function MeetingManagement() {
     if (right < totalPages - 1) pages.push("...");
     pages.push(totalPages);
     return pages;
-  }
-
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      scheduled: { label: "Đã lên lịch", class: "badge-primary" },
-      completed: { label: "Đã hoàn thành", class: "badge-success" },
-      cancelled: { label: "Đã hủy", class: "badge-danger" },
-    };
-    const info = statusMap[status] || { label: status, class: "" };
-    return <span className={`badge ${info.class}`}>{info.label}</span>;
   };
 
   return (
@@ -283,7 +256,7 @@ export default function MeetingManagement() {
           </div>
           <div className="pagination-controls">
             <button
-              className="btn btn-sm"
+              className="btn btn-secondary btn-sm"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             >
@@ -309,7 +282,7 @@ export default function MeetingManagement() {
             )}
 
             <button
-              className="btn btn-sm"
+              className="btn btn-secondary btn-sm"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             >
@@ -347,47 +320,58 @@ export default function MeetingManagement() {
 // Modal tạo lịch họp
 function CreateMeetingModal({ onClose, onCreate }) {
   const [title, setTitle] = useState("");
-  const [meetingTime, setMeetingTime] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedInterns, setSelectedInterns] = useState([]);
-  const [showInternModal, setShowInternModal] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
+  const [programId, setProgramId] = useState(null);
+  const [programs, setPrograms] = useState([]);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    loadPrograms();
+  }, []);
+
+  const loadPrograms = async () => {
+    try {
+      const response = await apiClient.get("/projects");
+      setPrograms(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Failed to load programs:", error);
+      toast.error("Không thể tải danh sách chương trình!");
+    }
+  };
 
   const validate = () => {
-    const errors = {};
-    if (!title.trim()) errors.title = "Tiêu đề không được để trống";
-    if (!meetingTime) errors.meetingTime = "Vui lòng chọn thời gian họp";
-    if (!location.trim()) errors.location = "Địa điểm không được để trống";
-    if (selectedInterns.length === 0)
-      errors.attendees = "Vui lòng chọn ít nhất 1 thực tập sinh";
-    return errors;
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = "Tiêu đề không được để trống";
+    if (!programId) newErrors.programId = "Vui lòng chọn chương trình";
+    if (!startTime) newErrors.startTime = "Vui lòng chọn thời gian bắt đầu";
+    if (!endTime) newErrors.endTime = "Vui lòng chọn thời gian kết thúc";
+    if (startTime && endTime && endTime.isBefore(startTime)) {
+      newErrors.endTime = "Thời gian kết thúc phải sau thời gian bắt đầu";
+    }
+    if (!location.trim()) newErrors.location = "Địa điểm không được để trống";
+    return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const errors = validate();
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
+    const newErrors = validate();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       toast.error("Vui lòng điền đầy đủ thông tin!");
       return;
     }
 
     onCreate({
+      programId,
       title: title.trim(),
-      meetingTime: meetingTime.format("YYYY-MM-DDTHH:mm:ss"),
-      location: location.trim(),
       description: description.trim() || "",
-      attendeeIds: selectedInterns.map(
-        (intern) => intern.intern_id || intern.id
-      ),
+      startTime: startTime.format("YYYY-MM-DDTHH:mm:ss"),
+      endTime: endTime.format("YYYY-MM-DDTHH:mm:ss"),
+      location: location.trim(),
     });
-  };
-
-  const handleRemoveIntern = (internId) => {
-    setSelectedInterns((prev) =>
-      prev.filter((i) => (i.intern_id || i.id) !== internId)
-    );
   };
 
   return (
@@ -414,113 +398,114 @@ function CreateMeetingModal({ onClose, onCreate }) {
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
+            <label htmlFor="program">Chương trình *</label>
+            <Select
+              id="program"
+              style={{ width: "100%" }}
+              placeholder="Chọn chương trình"
+              value={programId}
+              onChange={(value) => setProgramId(value)}
+              status={errors.programId ? "error" : undefined}
+              options={programs.map((p) => ({
+                value: p.project_id || p.id,
+                label: p.title,
+              }))}
+            />
+            {errors.programId && (
+              <div className="error-message">{errors.programId}</div>
+            )}
+            <small
+              style={{
+                color: "#666",
+                fontSize: 12,
+                marginTop: 4,
+                display: "block",
+              }}
+            >
+              Lịch họp sẽ được tạo cho tất cả thực tập sinh trong chương trình
+              này
+            </small>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="title">Tiêu đề cuộc họp *</label>
             <input
               id="title"
               type="text"
-              className={`form-input ${
-                validationErrors.title ? "input-error" : ""
-              }`}
+              className={`form-input ${errors.title ? "input-error" : ""}`}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="VD: Họp tổng kết tháng"
             />
-            {validationErrors.title && (
-              <div className="error-message">{validationErrors.title}</div>
+            {errors.title && (
+              <div className="error-message">{errors.title}</div>
             )}
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="meeting-time">Thời gian họp *</label>
+              <label htmlFor="start-time">Thời gian bắt đầu *</label>
               <DatePicker
-                id="meeting-time"
+                id="start-time"
                 showTime
                 format="YYYY-MM-DD HH:mm"
-                value={meetingTime}
-                onChange={(value) => setMeetingTime(value)}
+                value={startTime}
+                onChange={(value) => setStartTime(value)}
                 className="app-date-picker"
-                status={validationErrors.meetingTime ? "error" : undefined}
-                placeholder="Chọn ngày và giờ"
+                style={{ width: "100%" }}
+                status={errors.startTime ? "error" : undefined}
+                placeholder="Chọn ngày và giờ bắt đầu"
               />
-              {validationErrors.meetingTime && (
-                <div className="error-message">
-                  {validationErrors.meetingTime}
-                </div>
+              {errors.startTime && (
+                <div className="error-message">{errors.startTime}</div>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="location">Địa điểm *</label>
-              <input
-                id="location"
-                type="text"
-                className={`form-input ${
-                  validationErrors.location ? "input-error" : ""
-                }`}
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="VD: Phòng họp A, Tầng 3"
+              <label htmlFor="end-time">Thời gian kết thúc *</label>
+              <DatePicker
+                id="end-time"
+                showTime
+                format="YYYY-MM-DD HH:mm"
+                value={endTime}
+                onChange={(value) => setEndTime(value)}
+                className="app-date-picker"
+                style={{ width: "100%" }}
+                status={errors.endTime ? "error" : undefined}
+                placeholder="Chọn ngày và giờ kết thúc"
               />
-              {validationErrors.location && (
-                <div className="error-message">{validationErrors.location}</div>
+              {errors.endTime && (
+                <div className="error-message">{errors.endTime}</div>
               )}
             </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="location">Địa điểm *</label>
+            <input
+              id="location"
+              type="text"
+              className={`form-input ${errors.location ? "input-error" : ""}`}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="VD: Phòng họp A, Tầng 3"
+            />
+            {errors.location && (
+              <div className="error-message">{errors.location}</div>
+            )}
           </div>
 
           <div className="form-group">
             <label htmlFor="description">Mô tả cuộc họp</label>
             <textarea
               id="description"
-              className="form-input"
+              className="form-textarea"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Nội dung, chương trình cuộc họp..."
               rows="4"
             />
           </div>
-
-          <div className="form-group">
-            <label>Người tham dự *</label>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setShowInternModal(true)}
-              style={{ width: "100%" }}
-            >
-              + Thêm thực tập sinh
-            </button>
-            {validationErrors.attendees && (
-              <div className="error-message">{validationErrors.attendees}</div>
-            )}
-          </div>
-
-          {selectedInterns.length > 0 && (
-            <div className="selected-interns-list">
-              <h4 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600 }}>
-                Đã chọn ({selectedInterns.length}):
-              </h4>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {selectedInterns.map((intern) => (
-                  <div
-                    key={intern.intern_id || intern.id}
-                    className="intern-chip"
-                  >
-                    <span>{intern.student}</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleRemoveIntern(intern.intern_id || intern.id)
-                      }
-                      className="chip-remove"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="form-actions">
             <button type="button" className="btn-outline" onClick={onClose}>
@@ -531,27 +516,6 @@ function CreateMeetingModal({ onClose, onCreate }) {
             </button>
           </div>
         </form>
-
-        {showInternModal && (
-          <div className="intern-selection-modal-overlay">
-            <div className="intern-selection-modal">
-              <InternSelectionModal
-                onClose={() => setShowInternModal(false)}
-                onSelect={(intern) => {
-                  const internId = intern.intern_id || intern.id;
-                  if (
-                    !selectedInterns.find(
-                      (i) => (i.intern_id || i.id) === internId
-                    )
-                  ) {
-                    setSelectedInterns((prev) => [...prev, intern]);
-                  }
-                  setShowInternModal(false);
-                }}
-              />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -560,55 +524,45 @@ function CreateMeetingModal({ onClose, onCreate }) {
 // Modal chỉnh sửa lịch họp
 function EditMeetingModal({ meeting, onClose, onUpdate }) {
   const [title, setTitle] = useState(meeting.title || "");
-  const [meetingTime, setMeetingTime] = useState(
-    meeting.meetingTime ? dayjs(meeting.meetingTime) : null
+  const [startTime, setStartTime] = useState(
+    meeting.startTime ? dayjs(meeting.startTime) : null
+  );
+  const [endTime, setEndTime] = useState(
+    meeting.endTime ? dayjs(meeting.endTime) : null
   );
   const [location, setLocation] = useState(meeting.location || "");
   const [description, setDescription] = useState(meeting.description || "");
-  const [status, setStatus] = useState(meeting.status || "scheduled");
-  const [selectedInterns, setSelectedInterns] = useState(
-    meeting.attendees || []
-  );
-  const [showInternModal, setShowInternModal] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
+  const [errors, setErrors] = useState({});
 
   const validate = () => {
-    const errors = {};
-    if (!title.trim()) errors.title = "Tiêu đề không được để trống";
-    if (!meetingTime) errors.meetingTime = "Vui lòng chọn thời gian họp";
-    if (!location.trim()) errors.location = "Địa điểm không được để trống";
-    if (selectedInterns.length === 0)
-      errors.attendees = "Vui lòng chọn ít nhất 1 thực tập sinh";
-    return errors;
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = "Tiêu đề không được để trống";
+    if (!startTime) newErrors.startTime = "Vui lòng chọn thời gian bắt đầu";
+    if (!endTime) newErrors.endTime = "Vui lòng chọn thời gian kết thúc";
+    if (startTime && endTime && endTime.isBefore(startTime)) {
+      newErrors.endTime = "Thời gian kết thúc phải sau thời gian bắt đầu";
+    }
+    if (!location.trim()) newErrors.location = "Địa điểm không được để trống";
+    return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const errors = validate();
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
+    const newErrors = validate();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       toast.error("Vui lòng điền đầy đủ thông tin!");
       return;
     }
 
     onUpdate({
       title: title.trim(),
-      meetingTime: meetingTime.format("YYYY-MM-DDTHH:mm:ss"),
-      location: location.trim(),
       description: description.trim() || "",
-      status,
-      attendeeIds: selectedInterns.map(
-        (intern) => intern.intern_id || intern.id
-      ),
+      startTime: startTime.format("YYYY-MM-DDTHH:mm:ss"),
+      endTime: endTime.format("YYYY-MM-DDTHH:mm:ss"),
+      location: location.trim(),
     });
   };
-
-  const handleRemoveIntern = (internId) => {
-    setSelectedInterns((prev) =>
-      prev.filter((i) => (i.intern_id || i.id) !== internId)
-    );
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -633,125 +587,93 @@ function EditMeetingModal({ meeting, onClose, onUpdate }) {
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
+            <label>Chương trình</label>
+            <input
+              type="text"
+              className="form-input"
+              value={meeting.programTitle || ""}
+              disabled
+              style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
+            />
+            <small style={{ color: "#666", fontSize: 12 }}>
+              Không thể thay đổi chương trình
+            </small>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="edit-title">Tiêu đề cuộc họp *</label>
             <input
               id="edit-title"
               type="text"
-              className={`form-input ${
-                validationErrors.title ? "input-error" : ""
-              }`}
+              className={`form-input ${errors.title ? "input-error" : ""}`}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
-            {validationErrors.title && (
-              <div className="error-message">{validationErrors.title}</div>
+            {errors.title && (
+              <div className="error-message">{errors.title}</div>
             )}
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="edit-time">Thời gian họp *</label>
+              <label htmlFor="edit-start-time">Thời gian bắt đầu *</label>
               <DatePicker
-                id="edit-time"
+                id="edit-start-time"
                 showTime
                 format="YYYY-MM-DD HH:mm"
-                value={meetingTime}
-                onChange={(value) => setMeetingTime(value)}
+                value={startTime}
+                onChange={(value) => setStartTime(value)}
                 className="app-date-picker"
-                status={validationErrors.meetingTime ? "error" : undefined}
+                style={{ width: "100%" }}
+                status={errors.startTime ? "error" : undefined}
               />
-              {validationErrors.meetingTime && (
-                <div className="error-message">
-                  {validationErrors.meetingTime}
-                </div>
+              {errors.startTime && (
+                <div className="error-message">{errors.startTime}</div>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="edit-location">Địa điểm *</label>
-              <input
-                id="edit-location"
-                type="text"
-                className={`form-input ${
-                  validationErrors.location ? "input-error" : ""
-                }`}
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+              <label htmlFor="edit-end-time">Thời gian kết thúc *</label>
+              <DatePicker
+                id="edit-end-time"
+                showTime
+                format="YYYY-MM-DD HH:mm"
+                value={endTime}
+                onChange={(value) => setEndTime(value)}
+                className="app-date-picker"
+                style={{ width: "100%" }}
+                status={errors.endTime ? "error" : undefined}
               />
-              {validationErrors.location && (
-                <div className="error-message">{validationErrors.location}</div>
+              {errors.endTime && (
+                <div className="error-message">{errors.endTime}</div>
               )}
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="edit-status">Trạng thái</label>
-              <select
-                id="edit-status"
-                className="form-select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="scheduled">Đã lên lịch</option>
-                <option value="completed">Đã hoàn thành</option>
-                <option value="cancelled">Đã hủy</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="edit-description">Mô tả</label>
-              <textarea
-                id="edit-description"
-                className="form-input"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows="3"
-              />
             </div>
           </div>
 
           <div className="form-group">
-            <label>Người tham dự *</label>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setShowInternModal(true)}
-              style={{ width: "100%" }}
-            >
-              + Thêm thực tập sinh
-            </button>
-            {validationErrors.attendees && (
-              <div className="error-message">{validationErrors.attendees}</div>
+            <label htmlFor="edit-location">Địa điểm *</label>
+            <input
+              id="edit-location"
+              type="text"
+              className={`form-input ${errors.location ? "input-error" : ""}`}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+            {errors.location && (
+              <div className="error-message">{errors.location}</div>
             )}
           </div>
 
-          {selectedInterns.length > 0 && (
-            <div className="selected-interns-list">
-              <h4 style={{ marginBottom: 12, fontSize: 14, fontWeight: 600 }}>
-                Đã chọn ({selectedInterns.length}):
-              </h4>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {selectedInterns.map((intern) => (
-                  <div
-                    key={intern.intern_id || intern.id}
-                    className="intern-chip"
-                  >
-                    <span>{intern.student}</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleRemoveIntern(intern.intern_id || intern.id)
-                      }
-                      className="chip-remove"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="form-group">
+            <label htmlFor="edit-description">Mô tả</label>
+            <textarea
+              id="edit-description"
+              className="form-input"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows="4"
+            />
+          </div>
 
           <div className="form-actions">
             <button type="button" className="btn-outline" onClick={onClose}>
@@ -762,27 +684,6 @@ function EditMeetingModal({ meeting, onClose, onUpdate }) {
             </button>
           </div>
         </form>
-
-        {showInternModal && (
-          <div className="intern-selection-modal-overlay">
-            <div className="intern-selection-modal">
-              <InternSelectionModal
-                onClose={() => setShowInternModal(false)}
-                onSelect={(intern) => {
-                  const internId = intern.intern_id || intern.id;
-                  if (
-                    !selectedInterns.find(
-                      (i) => (i.intern_id || i.id) === internId
-                    )
-                  ) {
-                    setSelectedInterns((prev) => [...prev, intern]);
-                  }
-                  setShowInternModal(false);
-                }}
-              />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -811,12 +712,20 @@ function ViewMeetingModal({ meeting, onClose }) {
 
         <div className="view-details">
           <div className="detail-row">
+            <label>Chương trình:</label>
+            <div>{meeting.programTitle || "-"}</div>
+          </div>
+          <div className="detail-row">
             <label>Tiêu đề:</label>
             <div>{meeting.title}</div>
           </div>
           <div className="detail-row">
-            <label>Thời gian:</label>
-            <div>{formatDateTime(meeting.meetingTime)}</div>
+            <label>Thời gian bắt đầu:</label>
+            <div>{formatDateTime(meeting.startTime)}</div>
+          </div>
+          <div className="detail-row">
+            <label>Thời gian kết thúc:</label>
+            <div>{formatDateTime(meeting.endTime)}</div>
           </div>
           <div className="detail-row">
             <label>Địa điểm:</label>
@@ -824,13 +733,7 @@ function ViewMeetingModal({ meeting, onClose }) {
           </div>
           <div className="detail-row">
             <label>Trạng thái:</label>
-            <div>
-              {meeting.status === "scheduled"
-                ? "Đã lên lịch"
-                : meeting.status === "completed"
-                ? "Đã hoàn thành"
-                : "Đã hủy"}
-            </div>
+            <div>{meeting.status}</div>
           </div>
           <div className="detail-row">
             <label>Mô tả:</label>
@@ -839,18 +742,27 @@ function ViewMeetingModal({ meeting, onClose }) {
             </div>
           </div>
           <div className="detail-row">
-            <label>Người tham dự ({meeting.attendeeCount || 0}):</label>
-            <div>
-              {meeting.attendees && meeting.attendees.length > 0 ? (
+            <label>Số thực tập sinh:</label>
+            <div>{meeting.internCount || 0}</div>
+          </div>
+          {meeting.interns && meeting.interns.length > 0 && (
+            <div className="detail-row">
+              <label>Danh sách thực tập sinh:</label>
+              <div>
                 <ul style={{ margin: 0, paddingLeft: 20 }}>
-                  {meeting.attendees.map((attendee, idx) => (
-                    <li key={idx}>{attendee.student || attendee.name}</li>
+                  {meeting.interns.map((intern, idx) => (
+                    <li key={idx}>
+                      {intern.internName} ({intern.internEmail})
+                      {intern.calendarSynced && " ✅"}
+                    </li>
                   ))}
                 </ul>
-              ) : (
-                <span>Chưa có người tham dự</span>
-              )}
+              </div>
             </div>
+          )}
+          <div className="detail-row">
+            <label>Người tạo:</label>
+            <div>{meeting.createdBy || meeting.hrName || "-"}</div>
           </div>
         </div>
 

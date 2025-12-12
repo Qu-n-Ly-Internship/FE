@@ -151,13 +151,13 @@ export default function DocQueue() {
                     <div style={{ display: "flex", gap: 8 }}>
                       <button
                         onClick={() => handleReview(d, "APPROVE")}
-                        className="btn btn-duyet"
+                        className="btn btn-success"
                       >
                         Duyệt
                       </button>
                       <button
                         onClick={() => handleReview(d, "REJECT")}
-                        className="btn btn-tuchoi"
+                        className="btn btn-danger"
                       >
                         Từ chối
                       </button>

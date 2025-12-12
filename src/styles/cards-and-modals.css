@@ -55,6 +55,10 @@
   background: var(--warning-light);
 }
 
+.stat-wait-icon {
+  background: var(--wait);
+}
+
 .stat-approved-icon {
   background: var(--success-light);
 }
@@ -77,6 +81,10 @@
 
 .stat-pending-value {
   color: var(--pending);
+}
+
+.stat-wait-value {
+  color: var(--wait);
 }
 
 .stat-approved-value {

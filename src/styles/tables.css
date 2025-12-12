@@ -69,10 +69,12 @@
 }
 
 /* Text Alignment */
+.table-th.center,
 .table-td.center,
 .table td.center,
 .request-table td.center {
   text-align: center;
+  justify-items: center;
 }
 
 .table-td.right,
@@ -251,12 +253,29 @@
   display: flex;
   gap: var(--spacing-md);
   align-items: center;
+  background-color: white !important;
 }
 
 .page-current {
   font-size: var(--font-size-md);
   color: var(--text-secondary);
   padding: 0 8px;
+}
+
+.pagination-controls .btn:not(:disabled):hover {
+  background: #489be8;
+  border-color: #cbd5e1;
+}
+.page-btn.active {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Dấu "..." */
+.page-dots {
+  padding: 6px 12px;
+  color: #6b7280;
+  font-size: 14px;
 }
 
 /* Stats Bar */

@@ -163,8 +163,8 @@ export default function AllowanceManagement() {
                   <th className="table-th">Loại phụ cấp</th>
                   <th className="table-th">Số tiền</th>
                   <th className="table-th">Ngày áp dụng</th>
-                  <th className="table-th">Ngày thanh toán</th>
-                  <th className="table-th">Thao tác</th>
+                  <th className="table-th center">Ngày thanh toán</th>
+                  <th className="table-th center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -192,10 +192,10 @@ export default function AllowanceManagement() {
                         </span>
                       )}
                     </td>
-                    <td className="table-td">
-                      <div className="action-buttons">
+                    <td className="table-td center">
+                      <div className="action-buttons ">
                         <button
-                          className="btn btn-danger btn-sm"
+                          className="btn btn-danger btn-sm "
                           onClick={() =>
                             handleDeleteAllowance(item.allowanceId)
                           }

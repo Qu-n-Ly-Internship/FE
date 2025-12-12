@@ -74,7 +74,6 @@ export default function DocumentUpload() {
     }));
 
     try {
-      // Upload CV to /api/cv/upload endpoint
       await uploadCV({ file: state.file });
 
       setUploadState((prev) => ({
@@ -114,26 +113,28 @@ export default function DocumentUpload() {
   if (!user) {
     return (
       <div className="page-container">
-        <h2>Vui lòng đăng nhập</h2>
-        <p>Bạn cần đăng nhập để có thể nộp tài liệu.</p>
-        <a href="/login" className="link">
-          Đăng nhập ngay
-        </a>
+        <div className="card">
+          <h2>Vui lòng đăng nhập</h2>
+          <p>Bạn cần đăng nhập để có thể nộp tài liệu.</p>
+          <a href="/login" className="btn btn-primary">
+            Đăng nhập ngay
+          </a>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="profile-container">
+    <div className="page-container document-upload">
       {/* Header */}
       <div className="du-header">
-        <h1 className="profile-title">
+        <h1>
           📚{" "}
           {user?.role === "USER"
             ? "Nộp hồ sơ ứng tuyển"
             : "Nộp tài liệu thực tập"}
         </h1>
-        <p className="text-muted fs-16 mt-16">
+        <p className="text-secondary">
           {user?.role === "USER"
             ? "Tải lên CV của bạn để ứng tuyển vị trí thực tập sinh"
             : "Tải lên CV của bạn"}
@@ -147,11 +148,11 @@ export default function DocumentUpload() {
       </div>
 
       {/* User Info */}
-      <div className="upload-card upload-card--muted mb-24">
-        <div className="du-user-row">
+      <div className="card">
+        <div className="du-user-card">
           <div
-            className={`avatar avatar--sm ${
-              user?.avatar ? "avatar--has-image" : ""
+            className={`du-avatar ${
+              user?.avatar ? "du-avatar--has-image" : ""
             }`}
             style={{
               backgroundImage: user?.avatar ? `url(${user.avatar})` : "none",
@@ -159,14 +160,12 @@ export default function DocumentUpload() {
           >
             {!user?.avatar && (user?.fullName?.charAt(0)?.toUpperCase() || "U")}
           </div>
-          <div>
-            <div className="fw-600 fs-16">
-              {user.fullName || "Thực tập sinh"}
-            </div>
-            <div className="text-muted fs-14">
+          <div className="du-user-info">
+            <h3>{user.fullName || "Thực tập sinh"}</h3>
+            <p>
               {user.email} •{" "}
               {user.role === "USER" ? "Ứng viên" : "Thực tập sinh"}
-            </div>
+            </p>
           </div>
         </div>
       </div>
@@ -175,13 +174,13 @@ export default function DocumentUpload() {
       {documentTypes.map((docType) => {
         const state = uploadState[docType.key];
         return (
-          <div key={docType.key} className="upload-card mb-24">
+          <div key={docType.key} className="card du-section">
             {/* Header */}
-            <div className="du-user-row mb-16">
-              <span className="fs-24">{docType.icon}</span>
+            <div className="du-section-header">
+              <span className="du-section-icon">{docType.icon}</span>
               <div>
-                <h3 className="du-title">{docType.title}</h3>
-                <p className="du-desc">{docType.description}</p>
+                <h3 className="du-section-title">{docType.title}</h3>
+                <p className="du-section-desc">{docType.description}</p>
               </div>
             </div>
 
@@ -218,24 +217,24 @@ export default function DocumentUpload() {
               />
 
               {!state.file ? (
-                <>
-                  <div className="du-icon-xl">📁</div>
-                  <div className="du-file-name">
+                <div className="du-file-preview">
+                  <div className="du-dropzone-icon">📁</div>
+                  <div className="du-dropzone-text">
                     Click để chọn file hoặc kéo thả file vào đây
                   </div>
-                  <div className="du-file-size">
+                  <div className="du-dropzone-hint">
                     Hỗ trợ: {docType.accept.replace(/\./g, "").toUpperCase()} •
                     Tối đa 10MB
                   </div>
-                </>
+                </div>
               ) : (
-                <>
-                  <div className="fs-24 mb-8">✅</div>
+                <div className="du-file-preview">
+                  <div className="du-dropzone-icon">✅</div>
                   <div className="du-file-name">{state.file.name}</div>
                   <div className="du-file-size">
                     {formatFileSize(state.file.size)}
                   </div>
-                </>
+                </div>
               )}
             </div>
 
@@ -244,7 +243,7 @@ export default function DocumentUpload() {
               <button
                 onClick={() => handleUpload(docType.key)}
                 disabled={!state.file || state.uploading}
-                className="p-btn p-btn-primary"
+                className="btn btn-primary"
               >
                 {state.uploading ? "Đang tải lên..." : "Tải lên"}
               </button>
@@ -263,7 +262,7 @@ export default function DocumentUpload() {
                     }));
                     document.getElementById(`file-${docType.key}`).value = "";
                   }}
-                  className="p-btn p-btn-outline-danger"
+                  className="btn btn-outline-danger"
                 >
                   Hủy
                 </button>
@@ -285,19 +284,17 @@ export default function DocumentUpload() {
       })}
 
       {/* Help Section */}
-      <div className="upload-card du-help">
+      <div className="card du-help">
         <h4 className="du-help-title">
-          <span className="du-help-icon">💡</span> Hướng dẫn
+          <span>💡</span> Hướng dẫn
         </h4>
         <ul className="du-help-list">
-          <li className="du-help-item">
-            CV nên có định dạng PDF hoặc DOCX để đảm bảo hiển thị tốt
-          </li>
-          <li className="du-help-item">
+          <li>CV nên có định dạng PDF hoặc DOCX để đảm bảo hiển thị tốt</li>
+          <li>
             CV nên bao gồm thông tin cá nhân, học vấn, kinh nghiệm và kỹ năng
           </li>
-          <li className="du-help-item">File không được vượt quá 10MB</li>
-          <li className="du-help-item">
+          <li>File không được vượt quá 10MB</li>
+          <li>
             Sau khi tải lên, HR sẽ xem xét và phản hồi trong vòng 3-5 ngày làm
             việc
           </li>

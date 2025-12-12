@@ -327,19 +327,18 @@ export default function MentorReviewInterns() {
             <div className="stat-label">Tổng TTS</div>
           </div>
         </div>
-        {selectedIntern && (
-          <div className="stat-card">
-            <div className="stat-icon stat-approved-icon">
-              <ClipboardList />
-            </div>
-            <div className="stat-info">
-              <div className="stat-value stat-approved-value">
-                {stats.totalEvaluations}
-              </div>
-              <div className="stat-label">Đánh giá định kỳ</div>
-            </div>
+
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">
+            <ClipboardList />
           </div>
-        )}
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {stats.totalEvaluations}
+            </div>
+            <div className="stat-label">Đánh giá định kỳ</div>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}

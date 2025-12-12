@@ -27,7 +27,9 @@ export default function HRLeaveApprovalPage() {
   // Filters
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [dateRangeFilter, setDateRangeFilter] = useState(null);
+
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,16 +63,6 @@ export default function HRLeaveApprovalPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function getLeaveTypeName(type) {
-    const typeMap = {
-      paid: "Có phép",
-      unpaid: "Không phép",
-      sick: "Ốm đau",
-      other: "Khác",
-    };
-    return typeMap[type] || type;
   }
 
   function getStatusBadge(status) {
@@ -110,35 +102,32 @@ export default function HRLeaveApprovalPage() {
       ? req.status?.toLowerCase() === statusFilter.toLowerCase()
       : true;
 
-    const matchesDateRange = dateRangeFilter
-      ? dayjs(req.startDate).isBetween(
-          dateRangeFilter[0],
-          dateRangeFilter[1],
-          "day",
-          "[]"
-        ) ||
-        dayjs(req.endDate).isBetween(
-          dateRangeFilter[0],
-          dateRangeFilter[1],
-          "day",
-          "[]"
-        )
-      : true;
+    const startDate = startDateFilter ? new Date(startDateFilter) : null;
+    const endDate = endDateFilter ? new Date(endDateFilter) : null;
+    const requestDate = new Date(req.startDate);
 
-    return matchesSearch && matchesStatus && matchesDateRange;
+    if (startDate && requestDate < startDate) {
+      return false;
+    }
+    if (endDate && requestDate > endDate) {
+      return false;
+    }
+
+    return matchesSearch && matchesStatus;
   });
 
   // Reset filters
   function clearFilters() {
     setSearchText("");
     setStatusFilter("");
-    setDateRangeFilter(null);
+    setStartDateFilter("");
+    setEndDateFilter("");
   }
 
   // Pagination
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchText, statusFilter, dateRangeFilter]);
+  }, [searchText, statusFilter, startDateFilter, endDateFilter]);
 
   const totalItems = filteredRequests.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -325,13 +314,21 @@ export default function HRLeaveApprovalPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Lọc theo ngày nghỉ</label>
-            <RangePicker
-              format="DD/MM/YYYY"
-              value={dateRangeFilter}
-              onChange={(dates) => setDateRangeFilter(dates)}
-              className="form-date-range"
-              placeholder={["Từ ngày", "Đến ngày"]}
+            <label className="form-label">Từ ngày</label>
+            <input
+              type="date"
+              className="form-input"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Đến ngày</label>
+            <input
+              type="date"
+              className="form-input"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
             />
           </div>
 
@@ -368,7 +365,7 @@ export default function HRLeaveApprovalPage() {
                     <th className="table-th">Lý do</th>
                     <th className="table-th">Trạng thái</th>
                     <th className="table-th">Ngày tạo</th>
-                    <th className="table-th">Hành động</th>
+                    <th className="table-th center">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -395,7 +392,7 @@ export default function HRLeaveApprovalPage() {
                         {dayjs(request.startDate).format("DD/MM/YYYY")} -{" "}
                         {dayjs(request.endDate).format("DD/MM/YYYY")}
                       </td>
-                      <td className="table-td center">
+                      <td className="table-td ">
                         {calculateDays(request.startDate, request.endDate)} ngày
                       </td>
                       <td className="table-td">
@@ -409,9 +406,9 @@ export default function HRLeaveApprovalPage() {
                       <td className="table-td">
                         {dayjs(request.createdAt).format("DD/MM/YYYY HH:mm")}
                       </td>
-                      <td className="table-td">
+                      <td className="table-td center">
                         {request.status?.toLowerCase() === "pending" ? (
-                          <div className="action-buttons">
+                          <div className="action-buttons center">
                             <button
                               className="btn btn-approve"
                               onClick={() => setShowApproveModal(request)}

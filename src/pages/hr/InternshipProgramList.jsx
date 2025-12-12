@@ -176,15 +176,8 @@ export default function InternshipProgramList() {
       </div>
 
       {/* Filters */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: 16,
-            alignItems: "flex-end",
-          }}
-        >
+      <div className="card filters-card">
+        <div className="filters-grid">
           <div className="form-group">
             <label className="form-label">Lọc theo tên</label>
             <input
@@ -214,7 +207,7 @@ export default function InternshipProgramList() {
             />
           </div>
           <div className="form-group">
-            <button className="btn clear-filters-btn" onClick={clearFilters}>
+            <button className="btn btn-clear" onClick={clearFilters}>
               Xóa bộ lọc
             </button>
           </div>
@@ -263,23 +256,23 @@ export default function InternshipProgramList() {
                     <td className="table-td">
                       <div className="action-buttons">
                         <button
-                          className="program-btn-info btn"
+                          className="btn-info btn btn-sm"
                           onClick={() =>
                             navigate(`/hr/departments/${program.id}`)
                           }
                           title="Xem chi tiết phòng ban"
                         >
-                          Chi tiết P.Ban
+                          Chi tiết
                         </button>
                         <button
-                          className="program-btn-warning btn"
+                          className="btn-warning btn btn-sm"
                           onClick={() => setEditing(program)}
                           title="Chỉnh sửa chương trình"
                         >
                           Sửa
                         </button>
                         <button
-                          className="program-btn-danger  btn"
+                          className="btn-danger  btn btn-sm"
                           onClick={() => handleDeleteProgram(program.id)}
                           title="Xóa chương trình"
                         >

@@ -246,6 +246,7 @@
 /* ======================== */
 .sidebar-nav-btn.active,
 .sidebar-submenu-btn.active {
+  background-color: #6daff4d1;
   color: #ac158bd1;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(43, 124, 255, 0.25);
