@@ -1,9 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { getAllContracts } from "../../services/documentService";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import "./ContractList.css";
 
 export default function AllContracts() {
@@ -19,7 +17,15 @@ export default function AllContracts() {
       setLoading(true);
       const res = await getAllContracts();
       console.log("📄 Danh sách hợp đồng:", res);
-      setContracts(res || []);
+
+      // Sắp xếp theo thời gian mới nhất trước
+      const sorted = (res || []).sort((a, b) => {
+        const dateA = new Date(a.uploaded_at || 0);
+        const dateB = new Date(b.uploaded_at || 0);
+        return dateB - dateA; // Mới nhất trước
+      });
+
+      setContracts(sorted);
     } catch (e) {
       console.error("❌ Lỗi tải hợp đồng:", e);
       const msg = e?.response?.data || e.message || "Không thể tải hợp đồng.";
@@ -61,123 +67,123 @@ export default function AllContracts() {
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1 style={{ marginBottom: 12, fontWeight: "bold", fontSize: "28px" }}>
-        Tất cả hợp đồng
-      </h1>
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">Tất cả hợp đồng</h1>
+      </div>
 
-      <div style={{ border: "1px solid #ccc", borderRadius: 8, padding: 16 }}>
-        {loading && <div>Đang tải dữ liệu…</div>}
+      <div className="card">
+        {loading && <div className="loading center">Đang tải dữ liệu…</div>}
 
         {!loading && contracts.length === 0 && (
-          <div>⚠️ Không có hợp đồng nào.</div>
+          <div className="empty center">⚠️ Không có hợp đồng nào.</div>
         )}
 
         {!loading && contracts.length > 0 && (
           <>
-            <table
-              border="1"
-              cellPadding="8"
-              cellSpacing="0"
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                textAlign: "left",
-              }}
-            >
-              <thead>
-                <tr style={{ background: "#f0f0f0" }}>
-                  <th>Tên Intern</th>
-                  <th>Tên HR</th>
-                  <th>Tên file</th>
-                  <th>Chi tiết file</th>
-                  <th>Trạng thái</th>
-                  <th>Ngày Upload</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((c, idx) => {
-                  const fileUrl =
-                    c.file_url && c.file_url !== "-" ? c.file_url : null;
-                  const fileName =
-                    c.file_name && c.file_name !== "-"
-                      ? decodeURIComponent(c.file_name)
-                      : "-";
+            <div className="table-responsive">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className="table-th">Tên Intern</th>
+                    <th className="table-th">Tên HR</th>
+                    <th className="table-th">Tên file</th>
+                    <th className="table-th">Chi tiết file</th>
+                    <th className="table-th">Trạng thái</th>
+                    <th className="table-th">Ngày Upload</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.map((c, idx) => {
+                    const fileUrl =
+                      c.file_url && c.file_url !== "-" ? c.file_url : null;
+                    const fileName =
+                      c.file_name && c.file_name !== "-"
+                        ? decodeURIComponent(c.file_name)
+                        : "-";
 
-                  return (
-                    <tr key={`${c.intern_name}-${c.uploaded_at}-${idx}`}>
-                      <td>{c.intern_name || "N/A"}</td>
-                      <td>{c.hr_name || "N/A"}</td>
-                      <td>{fileName}</td>
-                      <td>
-                        {fileUrl ? (
-                          <a
-                            href={fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {fileName}
-                          </a>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td>{c.status || "-"}</td>
-                      <td>
-                        {c.uploaded_at
-                          ? new Date(c.uploaded_at).toLocaleString()
-                          : ""}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    return (
+                      <tr key={`${c.intern_name}-${c.uploaded_at}-${idx}`}>
+                        <td className="table-td">{c.intern_name || "N/A"}</td>
+                        <td className="table-td">{c.hr_name || "N/A"}</td>
+                        <td className="table-td">{fileName}</td>
+                        <td className="table-td">
+                          {fileUrl ? (
+                            <a
+                              href={fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: "var(--primary)",
+                                textDecoration: "underline",
+                              }}
+                            >
+                              {fileName}
+                            </a>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td className="table-td">{c.status || "-"}</td>
+                        <td className="table-td">
+                          {c.uploaded_at
+                            ? new Date(c.uploaded_at).toLocaleString("vi-VN")
+                            : ""}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
             {/* Pagination */}
-            <div className="pagination">
-              <div className="pagination-info">
-                Hiển thị {totalItems === 0 ? 0 : startIndex + 1}–
-                {Math.min(startIndex + pageSize, totalItems)} trên {totalItems}
-              </div>
-              <div className="pagination-controls">
-                <button
-                  className="btn btn-sm"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                >
-                  ‹ Trước
-                </button>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {totalItems === 0 ? 0 : startIndex + 1}–
+                  {Math.min(startIndex + pageSize, totalItems)} trên{" "}
+                  {totalItems}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    ‹ Trước
+                  </button>
 
-                {getPageNumbers().map((p, idx) =>
-                  p === "..." ? (
-                    <span key={`dots-${idx}`} className="page-dots">
-                      …
-                    </span>
-                  ) : (
-                    <button
-                      key={p}
-                      className={`btn btn-sm page-btn ${
-                        p === currentPage ? "active" : ""
-                      }`}
-                      onClick={() => setCurrentPage(p)}
-                    >
-                      {p}
-                    </button>
-                  )
-                )}
+                  {getPageNumbers().map((p, idx) =>
+                    p === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`btn btn-sm page-btn ${
+                          p === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
 
-                <button
-                  className="btn btn-sm"
-                  disabled={currentPage === totalPages}
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                >
-                  Sau ›
-                </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                  >
+                    Sau ›
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </div>

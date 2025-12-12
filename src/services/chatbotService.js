@@ -1,6 +1,6 @@
 import { useAuthStore } from "../store/authStore";
 
-const API_URL = "http://codeft.duckdns.org:8000/chat";
+const API_URL = "http://localhost:8000/chat";
 
 export async function sendChatMessage(question, conversationId) {
   const { user } = useAuthStore.getState();
