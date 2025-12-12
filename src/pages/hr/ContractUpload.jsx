@@ -4,6 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 import InternSelectionModal from "../../components/common/InternSelectionModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 import "../../styles/variables.css";
 import "../../styles/forms.css";
 import "./ContractUpload.css";
@@ -65,11 +66,17 @@ export default function ContractUpload() {
 
       if (!hrId || hrId === "undefined" || hrId === undefined) {
         toast.error("Không tìm thấy thông tin HR. Vui lòng đăng nhập lại!");
+
+        setUploading(false);
+
         return;
       }
 
       if (!internId || internId === "undefined" || internId === undefined) {
         toast.error("Không tìm thấy ID thực tập sinh!");
+
+        setUploading(false);
+
         return;
       }
 

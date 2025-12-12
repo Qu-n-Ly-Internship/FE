@@ -17,7 +17,15 @@ export default function AllContracts() {
       setLoading(true);
       const res = await getAllContracts();
       console.log("📄 Danh sách hợp đồng:", res);
-      setContracts(res || []);
+
+      // Sắp xếp theo thời gian mới nhất trước
+      const sorted = (res || []).sort((a, b) => {
+        const dateA = new Date(a.uploaded_at || 0);
+        const dateB = new Date(b.uploaded_at || 0);
+        return dateB - dateA; // Mới nhất trước
+      });
+
+      setContracts(sorted);
     } catch (e) {
       console.error("❌ Lỗi tải hợp đồng:", e);
       const msg = e?.response?.data || e.message || "Không thể tải hợp đồng.";
@@ -73,59 +81,61 @@ export default function AllContracts() {
 
         {!loading && contracts.length > 0 && (
           <>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th className="table-th">Tên Intern</th>
-                  <th className="table-th">Tên HR</th>
-                  <th className="table-th">Tên file</th>
-                  <th className="table-th">Chi tiết file</th>
-                  <th className="table-th">Trạng thái</th>
-                  <th className="table-th">Ngày Upload</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((c, idx) => {
-                  const fileUrl =
-                    c.file_url && c.file_url !== "-" ? c.file_url : null;
-                  const fileName =
-                    c.file_name && c.file_name !== "-"
-                      ? decodeURIComponent(c.file_name)
-                      : "-";
+            <div className="table-responsive">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className="table-th">Tên Intern</th>
+                    <th className="table-th">Tên HR</th>
+                    <th className="table-th">Tên file</th>
+                    <th className="table-th">Chi tiết file</th>
+                    <th className="table-th">Trạng thái</th>
+                    <th className="table-th">Ngày Upload</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.map((c, idx) => {
+                    const fileUrl =
+                      c.file_url && c.file_url !== "-" ? c.file_url : null;
+                    const fileName =
+                      c.file_name && c.file_name !== "-"
+                        ? decodeURIComponent(c.file_name)
+                        : "-";
 
-                  return (
-                    <tr key={`${c.intern_name}-${c.uploaded_at}-${idx}`}>
-                      <td className="table-td">{c.intern_name || "N/A"}</td>
-                      <td className="table-td">{c.hr_name || "N/A"}</td>
-                      <td className="table-td">{fileName}</td>
-                      <td className="table-td">
-                        {fileUrl ? (
-                          <a
-                            href={fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              color: "var(--primary)",
-                              textDecoration: "underline",
-                            }}
-                          >
-                            {fileName}
-                          </a>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td className="table-td">{c.status || "-"}</td>
-                      <td className="table-td">
-                        {c.uploaded_at
-                          ? new Date(c.uploaded_at).toLocaleString("vi-VN")
-                          : ""}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    return (
+                      <tr key={`${c.intern_name}-${c.uploaded_at}-${idx}`}>
+                        <td className="table-td">{c.intern_name || "N/A"}</td>
+                        <td className="table-td">{c.hr_name || "N/A"}</td>
+                        <td className="table-td">{fileName}</td>
+                        <td className="table-td">
+                          {fileUrl ? (
+                            <a
+                              href={fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: "var(--primary)",
+                                textDecoration: "underline",
+                              }}
+                            >
+                              {fileName}
+                            </a>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td className="table-td">{c.status || "-"}</td>
+                        <td className="table-td">
+                          {c.uploaded_at
+                            ? new Date(c.uploaded_at).toLocaleString("vi-VN")
+                            : ""}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
