@@ -21,7 +21,7 @@ export default function InternSelectionModal({ onClose, onSelect }) {
         const response = await getInternships({
           q: searchQuery,
           size: 100,
-          status: 'active' // ✅ Chỉ lấy intern đang active
+          status: "active", // ✅ Chỉ lấy intern đang active
         });
 
         // ✅ Handle response format mới từ backend
@@ -30,12 +30,15 @@ export default function InternSelectionModal({ onClose, onSelect }) {
 
         // ✅ Hiển thị thông báo nếu không có intern
         if (internData.length === 0 && !searchQuery) {
-          setError("Bạn chưa quản lý program nào hoặc chưa có thực tập sinh trong các program của bạn");
+          setError(
+            "Bạn chưa quản lý program nào hoặc chưa có thực tập sinh trong các program của bạn"
+          );
         }
-
       } catch (error) {
         console.error("Failed to fetch interns:", error);
-        const errorMsg = error.response?.data?.message || "Không thể tải danh sách thực tập sinh.";
+        const errorMsg =
+          error.response?.data?.message ||
+          "Không thể tải danh sách thực tập sinh.";
         setError(errorMsg);
         toast.error(errorMsg);
         setInterns([]);
