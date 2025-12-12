@@ -301,7 +301,7 @@ export default function ReviewSupportRequests() {
         ) : (
           <>
             <div className="table-wrapper">
-              <table className="table request-table">
+              <table className="table ">
                 <thead>
                   <tr>
                     <th className="table-th">STT</th>
@@ -401,7 +401,7 @@ export default function ReviewSupportRequests() {
                 </div>
                 <div className="pagination-controls">
                   <button
-                    className="btn btn-sm"
+                    className="btn btn-secondary  btn-sm"
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 0}
                   >
@@ -411,7 +411,7 @@ export default function ReviewSupportRequests() {
                     Trang {currentPage + 1} / {totalPages}
                   </span>
                   <button
-                    className="btn btn-sm"
+                    className="btn btn-secondary  btn-sm"
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage >= totalPages - 1}
                   >

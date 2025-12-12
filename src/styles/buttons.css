@@ -1,5 +1,5 @@
 /* src/styles/buttons.css - Standardized Button Styles */
-
+@import "./variables.css";
 /* Base Button */
 .btn {
   border: none;
@@ -229,6 +229,11 @@
 .action-buttons .btn {
   min-width: 80px;
   white-space: nowrap;
+}
+
+/*Action Buttons Centered*/
+.action-buttons.center {
+  justify-content: center;
 }
 
 /* Full Width Button */

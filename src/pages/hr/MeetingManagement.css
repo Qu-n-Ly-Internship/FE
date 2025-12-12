@@ -178,11 +178,12 @@
 /* Pagination specific styles */
 .page-dots {
   padding: 0 var(--spacing-sm);
-  color: var(--text-muted);
+  color: white;
 }
 
 .page-btn {
   min-width: 36px;
+  background-color: gray;
 }
 
 .page-btn.active {

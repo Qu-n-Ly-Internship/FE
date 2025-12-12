@@ -541,10 +541,11 @@
 
 .chatbot-message-input:focus-visible {
   outline: none;
-/* Markdown styling */
-.markdown-body {
-  font-size: 14px;
-  line-height: 1.6;
+  /* Markdown styling */
+  .markdown-body {
+    font-size: 14px;
+    line-height: 1.6;
+  }
 }
 
 .markdown-body p {

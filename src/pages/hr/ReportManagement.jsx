@@ -322,50 +322,49 @@ export default function ReportManagement() {
       </div>
 
       {/* Statistics */}
-      {selectedIntern && (
-        <div className="stats-row">
-          <div className="stat-card">
-            <div className="stat-icon stat-total">
-              <Users />
-            </div>
-            <div className="stat-info">
-              <div className="stat-value">{stats.totalInterns}</div>
-              <div className="stat-label">Tổng TTS</div>
-            </div>
+
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">
+            <Users />
           </div>
-          <div className="stat-card">
-            <div className="stat-icon stat-approved-icon">
-              <ClipboardList />
-            </div>
-            <div className="stat-info">
-              <div className="stat-value stat-approved-value">
-                {stats.totalEvaluations}
-              </div>
-              <div className="stat-label">Đánh giá định kỳ</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon stat-pending-icon">
-              <FileText />
-            </div>
-            <div className="stat-info">
-              <div className="stat-value stat-pending-value">
-                {stats.totalReports}
-              </div>
-              <div className="stat-label">Báo cáo cuối kỳ</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon stat-total">
-              <TrendingUp />
-            </div>
-            <div className="stat-info">
-              <div className="stat-value">{stats.avgScore}</div>
-              <div className="stat-label">Điểm trung bình</div>
-            </div>
+          <div className="stat-info">
+            <div className="stat-value">{stats.totalInterns}</div>
+            <div className="stat-label">Tổng TTS</div>
           </div>
         </div>
-      )}
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">
+            <ClipboardList />
+          </div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {stats.totalEvaluations}
+            </div>
+            <div className="stat-label">Đánh giá định kỳ</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">
+            <FileText />
+          </div>
+          <div className="stat-info">
+            <div className="stat-value stat-pending-value">
+              {stats.totalReports}
+            </div>
+            <div className="stat-label">Báo cáo cuối kỳ</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-total">
+            <TrendingUp />
+          </div>
+          <div className="stat-info">
+            <div className="stat-value">{stats.avgScore}</div>
+            <div className="stat-label">Điểm trung bình</div>
+          </div>
+        </div>
+      </div>
 
       {/* Filters */}
       <div className="card filters-card">

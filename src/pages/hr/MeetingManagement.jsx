@@ -29,6 +29,17 @@ const getStatusBadge = (status) => {
   return <span className={`badge ${info.class}`}>{info.label}</span>;
 };
 
+const getStatusBadge = (status) => {
+  const statusMap = {
+    SCHEDULED: { label: "Đã lên lịch", class: "badge-primary" },
+    COMPLETED: { label: "Đã hoàn thành", class: "badge-success" },
+    CANCELLED: { label: "Đã hủy", class: "badge-danger" },
+    "Đã tạo lịch": { label: "Đã tạo lịch", class: "badge-primary" },
+  };
+  const info = statusMap[status] || { label: status, class: "" };
+  return <span className={`badge ${info.class}`}>{info.label}</span>;
+};
+
 export default function MeetingManagement() {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -273,7 +284,7 @@ export default function MeetingManagement() {
           </div>
           <div className="pagination-controls">
             <button
-              className="btn btn-sm"
+              className="btn btn-secondary btn-sm"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             >
@@ -299,7 +310,7 @@ export default function MeetingManagement() {
             )}
 
             <button
-              className="btn btn-sm"
+              className="btn btn-secondary btn-sm"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             >
@@ -517,7 +528,7 @@ function CreateMeetingModal({ onClose, onCreate }) {
             <label htmlFor="description">Mô tả cuộc họp</label>
             <textarea
               id="description"
-              className="form-input"
+              className="form-textarea"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Nội dung, chương trình cuộc họp..."
@@ -581,7 +592,7 @@ function EditMeetingModal({ meeting, onClose, onUpdate }) {
       location: location.trim(),
     });
   };
-
+  
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div

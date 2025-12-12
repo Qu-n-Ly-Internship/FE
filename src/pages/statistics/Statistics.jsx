@@ -34,7 +34,7 @@ export default function Statistics() {
   const { user } = useAuthStore();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState("completion"); // completion | candidates
+  const [activeTab, setActiveTab] = useState("completion");
 
   // States cho dữ liệu thống kê hoàn thành
   const [completionStats, setCompletionStats] = useState(null);
@@ -195,9 +195,9 @@ export default function Statistics() {
 
   return (
     <div className="statistics-container">
-      {/* Header */}
-      <div className="statistics-header">
-        <h1>📊 Thống kê chương trình thực tập</h1>
+      {/* Header - Using page-header pattern */}
+      <div className="statistics-header page-header">
+        <h1 className="page-title">📊 Thống kê chương trình thực tập</h1>
       </div>
 
       {/* Tabs */}
@@ -217,7 +217,7 @@ export default function Statistics() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "50px" }}>
+        <div className="loading center">
           <h2>⏳ Đang tải dữ liệu thống kê...</h2>
         </div>
       ) : (
@@ -225,13 +225,14 @@ export default function Statistics() {
           {/* TAB 1: TỶ LỆ HOÀN THÀNH */}
           {activeTab === "completion" && (
             <>
-              {/* Bộ lọc */}
-              <div className="filters-section">
+              {/* Bộ lọc - Using filters-card pattern */}
+              <div className="filters-section filter-card">
                 <h2>🔍 Bộ lọc</h2>
                 <div className="filters-grid">
-                  <div className="filter-item">
-                    <label>Chương trình thực tập</label>
+                  <div className="form-group">
+                    <label className="form-label">Chương trình thực tập</label>
                     <select
+                      className="form-select"
                       name="programId"
                       value={filters.programId}
                       onChange={handleFilterChange}
@@ -244,9 +245,10 @@ export default function Statistics() {
                       ))}
                     </select>
                   </div>
-                  <div className="filter-item">
-                    <label>Mentor</label>
+                  <div className="form-group">
+                    <label className="form-label">Mentor</label>
                     <select
+                      className="form-select"
                       name="mentorId"
                       value={filters.mentorId}
                       onChange={handleFilterChange}
@@ -259,9 +261,10 @@ export default function Statistics() {
                       ))}
                     </select>
                   </div>
-                  <div className="filter-item">
-                    <label>Chuyên ngành</label>
+                  <div className="form-group">
+                    <label className="form-label">Chuyên ngành</label>
                     <select
+                      className="form-select"
                       name="major"
                       value={filters.major}
                       onChange={handleFilterChange}
@@ -274,19 +277,22 @@ export default function Statistics() {
                       ))}
                     </select>
                   </div>
-                  <div className="filter-item">
-                    <button className="btn-reset" onClick={handleResetFilters}>
+                  <div className="form-group">
+                    <button
+                      className="btn btn-clear btn-md"
+                      onClick={handleResetFilters}
+                    >
                       🔄 Đặt lại
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Tổng quan */}
-              <div className="overview-section">
+              {/* Tổng quan - Using stats-row pattern */}
+              <div className="overview-section stats-row">
                 <div className="stat-card card-blue">
                   <div className="stat-icon">👥</div>
-                  <div className="stat-content">
+                  <div className="stat-info">
                     <div className="stat-value">
                       {completionStats?.total || 0}
                     </div>
@@ -294,18 +300,18 @@ export default function Statistics() {
                   </div>
                 </div>
                 <div className="stat-card card-green">
-                  <div className="stat-icon">✅</div>
-                  <div className="stat-content">
-                    <div className="stat-value">
+                  <div className="stat-icon stat-approved-icon">✅</div>
+                  <div className="stat-info">
+                    <div className="stat-value stat-approved-value">
                       {completionStats?.completed || 0}
                     </div>
                     <div className="stat-label">TTS hoàn thành</div>
                   </div>
                 </div>
                 <div className="stat-card card-orange">
-                  <div className="stat-icon">⏳</div>
-                  <div className="stat-content">
-                    <div className="stat-value">
+                  <div className="stat-icon stat-pending-icon">⏳</div>
+                  <div className="stat-info">
+                    <div className="stat-value stat-pending-value">
                       {completionStats?.notCompleted || 0}
                     </div>
                     <div className="stat-label">TTS chưa hoàn thành</div>
@@ -313,7 +319,7 @@ export default function Statistics() {
                 </div>
                 <div className="stat-card card-purple">
                   <div className="stat-icon">📈</div>
-                  <div className="stat-content">
+                  <div className="stat-info">
                     <div className="stat-value">{completionRate}%</div>
                     <div className="stat-label">Tỷ lệ hoàn thành</div>
                   </div>
@@ -401,12 +407,12 @@ export default function Statistics() {
                 </div>
               </div>
 
-              {/* Bảng chi tiết */}
+              {/* Bảng chi tiết - Using table-wrapper pattern */}
               <div className="details-section">
                 <h2>📋 Chi tiết theo chương trình</h2>
                 {programStats.length > 0 ? (
-                  <div className="table-container">
-                    <table className="stats-table">
+                  <div className="table-wrapper">
+                    <table className="stats-table table">
                       <thead>
                         <tr>
                           <th>Chương trình</th>
@@ -440,15 +446,10 @@ export default function Statistics() {
                     </table>
                   </div>
                 ) : (
-                  <p
-                    style={{
-                      textAlign: "center",
-                      padding: "20px",
-                      color: "#999",
-                    }}
-                  >
-                    Không có dữ liệu
-                  </p>
+                  <div className="empty">
+                    <div className="empty-icon">📊</div>
+                    <p className="empty-text">Không có dữ liệu</p>
+                  </div>
                 )}
               </div>
             </>
@@ -458,12 +459,13 @@ export default function Statistics() {
           {activeTab === "candidates" && (
             <>
               {/* Bộ lọc */}
-              <div className="filters-section">
+              <div className="filters-section filter-card">
                 <h2>🔍 Bộ lọc</h2>
                 <div className="filters-grid">
-                  <div className="filter-item">
-                    <label>Chương trình thực tập</label>
+                  <div className="form-group">
+                    <label className="form-label">Chương trình thực tập</label>
                     <select
+                      className="form-select"
                       name="programId"
                       value={candidateFilters.programId}
                       onChange={handleCandidateFilterChange}
@@ -476,26 +478,31 @@ export default function Statistics() {
                       ))}
                     </select>
                   </div>
-                  <div className="filter-item">
-                    <label>Từ ngày</label>
+                  <div className="form-group">
+                    <label className="form-label">Từ ngày</label>
                     <input
+                      className="form-input"
                       type="date"
                       name="startDate"
                       value={candidateFilters.startDate}
                       onChange={handleCandidateFilterChange}
                     />
                   </div>
-                  <div className="filter-item">
-                    <label>Đến ngày</label>
+                  <div className="form-group">
+                    <label className="form-label">Đến ngày</label>
                     <input
+                      className="form-input"
                       type="date"
                       name="endDate"
                       value={candidateFilters.endDate}
                       onChange={handleCandidateFilterChange}
                     />
                   </div>
-                  <div className="filter-item">
-                    <button className="btn-reset" onClick={handleResetFilters}>
+                  <div className="form-group">
+                    <button
+                      className="btn btn-clear btn-md"
+                      onClick={handleResetFilters}
+                    >
                       🔄 Đặt lại
                     </button>
                   </div>
@@ -575,8 +582,8 @@ export default function Statistics() {
               <div className="details-section">
                 <h2>📋 Top 10 trường đại học</h2>
                 {schoolStats.length > 0 ? (
-                  <div className="table-container">
-                    <table className="stats-table">
+                  <div className="table-wrapper">
+                    <table className="stats-table table">
                       <thead>
                         <tr>
                           <th>#</th>
@@ -598,15 +605,10 @@ export default function Statistics() {
                     </table>
                   </div>
                 ) : (
-                  <p
-                    style={{
-                      textAlign: "center",
-                      padding: "20px",
-                      color: "#999",
-                    }}
-                  >
-                    Không có dữ liệu
-                  </p>
+                  <div className="empty">
+                    <div className="empty-icon">🎓</div>
+                    <p className="empty-text">Không có dữ liệu</p>
+                  </div>
                 )}
               </div>
             </>
