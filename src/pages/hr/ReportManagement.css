@@ -27,6 +27,21 @@
   margin-bottom: var(--spacing-2xl);
 }
 
+.program-select {
+  width: 300px;
+  height: 32px;
+  padding: 8px 11px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  font-size: var(--font-size-md);
+  background: var(--bg-input);
+  transition: all var(--transition-fast);
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
 .section-title {
   font-size: 24px;
   font-weight: 700;

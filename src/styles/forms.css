@@ -81,6 +81,11 @@
   box-shadow: 0 0 0 3px rgba(43, 124, 255, 0.1);
 }
 
+.form-field {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Date Range Picker */
 .form-date-range {
   width: 100%;

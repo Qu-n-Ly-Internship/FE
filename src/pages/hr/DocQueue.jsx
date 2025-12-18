@@ -100,7 +100,7 @@ export default function DocQueue() {
               <th className="table-th">Tên file</th>
               <th className="table-th">Ngày nộp</th>
               <th className="table-th">Trạng thái</th>
-              <th className="table-th" style={{ width: 200 }}>
+              <th className="table-th center" style={{ width: 200 }}>
                 Thao tác
               </th>
             </tr>
@@ -147,7 +147,7 @@ export default function DocQueue() {
                   <td className="table-td">
                     <StatusBadge status={d.status} />
                   </td>
-                  <td className="table-td">
+                  <td className="table-td center">
                     <div style={{ display: "flex", gap: 8 }}>
                       <button
                         onClick={() => handleReview(d, "APPROVE")}

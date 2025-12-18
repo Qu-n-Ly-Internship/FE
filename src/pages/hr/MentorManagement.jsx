@@ -603,7 +603,7 @@ export default function HRProjectManagement() {
                   )}
 
                   <button
-                    className={`btn-add-intern ${
+                    className={`btn-add-intern btn-md${
                       status.isFull ? "disabled" : ""
                     }`}
                     onClick={() => handleAddIntern(project)}

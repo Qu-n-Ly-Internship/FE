@@ -170,6 +170,20 @@
   height: 20px;
 }
 
+.maximize-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.2s;
+}
+
 /* Messages area */
 .chatbot-messages {
   flex: 1;

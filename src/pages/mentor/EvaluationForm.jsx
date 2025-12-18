@@ -16,6 +16,7 @@ import {
   Calendar,
   MessageSquare,
   ClipboardList,
+  ArrowLeft,
 } from "lucide-react";
 
 import "./EvaluationForm.css";
@@ -43,6 +44,7 @@ export default function MentorReviewInterns() {
 
   const [selectedIntern, setSelectedIntern] = useState(null);
   const [copiedInternId, setCopiedInternId] = useState(null);
+  const [showInternList, setShowInternList] = useState(true);
 
   // Form states
   const [showForm, setShowForm] = useState(false);
@@ -166,16 +168,27 @@ export default function MentorReviewInterns() {
     setSelectedDepartmentId("");
     setSelectedIntern(null);
     setEvaluations([]);
+    setShowInternList(true);
   };
 
   const handleDepartmentChange = (e) => {
     setSelectedDepartmentId(e.target.value);
     setSelectedIntern(null);
     setEvaluations([]);
+    setShowInternList(true);
   };
 
   const handleSelectIntern = (intern) => {
     setSelectedIntern(intern);
+    setShowForm(false);
+    setEditingEvaluation(null);
+    setShowInternList(false);
+  };
+
+  const handleBackToList = () => {
+    setShowInternList(true);
+    setSelectedIntern(null);
+    setEvaluations([]);
     setShowForm(false);
     setEditingEvaluation(null);
   };
@@ -381,8 +394,8 @@ export default function MentorReviewInterns() {
         </div>
       </div>
 
-      {/* Interns Grid */}
-      {!loading && selectedProgramId && (
+      {/* Interns Grid - CHỈ HIỆN KHI showInternList = true */}
+      {!loading && selectedProgramId && showInternList && (
         <div className="card">
           <div className="section-header">
             <h2 className="section-title">
@@ -403,17 +416,9 @@ export default function MentorReviewInterns() {
               {interns.map((intern) => (
                 <div
                   key={`${intern.id}-${intern.projectId}`}
-                  className={`intern-card ${
-                    selectedIntern?.id === intern.id ? "selected" : ""
-                  }`}
+                  className="intern-card"
                   onClick={() => handleSelectIntern(intern)}
                 >
-                  {selectedIntern?.id === intern.id && (
-                    <div className="selected-badge">
-                      <Check />
-                    </div>
-                  )}
-
                   <div className="intern-header">
                     <div>
                       <h3 className="intern-name">{intern.fullName}</h3>
@@ -462,8 +467,8 @@ export default function MentorReviewInterns() {
         </div>
       )}
 
-      {/* Evaluation Section */}
-      {selectedIntern && (
+      {/* Evaluation Section - CHỈ HIỆN KHI ĐÃ CHỌN INTERN VÀ showInternList = false */}
+      {selectedIntern && !showInternList && (
         <div className="card">
           <div className="evaluation-header">
             <div className="evaluation-title-group">
@@ -476,12 +481,10 @@ export default function MentorReviewInterns() {
               </div>
             </div>
 
-            {!showForm && (
-              <button onClick={handleNewEvaluation} className="btn btn-primary">
-                <Plus />
-                Tạo đánh giá mới
-              </button>
-            )}
+            <button onClick={handleBackToList} className="btn btn-outline">
+              <ArrowLeft />
+              Quay lại danh sách
+            </button>
           </div>
 
           {/* Evaluation Form */}
@@ -629,10 +632,20 @@ export default function MentorReviewInterns() {
           {/* Evaluation History */}
           {!showForm && (
             <div>
-              <h3 className="history-title">
-                <Calendar />
-                Lịch sử đánh giá
-              </h3>
+              <div className="evaluation-header">
+                <h3 className="history-title">
+                  <Calendar />
+                  Lịch sử đánh giá
+                </h3>
+
+                <button
+                  onClick={handleNewEvaluation}
+                  className="btn btn-primary"
+                >
+                  <Plus />
+                  Tạo đánh giá mới
+                </button>
+              </div>
 
               {evaluations.length === 0 ? (
                 <div className="empty">
