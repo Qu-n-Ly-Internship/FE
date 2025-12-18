@@ -424,10 +424,12 @@ function CreateProgramModal({ onClose, onCreate }) {
           <div className="form-group">
             <label className="form-label">Mô tả</label>
             <textarea
-              className="form-input"
-              rows={3}
+              className="form-field"
+              rows={8}
+              style={{ width: "100%" }}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="Nhập mô tả..."
             />
           </div>
 
@@ -655,8 +657,9 @@ function EditProgramModal({ program, onClose, onSave }) {
           <div className="form-group">
             <label className="form-label">Mô tả</label>
             <textarea
-              className="form-input"
-              rows={3}
+              className="form-field"
+              rows={8}
+              style={{ width: "100%" }}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />

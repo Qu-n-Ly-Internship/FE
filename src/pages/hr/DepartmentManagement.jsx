@@ -226,25 +226,25 @@ export default function DepartmentManagement() {
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="dept-table">
+            <table className="table">
               <thead>
                 <tr>
-                  <th>STT</th>
-                  <th>Tên phòng ban</th>
-                  <th>Mentor</th>
-                  <th>Sức chứa</th>
-                  <th>Người tạo</th>
-                  <th>Hành động</th>
+                  <th className="table-th">STT</th>
+                  <th className="table-th">Tên phòng ban</th>
+                  <th className="table-th">Mentor</th>
+                  <th className="table-th center">Sức chứa</th>
+                  <th className="table-th">Người tạo</th>
+                  <th className="table-th">Hành động</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredDepartments.map((dept, index) => (
                   <tr key={dept.id}>
-                    <td>{index + 1}</td>
-                    <td>
+                    <td className="table-td ">{index + 1}</td>
+                    <td className="table-td ">
                       <strong>{dept.departmentName}</strong>
                     </td>
-                    <td>
+                    <td className="table-td ">
                       <div className="mentor-list">
                         {dept.mentors?.length > 0 ? (
                           dept.mentors.map((m) => (
@@ -287,9 +287,9 @@ export default function DepartmentManagement() {
                         </button>
                       </div>
                     </td>
-                    <td>{dept.capacity ?? "—"}</td>
-                    <td>{dept.hrName || "Không rõ"}</td>
-                    <td>
+                    <td className="table-td center ">{dept.capacity ?? "—"}</td>
+                    <td className="table-td ">{dept.hrName || "Không rõ"}</td>
+                    <td className="table-td center">
                       <div className="action-buttons">
                         <button
                           className="btn btn-warning btn-sm"

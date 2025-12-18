@@ -387,18 +387,14 @@ function CreateAllowanceModal({ onClose, onCreate }) {
       </div>
 
       {showInternModal && (
-        <div className="intern-selection-modal-overlay">
-          <div className="intern-selection-modal">
-            <InternSelectionModal
-              onClose={() => setShowInternModal(false)}
-              onSelect={(intern) => {
-                console.log("Selected intern:", intern);
-                setSelectedIntern(intern);
-                setShowInternModal(false);
-              }}
-            />
-          </div>
-        </div>
+        <InternSelectionModal
+          onClose={() => setShowInternModal(false)}
+          onSelect={(intern) => {
+            console.log("Selected intern:", intern);
+            setSelectedIntern(intern);
+            setShowInternModal(false);
+          }}
+        />
       )}
     </div>
   );

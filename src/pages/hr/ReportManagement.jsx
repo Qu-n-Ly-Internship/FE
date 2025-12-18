@@ -17,6 +17,7 @@ import {
   FileText,
   TrendingUp,
   ClipboardList,
+  ArrowLeft,
 } from "lucide-react";
 
 import "./ReportManagement.css";
@@ -46,6 +47,7 @@ export default function ReportManagement() {
 
   const [selectedIntern, setSelectedIntern] = useState(null);
   const [copiedInternId, setCopiedInternId] = useState(null);
+  const [showInternList, setShowInternList] = useState(true);
 
   // Form states
   const [showForm, setShowForm] = useState(false);
@@ -183,6 +185,7 @@ export default function ReportManagement() {
     setSelectedIntern(null);
     setEvaluations([]);
     setReports([]);
+    setShowInternList(true);
   };
 
   const handleDepartmentChange = (e) => {
@@ -190,10 +193,21 @@ export default function ReportManagement() {
     setSelectedIntern(null);
     setEvaluations([]);
     setReports([]);
+    setShowInternList(true);
   };
 
   const handleSelectIntern = (intern) => {
     setSelectedIntern(intern);
+    setShowForm(false);
+    setEditingReport(null);
+    setShowInternList(false);
+  };
+
+  const handleBackToList = () => {
+    setShowInternList(true);
+    setSelectedIntern(null);
+    setEvaluations([]);
+    setReports([]);
     setShowForm(false);
     setEditingReport(null);
   };
@@ -376,8 +390,7 @@ export default function ReportManagement() {
             <select
               value={selectedProgramId}
               onChange={handleProgramChange}
-              className="form-select"
-              disabled={loading}
+              className="program-select"
             >
               {programs.map((program) => (
                 <option key={program.id} value={program.id}>
@@ -392,6 +405,7 @@ export default function ReportManagement() {
             <select
               value={selectedDepartmentId}
               onChange={handleDepartmentChange}
+              style={{ width: "150px" }}
               className="form-select"
               disabled={loading || !selectedProgramId}
             >
@@ -406,8 +420,8 @@ export default function ReportManagement() {
         </div>
       </div>
 
-      {/* Interns Grid */}
-      {!loading && selectedProgramId && (
+      {/* Interns Grid - CHỈ HIỆN KHI showInternList = true */}
+      {!loading && selectedProgramId && showInternList && (
         <div className="card">
           <div className="section-header">
             <h2 className="section-title">
@@ -428,17 +442,9 @@ export default function ReportManagement() {
               {interns.map((intern) => (
                 <div
                   key={`${intern.id}-${intern.projectId}`}
-                  className={`intern-card ${
-                    selectedIntern?.id === intern.id ? "selected" : ""
-                  }`}
+                  className="intern-card"
                   onClick={() => handleSelectIntern(intern)}
                 >
-                  {selectedIntern?.id === intern.id && (
-                    <div className="selected-badge">
-                      <Check />
-                    </div>
-                  )}
-
                   <div className="intern-header">
                     <div>
                       <h3 className="intern-name">{intern.fullName}</h3>
@@ -487,8 +493,8 @@ export default function ReportManagement() {
         </div>
       )}
 
-      {/* Report Section */}
-      {selectedIntern && (
+      {/* Report Section - CHỈ HIỆN KHI ĐÃ CHỌN INTERN VÀ showInternList = false */}
+      {selectedIntern && !showInternList && (
         <div className="card">
           <div className="evaluation-header">
             <div className="evaluation-title-group">
@@ -500,6 +506,10 @@ export default function ReportManagement() {
                 <p>Đánh giá và báo cáo tổng kết</p>
               </div>
             </div>
+            <button onClick={handleBackToList} className="btn btn-outline">
+              <ArrowLeft />
+              Quay lại danh sách
+            </button>
           </div>
 
           {/* Evaluations */}
