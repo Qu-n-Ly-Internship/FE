@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./MeetingManagement.css";
+
 import {
   getMeetings,
   createMeeting,
@@ -12,10 +13,21 @@ import {
 } from "../../services/meetingService";
 import apiClient from "../../services/apiClient";
 
-function formatDateTime(dateTimeString) {
+const formatDateTime = (dateTimeString) => {
   if (!dateTimeString) return "";
   return dayjs(dateTimeString).format("DD/MM/YYYY HH:mm");
-}
+};
+
+const getStatusBadge = (status) => {
+  const statusMap = {
+    SCHEDULED: { label: "Đã lên lịch", class: "badge-primary" },
+    COMPLETED: { label: "Đã hoàn thành", class: "badge-success" },
+    CANCELLED: { label: "Đã hủy", class: "badge-danger" },
+    "Đã tạo lịch": { label: "Đã tạo lịch", class: "badge-primary" },
+  };
+  const info = statusMap[status] || { label: status, class: "" };
+  return <span className={`badge ${info.class}`}>{info.label}</span>;
+};
 
 const getStatusBadge = (status) => {
   const statusMap = {
@@ -143,15 +155,23 @@ export default function MeetingManagement() {
         </button>
       </div>
 
-      <div className="card filters-card">
-        <div className="filters-grid">
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div
+          className="form-row"
+          style={{
+            padding: 16,
+            gap: 16,
+            alignItems: "flex-end",
+            flexWrap: "wrap",
+          }}
+        >
           <div className="form-group">
             <label htmlFor="searchFilter" className="form-label">
               Tìm kiếm
             </label>
             <input
               className="form-input"
-              placeholder="Tìm theo tiêu đề hoặc địa điểm"
+              placeholder="Tìm theo tiêu đề, địa điểm, chương trình"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
@@ -164,9 +184,9 @@ export default function MeetingManagement() {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="">Tất cả</option>
-              <option value="scheduled">Đã lên lịch</option>
-              <option value="completed">Đã hoàn thành</option>
-              <option value="cancelled">Đã hủy</option>
+              <option value="SCHEDULED">Đã lên lịch</option>
+              <option value="COMPLETED">Đã hoàn thành</option>
+              <option value="CANCELLED">Đã hủy</option>
             </select>
           </div>
           <div className="form-group">
@@ -184,15 +204,18 @@ export default function MeetingManagement() {
         </div>
       </div>
 
+      {/* Table */}
       <div className="card">
         <table className="table">
           <thead>
             <tr>
               <th className="table-th">STT</th>
               <th className="table-th">Tiêu đề</th>
-              <th className="table-th">Thời gian</th>
+              <th className="table-th">Chương trình</th>
+              <th className="table-th">Thời gian bắt đầu</th>
+              <th className="table-th">Thời gian kết thúc</th>
               <th className="table-th">Địa điểm</th>
-              <th className="table-th">Số người tham gia</th>
+              <th className="table-th">Số TTS</th>
               <th className="table-th">Trạng thái</th>
               <th className="table-th">Thao tác</th>
             </tr>
@@ -200,26 +223,30 @@ export default function MeetingManagement() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="7" className="table-td center">
+                <td colSpan="9" className="table-td center">
                   Đang tải...
                 </td>
               </tr>
             ) : pageItems.length === 0 ? (
               <tr>
-                <td colSpan="7" className="table-td center">
+                <td colSpan="9" className="table-td center">
                   Chưa có lịch họp nào.
                 </td>
               </tr>
             ) : (
               pageItems.map((meeting, index) => (
-                <tr key={meeting.meetingId}>
+                <tr key={meeting.id}>
                   <td className="table-td">{startIndex + index + 1}</td>
                   <td className="table-td">{meeting.title}</td>
+                  <td className="table-td">{meeting.programTitle || "-"}</td>
                   <td className="table-td">
-                    {formatDateTime(meeting.meetingTime)}
+                    {formatDateTime(meeting.startTime)}
+                  </td>
+                  <td className="table-td">
+                    {formatDateTime(meeting.endTime)}
                   </td>
                   <td className="table-td">{meeting.location || "-"}</td>
-                  <td className="table-td">{meeting.attendeeCount || 0}</td>
+                  <td className="table-td">{meeting.internCount || 0}</td>
                   <td className="table-td">{getStatusBadge(meeting.status)}</td>
                   <td className="table-td">
                     <button
@@ -237,8 +264,8 @@ export default function MeetingManagement() {
                       Sửa
                     </button>
                     <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDeleteMeeting(meeting.meetingId)}
+                      className="btn btn-danger btn-sm xoa"
+                      onClick={() => handleDeleteMeeting(meeting.id)}
                     >
                       Xóa
                     </button>
@@ -249,6 +276,7 @@ export default function MeetingManagement() {
           </tbody>
         </table>
 
+        {/* Pagination */}
         <div className="pagination">
           <div className="pagination-info">
             Hiển thị {totalItems === 0 ? 0 : startIndex + 1}–
@@ -292,6 +320,7 @@ export default function MeetingManagement() {
         </div>
       </div>
 
+      {/* Modals */}
       {showCreateModal && (
         <CreateMeetingModal
           onClose={() => setShowCreateModal(false)}
@@ -317,7 +346,7 @@ export default function MeetingManagement() {
   );
 }
 
-// Modal tạo lịch họp
+// ==================== CREATE MODAL ====================
 function CreateMeetingModal({ onClose, onCreate }) {
   const [title, setTitle] = useState("");
   const [startTime, setStartTime] = useState(null);
@@ -521,7 +550,7 @@ function CreateMeetingModal({ onClose, onCreate }) {
   );
 }
 
-// Modal chỉnh sửa lịch họp
+// ==================== EDIT MODAL ====================
 function EditMeetingModal({ meeting, onClose, onUpdate }) {
   const [title, setTitle] = useState(meeting.title || "");
   const [startTime, setStartTime] = useState(
@@ -563,6 +592,7 @@ function EditMeetingModal({ meeting, onClose, onUpdate }) {
       location: location.trim(),
     });
   };
+  
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -689,7 +719,7 @@ function EditMeetingModal({ meeting, onClose, onUpdate }) {
   );
 }
 
-// Modal xem chi tiết lịch họp
+// ==================== VIEW MODAL ====================
 function ViewMeetingModal({ meeting, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
