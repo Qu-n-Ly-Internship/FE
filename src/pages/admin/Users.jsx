@@ -161,15 +161,6 @@ export default function Users() {
 
   return (
     <div className="page-container admin-container">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        draggable
-        pauseOnHover
-        theme="light"
-      />
 
       <div className="page-header">
         <h1 className="page-title admin-title">Quản lý người dùng</h1>

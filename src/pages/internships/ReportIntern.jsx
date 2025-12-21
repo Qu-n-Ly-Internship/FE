@@ -80,7 +80,7 @@ export default function InternViewReports() {
 
   return (
     <div className="page-container">
-      <ToastContainer position="top-right" autoClose={3000} />
+
 
       {/* Header Section */}
       <div className="page-header">

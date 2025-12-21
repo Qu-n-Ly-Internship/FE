@@ -253,7 +253,7 @@ const TaskManagement = () => {
 
   return (
     <div className="page-container">
-      <ToastContainer position="top-right" autoClose={3000} />
+
 
       {/* Page Header */}
       <div className="page-header">

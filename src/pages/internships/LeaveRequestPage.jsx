@@ -209,7 +209,7 @@ export default function LeaveRequestPage() {
 
   return (
     <div className="page-container">
-      <ToastContainer position="top-right" autoClose={3000} />
+
 
       <div className="page-header">
         <h1 className="page-title">📋 Đăng ký nghỉ phép</h1>

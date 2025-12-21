@@ -223,15 +223,7 @@ export default function InternshipList() {
 
   return (
     <div className="page-container internship-list-container">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+
 
       <div className="page-header">
         <h1 className="page-title">Danh sách Thực tập</h1>

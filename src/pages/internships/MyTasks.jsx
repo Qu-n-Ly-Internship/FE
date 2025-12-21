@@ -172,15 +172,6 @@ export default function MyTasks() {
 
   return (
     <div className="page-container">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        draggable
-        pauseOnHover
-        theme="light"
-      />
 
       <div className="page-header">
         <h1 className="page-title mytasks-title">Công việc của tôi</h1>

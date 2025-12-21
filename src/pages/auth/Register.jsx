@@ -160,15 +160,6 @@ export default function Register() {
 
   return (
     <div className="auth-container">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        draggable
-        pauseOnHover
-        theme="light"
-      />
 
       <div className="auth-left">
         <img src={teamworkImage} alt="Teamwork" />
