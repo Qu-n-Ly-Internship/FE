@@ -27,7 +27,7 @@ import {
   getInternsByMajor,
   getRecruitmentTimeline,
 } from "../../services/statisticsService";
-import ".Statistics.css";
+import "./Statistics.css";
 
 export default function Statistics() {
   const navigate = useNavigate();
