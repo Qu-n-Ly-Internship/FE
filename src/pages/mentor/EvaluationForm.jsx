@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Users,
   BookOpen,
@@ -12,7 +14,8 @@ import {
   Star,
   Award,
   Calendar,
-  MessageSquare,
+  ClipboardList,
+  ArrowLeft,
 } from "lucide-react";
 
 import "./EvaluationForm.css";
@@ -37,11 +40,16 @@ export default function MentorReviewInterns() {
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const [selectedIntern, setSelectedIntern] = useState(null);
   const [copiedInternId, setCopiedInternId] = useState(null);
+  const [showInternList, setShowInternList] = useState(true);
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(9); // 9 cards mỗi trang cho grid 3 cột
+
+  // Form states
   const [showForm, setShowForm] = useState(false);
   const [editingEvaluation, setEditingEvaluation] = useState(null);
   const [formData, setFormData] = useState({
@@ -51,10 +59,12 @@ export default function MentorReviewInterns() {
     scores: [{ criteriaName: "", score: 0, comment: "" }],
   });
 
+  // Load programs once
   useEffect(() => {
     loadPrograms();
   }, []);
 
+  // Auto load departments + projects when program changes
   useEffect(() => {
     if (selectedProgramId) {
       loadDepartments(selectedProgramId);
@@ -67,26 +77,61 @@ export default function MentorReviewInterns() {
     }
   }, [selectedProgramId]);
 
+  // Load projects when department changes
   useEffect(() => {
     if (selectedProgramId && selectedDepartmentId) {
       loadProjects(selectedProgramId, selectedDepartmentId);
     }
   }, [selectedDepartmentId]);
 
+  // Load evaluations when intern changes
   useEffect(() => {
     if (selectedIntern) {
       loadEvaluations(selectedIntern.id);
     }
   }, [selectedIntern]);
 
+  // Reset về trang đầu khi có thay đổi dữ liệu
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [interns]);
+
+  // Tính toán phân trang
+  const totalItems = interns.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = interns.slice(startIndex, startIndex + pageSize);
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
+
   const loadPrograms = async () => {
     try {
       setLoading(true);
-      setError("");
       const data = await getAllPrograms();
       setPrograms(data);
+
+      // Auto chọn chương trình đầu tiên
+      if (data.length > 0) {
+        setSelectedProgramId(data[0].id);
+      }
     } catch (err) {
-      setError("Không thể tải danh sách chương trình");
+      toast.error("Không thể tải danh sách chương trình");
       console.error(err);
     } finally {
       setLoading(false);
@@ -96,11 +141,10 @@ export default function MentorReviewInterns() {
   const loadDepartments = async (programId) => {
     try {
       setLoading(true);
-      setError("");
       const data = await getDepartmentsByProgram(programId);
       setDepartments(data);
     } catch (err) {
-      setError("Không thể tải danh sách phòng ban");
+      toast.error("Không thể tải danh sách phòng ban");
       console.error(err);
     } finally {
       setLoading(false);
@@ -110,10 +154,10 @@ export default function MentorReviewInterns() {
   const loadProjects = async (programId, departmentId) => {
     try {
       setLoading(true);
-      setError("");
       const data = await filterProjects(programId, departmentId);
       setProjects(data);
 
+      // Flatten interns from projects
       const allInterns = [];
       data.forEach((project) => {
         if (project.internNames && Array.isArray(project.internNames)) {
@@ -128,9 +172,10 @@ export default function MentorReviewInterns() {
           });
         }
       });
+
       setInterns(allInterns);
     } catch (err) {
-      setError("Không thể tải danh sách dự án");
+      toast.error("Không thể tải danh sách dự án");
       console.error(err);
     } finally {
       setLoading(false);
@@ -141,7 +186,7 @@ export default function MentorReviewInterns() {
     try {
       setLoading(true);
       const data = await getEvaluationsByIntern(internId);
-      setEvaluations(data);
+      setEvaluations(data || []);
     } catch (err) {
       console.error("Không thể tải evaluations:", err);
       setEvaluations([]);
@@ -155,16 +200,27 @@ export default function MentorReviewInterns() {
     setSelectedDepartmentId("");
     setSelectedIntern(null);
     setEvaluations([]);
+    setShowInternList(true);
   };
 
   const handleDepartmentChange = (e) => {
     setSelectedDepartmentId(e.target.value);
     setSelectedIntern(null);
     setEvaluations([]);
+    setShowInternList(true);
   };
 
   const handleSelectIntern = (intern) => {
     setSelectedIntern(intern);
+    setShowForm(false);
+    setEditingEvaluation(null);
+    setShowInternList(false);
+  };
+
+  const handleBackToList = () => {
+    setShowInternList(true);
+    setSelectedIntern(null);
+    setEvaluations([]);
     setShowForm(false);
     setEditingEvaluation(null);
   };
@@ -222,7 +278,7 @@ export default function MentorReviewInterns() {
 
   const handleSubmitEvaluation = async () => {
     if (!selectedIntern) {
-      alert("Vui lòng chọn thực tập sinh");
+      toast.error("Vui lòng chọn thực tập sinh");
       return;
     }
 
@@ -230,7 +286,7 @@ export default function MentorReviewInterns() {
       (s) => s.criteriaName.trim() !== ""
     );
     if (validScores.length === 0) {
-      alert("Vui lòng thêm ít nhất một tiêu chí đánh giá");
+      toast.error("Vui lòng thêm ít nhất một tiêu chí đánh giá");
       return;
     }
 
@@ -246,32 +302,32 @@ export default function MentorReviewInterns() {
 
       if (editingEvaluation) {
         await updateMentorEvaluation(editingEvaluation.evaluationId, payload);
-        alert("Cập nhật evaluation thành công!");
+        toast.success("Cập nhật đánh giá thành công!");
       } else {
         await createMentorEvaluation(payload);
-        alert("Tạo evaluation thành công!");
+        toast.success("Tạo đánh giá thành công!");
       }
 
       setShowForm(false);
       setEditingEvaluation(null);
       loadEvaluations(selectedIntern.id);
     } catch (err) {
-      alert(err.message || "Có lỗi xảy ra");
+      toast.error(err.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteEvaluation = async (evaluationId) => {
-    if (!window.confirm("Bạn có chắc muốn xóa evaluation này?")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa đánh giá này?")) return;
 
     try {
       setLoading(true);
       await deleteMentorEvaluation(evaluationId);
-      alert("Xóa evaluation thành công!");
+      toast.success("Xóa đánh giá thành công!");
       loadEvaluations(selectedIntern.id);
     } catch (err) {
-      alert(err.message || "Có lỗi xảy ra");
+      toast.error(err.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -289,113 +345,112 @@ export default function MentorReviewInterns() {
     return "poor";
   };
 
+  // Statistics
+  const stats = {
+    totalInterns: interns.length,
+    totalEvaluations: evaluations.length,
+  };
+
   return (
-    <div className="evaluation-page">
-      <div className="container">
-        {/* Header Section */}
-        <div className="header-card">
-          <div className="header-title">
-            <div className="header-icon">
-              <Award />
-            </div>
-            <div className="header-text">
-              <h1>Đánh Giá Thực Tập Sinh</h1>
-              <p>Quản lý và theo dõi tiến độ của thực tập sinh</p>
-            </div>
+    <div className="page-container">
+
+
+      {/* Page Header */}
+      <div className="page-header">
+        <h1 className="page-title">Đánh Giá Định Kỳ Thực Tập Sinh</h1>
+      </div>
+
+      {/* Statistics */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">
+            <Users />
           </div>
-
-          {error && (
-            <div className="error-message">
-              <X />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Filter Section */}
-          <div className="filter-grid">
-            <div className="form-group">
-              <label className="form-label">
-                <BookOpen />
-                Chương trình <span className="required">*</span>
-              </label>
-              <select
-                value={selectedProgramId}
-                onChange={handleProgramChange}
-                className="form-select"
-                disabled={loading}
-              >
-                <option value="">-- Chọn chương trình --</option>
-                {programs.map((program) => (
-                  <option key={program.id} value={program.id}>
-                    {program.programName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">
-                <Users />
-                Phòng ban (Tùy chọn)
-              </label>
-              <select
-                value={selectedDepartmentId}
-                onChange={handleDepartmentChange}
-                className="form-select"
-                disabled={loading || !selectedProgramId}
-              >
-                <option value="">-- Tất cả phòng ban --</option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.departmentName} (Sức chứa: {dept.capacity})
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="stat-info">
+            <div className="stat-value">{stats.totalInterns}</div>
+            <div className="stat-label">Tổng TTS</div>
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="loading-container">
-            <div className="spinner"></div>
-            <p className="loading-text">Đang tải dữ liệu...</p>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">
+            <ClipboardList />
           </div>
-        )}
-
-        {/* Interns Grid */}
-        {!loading && selectedProgramId && (
-          <div className="interns-card">
-            <div className="section-header">
-              <h2 className="section-title">
-                <Users />
-                Danh sách thực tập sinh
-                <span className="count-badge">{interns.length}</span>
-              </h2>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {stats.totalEvaluations}
             </div>
+            <div className="stat-label">Đánh giá định kỳ</div>
+          </div>
+        </div>
+      </div>
 
-            {interns.length === 0 ? (
-              <div className="empty-state">
+      {/* Filters */}
+      <div className="card filters-card">
+        <div className="filters-grid-report">
+          <div className="form-group">
+            <label className="form-label">
+              Chương trình <span className="required">*</span>
+            </label>
+            <select
+              value={selectedProgramId}
+              onChange={handleProgramChange}
+              className="form-select"
+              disabled={loading}
+            >
+              {programs.map((program) => (
+                <option key={program.id} value={program.id}>
+                  {program.programName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Phòng ban</label>
+            <select
+              value={selectedDepartmentId}
+              onChange={handleDepartmentChange}
+              className="form-select"
+              disabled={loading || !selectedProgramId}
+            >
+              <option value="">-- Tất cả phòng ban --</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.departmentName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Interns Grid - CHỈ HIỆN KHI showInternList = true */}
+      {!loading && selectedProgramId && showInternList && (
+        <div className="card">
+          <div className="section-header">
+            <h2 className="section-title">
+              Danh sách thực tập sinh
+              <span className="count-badge">{interns.length}</span>
+            </h2>
+          </div>
+
+          {interns.length === 0 ? (
+            <div className="empty">
+              <div className="empty-icon">
                 <Users />
-                <p>Không có thực tập sinh nào</p>
-                <small>Vui lòng chọn chương trình khác</small>
               </div>
-            ) : (
+              <div className="empty-text">Không có thực tập sinh nào</div>
+            </div>
+          ) : (
+            <>
               <div className="interns-grid">
-                {interns.map((intern) => (
+                {currentItems.map((intern) => (
                   <div
                     key={`${intern.id}-${intern.projectId}`}
-                    className={`intern-card ${
-                      selectedIntern?.id === intern.id ? "selected" : ""
-                    }`}
+                    className="intern-card"
                     onClick={() => handleSelectIntern(intern)}
                   >
-                    {selectedIntern?.id === intern.id && (
-                      <div className="selected-badge">
-                        <Check />
-                      </div>
-                    )}
-
                     <div className="intern-header">
                       <div>
                         <h3 className="intern-name">{intern.fullName}</h3>
@@ -444,189 +499,245 @@ export default function MentorReviewInterns() {
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Evaluation Section */}
-        {selectedIntern && (
-          <div className="evaluation-section">
-            <div className="evaluation-header">
-              <div className="evaluation-title-group">
-                <div className="evaluation-icon">
-                  <Award />
+              {/* Phân trang */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <div className="pagination-info">
+                    Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+                    {Math.min(startIndex + pageSize, totalItems)} trên{" "}
+                    {totalItems}
+                  </div>
+                  <div className="pagination-controls">
+                    <button
+                      className="btn btn-sm"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    >
+                      ‹ Trước
+                    </button>
+
+                    {getPageNumbers().map((p, idx) =>
+                      p === "..." ? (
+                        <span key={`dots-${idx}`} className="page-dots">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          className={`btn btn-sm page-btn ${
+                            p === currentPage ? "active" : ""
+                          }`}
+                          onClick={() => setCurrentPage(p)}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+
+                    <button
+                      className="btn btn-sm"
+                      disabled={currentPage === totalPages}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                    >
+                      Sau ›
+                    </button>
+                  </div>
                 </div>
-                <div className="evaluation-title-text">
-                  <h2>{selectedIntern.fullName}</h2>
-                  <p>Quản lý đánh giá và theo dõi tiến độ</p>
-                </div>
-              </div>
-              {!showForm && (
-                <button onClick={handleNewEvaluation} className="btn-primary">
-                  <Plus />
-                  Tạo đánh giá mới
-                </button>
               )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Evaluation Section - CHỈ HIỆN KHI ĐÃ CHỌN INTERN VÀ showInternList = false */}
+      {selectedIntern && !showInternList && (
+        <div className="card">
+          <div className="evaluation-header">
+            <div className="evaluation-title-group">
+              <div className="evaluation-icon">
+                <Award />
+              </div>
+              <div className="evaluation-title-text">
+                <h2>{selectedIntern.fullName}</h2>
+                <p>Quản lý đánh giá định kỳ</p>
+              </div>
             </div>
 
-            {/* Evaluation Form */}
-            {showForm && (
-              <div className="evaluation-form">
-                <h3 className="form-title">
-                  <Edit />
-                  {editingEvaluation
-                    ? "Chỉnh sửa đánh giá"
-                    : "Tạo đánh giá mới"}
-                </h3>
+            <button onClick={handleBackToList} className="btn btn-outline">
+              <ArrowLeft />
+              Quay lại danh sách
+            </button>
+          </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">
-                      <Calendar />
-                      Chu kỳ <span className="required">*</span>
-                    </label>
-                    <select
-                      value={formData.cycle}
-                      onChange={(e) =>
-                        setFormData({ ...formData, cycle: e.target.value })
-                      }
-                      className="form-select"
-                    >
-                      <option value="weekly">Hàng tuần</option>
-                      <option value="monthly">Hàng tháng</option>
-                    </select>
-                  </div>
+          {/* Evaluation Form */}
+          {showForm && (
+            <div className="evaluation-form">
+              <h3 className="form-title">
+                <Edit />
+                {editingEvaluation ? "Chỉnh sửa đánh giá" : "Tạo đánh giá mới"}
+              </h3>
 
-                  <div className="form-group">
-                    <label className="form-label">
-                      <Star />
-                      Kỳ số <span className="required">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.periodNo}
-                      onChange={(e) =>
-                        setFormData({ ...formData, periodNo: e.target.value })
-                      }
-                      className="form-input"
-                    />
-                  </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">
+                    Chu kỳ <span className="required">*</span>
+                  </label>
+                  <select
+                    value={formData.cycle}
+                    onChange={(e) =>
+                      setFormData({ ...formData, cycle: e.target.value })
+                    }
+                    className="form-select"
+                  >
+                    <option value="weekly">Hàng tuần</option>
+                    <option value="monthly">Hàng tháng</option>
+                  </select>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">
-                    <MessageSquare />
-                    Nhận xét chung
+                    Kỳ số <span className="required">*</span>
                   </label>
-                  <textarea
-                    value={formData.comment}
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.periodNo}
                     onChange={(e) =>
-                      setFormData({ ...formData, comment: e.target.value })
+                      setFormData({ ...formData, periodNo: e.target.value })
                     }
-                    className="form-textarea"
-                    placeholder="Nhận xét tổng quan về thực tập sinh..."
+                    className="form-input"
+                    placeholder="Nhập số kỳ"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <div className="criteria-header">
-                    <label className="criteria-label">
-                      <Award />
-                      Tiêu chí đánh giá <span className="required">*</span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleAddCriteria}
-                      className="btn-add"
-                    >
-                      <Plus />
-                      Thêm tiêu chí
-                    </button>
-                  </div>
+              <div className="form-group">
+                <label className="form-label">Nhận xét chung</label>
+                <textarea
+                  value={formData.comment}
+                  onChange={(e) =>
+                    setFormData({ ...formData, comment: e.target.value })
+                  }
+                  className="form-textarea"
+                  rows="4"
+                  placeholder="Nhập nhận xét tổng quan về thực tập sinh..."
+                />
+              </div>
 
-                  <div className="criteria-list">
-                    {formData.scores.map((score, index) => (
-                      <div key={index} className="criteria-item">
-                        <input
-                          type="text"
-                          placeholder="Tên tiêu chí"
-                          value={score.criteriaName}
-                          onChange={(e) =>
-                            handleScoreChange(
-                              index,
-                              "criteriaName",
-                              e.target.value
-                            )
-                          }
-                        />
-                        <input
-                          type="number"
-                          placeholder="Điểm"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          value={score.score}
-                          onChange={(e) =>
-                            handleScoreChange(index, "score", e.target.value)
-                          }
-                        />
-                        <input
-                          type="text"
-                          placeholder="Nhận xét"
-                          value={score.comment}
-                          onChange={(e) =>
-                            handleScoreChange(index, "comment", e.target.value)
-                          }
-                        />
-                        {formData.scores.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCriteria(index)}
-                            className="btn-remove"
-                            title="Xóa tiêu chí"
-                          >
-                            <Trash2 />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+              <div className="form-group">
+                <div className="criteria-header">
+                  <label className="criteria-label">
+                    <Award />
+                    Tiêu chí đánh giá <span className="required">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddCriteria}
+                    className="btn-add"
+                  >
+                    <Plus />
+                    Thêm tiêu chí
+                  </button>
                 </div>
 
-                <div className="form-actions">
-                  <button
-                    type="button"
-                    onClick={handleSubmitEvaluation}
-                    disabled={loading}
-                    className="btn-success"
-                  >
-                    <Save />
-                    {editingEvaluation ? "Cập nhật đánh giá" : "Lưu đánh giá"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCancelForm}
-                    className="btn-cancel"
-                  >
-                    <X />
-                    Hủy
-                  </button>
+                <div className="criteria-list">
+                  {formData.scores.map((score, index) => (
+                    <div key={index} className="criteria-item">
+                      <input
+                        type="text"
+                        placeholder="Tên tiêu chí"
+                        value={score.criteriaName}
+                        onChange={(e) =>
+                          handleScoreChange(
+                            index,
+                            "criteriaName",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <input
+                        type="number"
+                        placeholder="Điểm"
+                        min="0"
+                        max="10"
+                        step="0.5"
+                        value={score.score}
+                        onChange={(e) =>
+                          handleScoreChange(index, "score", e.target.value)
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Nhận xét"
+                        value={score.comment}
+                        onChange={(e) =>
+                          handleScoreChange(index, "comment", e.target.value)
+                        }
+                      />
+                      {formData.scores.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCriteria(index)}
+                          className="btn-remove"
+                          title="Xóa tiêu chí"
+                        >
+                          <Trash2 />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
 
-            {/* Evaluation History */}
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={handleSubmitEvaluation}
+                  disabled={loading}
+                  className="btn btn-success"
+                >
+                  <Save />
+                  {editingEvaluation ? "Cập nhật đánh giá" : "Lưu đánh giá"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelForm}
+                  className="btn btn-outline"
+                >
+                  <X />
+                  Hủy
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Evaluation History */}
+          {!showForm && (
             <div>
-              <h3 className="history-title">
-                <Calendar />
-                Lịch sử đánh giá
-              </h3>
+              <div className="evaluation-header">
+                <h3 className="history-title">
+                  <Calendar />
+                  Lịch sử đánh giá
+                </h3>
+
+                <button
+                  onClick={handleNewEvaluation}
+                  className="btn btn-primary"
+                >
+                  <Plus />
+                  Tạo đánh giá mới
+                </button>
+              </div>
+
               {evaluations.length === 0 ? (
-                <div className="empty-state">
-                  <Award />
-                  <p>Chưa có đánh giá nào</p>
-                  <small>Hãy tạo đánh giá đầu tiên cho thực tập sinh này</small>
+                <div className="empty">
+                  <div className="empty-icon">
+                    <Award />
+                  </div>
+                  <div className="empty-text">Chưa có đánh giá nào</div>
                 </div>
               ) : (
                 <div className="history-list">
@@ -700,9 +811,19 @@ export default function MentorReviewInterns() {
                 </div>
               )}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="card">
+          <div className="loading center">
+            <div className="spinner"></div>
+            <p>Đang tải dữ liệu...</p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

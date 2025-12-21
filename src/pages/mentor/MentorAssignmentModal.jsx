@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import "../mentor/mentorAssignmentModal.css";
+import PropTypes from "prop-types";
+import "./MentorAssignmentModal.css";
 import {
   assignMentor,
   unassignMentor,
@@ -23,7 +24,7 @@ export default function MentorAssignmentModal({
   useEffect(() => {
     if (internship) {
       loadCurrentAssignment();
-      onLoadMentors(); // Load mentors when modal opens
+      onLoadMentors();
     }
   }, [internship]);
 
@@ -40,7 +41,6 @@ export default function MentorAssignmentModal({
       const response = await getInternMentorAssignment(internId);
       console.log("📦 Assignment response:", response);
 
-      // Backend trả về { success, data: { mentorId, mentorName, ... } }
       if (response?.data) {
         const mentorData = {
           mentor: {
@@ -84,7 +84,6 @@ export default function MentorAssignmentModal({
     try {
       setAssigning(true);
 
-      // Use internship.id directly (intern_id from the table)
       const internId = internship.id || internship.intern_id;
 
       if (!internId) {
@@ -139,88 +138,121 @@ export default function MentorAssignmentModal({
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-box">
-        <h2 className="modal-title">
-          Phân công Mentor cho {internship.student}
-        </h2>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">
+            Phân công Mentor cho {internship.student}
+          </h2>
+          <button className="modal-close-btn" onClick={onClose}>
+            ✕
+          </button>
+        </div>
 
-        {/* Current assignment status */}
-        <div className="form-group" style={{ marginBottom: 20 }}>
-          {loadingAssignment ? (
-            <div>Đang tải thông tin phân công mentor…</div>
-          ) : currentAssignment?.mentor ? (
-            <div>
-              <strong>Mentor hiện tại:</strong>{" "}
-              {currentAssignment.mentor.fullName ||
-                currentAssignment.mentor.name}{" "}
-              ({currentAssignment.mentor.email})
-              <br />
-              <strong>Ngày phân công:</strong>{" "}
-              {currentAssignment.assignedAt
-                ? new Date(currentAssignment.assignedAt).toLocaleString()
-                : "-"}
-              <div style={{ marginTop: 8 }}>
-                <button
-                  className="btn btn-outline-danger"
-                  onClick={onUnassignMentor}
-                  disabled={assigning}
-                >
-                  Hủy phân công
-                </button>
+        <div className="modal-content">
+          {/* Current assignment status */}
+          <div className="form-group">
+            {loadingAssignment ? (
+              <div className="loading-assignment">
+                Đang tải thông tin phân công mentor…
               </div>
+            ) : currentAssignment?.mentor ? (
+              <div className="mentor-status-info">
+                <div>
+                  <strong>Mentor hiện tại:</strong>{" "}
+                  <span className="current-mentor-name">
+                    {currentAssignment.mentor.fullName ||
+                      currentAssignment.mentor.name}
+                  </span>
+                  <br />
+                  <span className="current-mentor-email">
+                    {currentAssignment.mentor.email}
+                  </span>
+                </div>
+                <div className="assigned-date">
+                  <strong>Ngày phân công:</strong>{" "}
+                  {currentAssignment.assignedAt
+                    ? new Date(currentAssignment.assignedAt).toLocaleString()
+                    : "-"}
+                </div>
+                <div className="unassign-action">
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={onUnassignMentor}
+                    disabled={assigning}
+                  >
+                    Hủy phân công
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mentor-status-info">
+                <strong>Trạng thái:</strong> Chưa được phân công mentor
+              </div>
+            )}
+          </div>
+
+          {/* Mentor selection */}
+          <div className="form-group">
+            <label className="form-label">
+              Chọn Mentor <span className="required">*</span>
+            </label>
+            <select
+              className="form-select"
+              value={selectedMentorId}
+              onChange={handleChangeMentor}
+              disabled={loadingMentors}
+            >
+              <option value="">-- Chọn mentor --</option>
+              {mentors.map((mentor) => {
+                const id = (mentor.id ?? mentor.mentorId)?.toString();
+                const name = mentor.fullName || mentor.name || `Mentor ${id}`;
+                const email = mentor.email || mentor.username || "";
+                return (
+                  <option key={id} value={id}>
+                    {name} {email ? `• ${email}` : ""}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn btn-outline" onClick={onClose}>
+              Đóng
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={onAssignMentor}
+              disabled={!selectedMentorId || assigning}
+            >
+              {assigning ? "Đang phân công..." : "Phân công Mentor"}
+            </button>
+          </div>
+
+          {message && (
+            <div className="message-success">
+              <span>✅</span>
+              {message}
             </div>
-          ) : (
-            <div>
-              <strong>Trạng thái:</strong> Chưa được phân công mentor
+          )}
+          {error && (
+            <div className="message-error">
+              <span>❌</span>
+              {error}
             </div>
           )}
         </div>
-
-        {/* Mentor selection */}
-        <div className="form-group">
-          <label className="form-label">Chọn Mentor</label>
-          <select
-            className="form-select"
-            value={selectedMentorId}
-            onChange={handleChangeMentor}
-            disabled={loadingMentors}
-          >
-            <option value="">-- Chọn mentor --</option>
-            {mentors.map((mentor) => {
-              const id = (mentor.id ?? mentor.mentorId)?.toString();
-              const name = mentor.fullName || mentor.name || `Mentor ${id}`;
-              const email = mentor.email || mentor.username || "";
-              return (
-                <option key={id} value={id}>
-                  {name} {email ? `• ${email}` : ""}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        <div className="form-actions">
-          <button type="button" className="btn-outline" onClick={onClose}>
-            Đóng
-          </button>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={onAssignMentor}
-            disabled={!selectedMentorId || assigning}
-          >
-            {assigning ? "Đang phân công..." : "Phân công Mentor"}
-          </button>
-        </div>
-
-        {message && (
-          <div style={{ color: "#28a745", marginTop: 8 }}>✅ {message}</div>
-        )}
-        {error && (
-          <div style={{ color: "#dc3545", marginTop: 8 }}>❌ {error}</div>
-        )}
       </div>
     </div>
   );
 }
+
+MentorAssignmentModal.propTypes = {
+  internship: PropTypes.object.isRequired,
+  mentors: PropTypes.array.isRequired,
+  loadingMentors: PropTypes.bool,
+  onClose: PropTypes.func.isRequired,
+  onLoadMentors: PropTypes.func.isRequired,
+};

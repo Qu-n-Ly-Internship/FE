@@ -293,7 +293,7 @@ const ChatbotWidget = () => {
             fill="currentColor"
           />
         </svg>
-        <span className="notification-badge">1</span>
+        {/* <span className="notification-badge"></span> */}
       </button>
 
       {isOpen && (

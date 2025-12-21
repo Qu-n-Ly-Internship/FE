@@ -8,7 +8,7 @@ import {
   getInternships,
   createInternship,
   updateInternship,
-  getInternPrograms, // ✅ Thêm import
+  getInternPrograms,
 } from "../../services/internshipService";
 import { getUsers } from "../../services/adminService";
 
@@ -21,17 +21,23 @@ export default function InternshipList() {
   const [searchText, setSearchText] = useState("");
   const [schoolFilter, setSchoolFilter] = useState("");
   const [majorFilter, setMajorFilter] = useState("");
-  const [programs, setPrograms] = useState([]); // ✅ State cho danh sách programs
-
+  const [programs, setPrograms] = useState([]);
+  const [notification, setNotification] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
+  const pageSize = 10;
 
   useEffect(() => {
     loadInternships();
-    loadPrograms(); // ✅ Load programs khi component mount
+    loadPrograms();
   }, []);
 
-  // ✅ Hàm load danh sách programs
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   async function loadPrograms() {
     try {
       const response = await getInternPrograms();
@@ -105,13 +111,119 @@ export default function InternshipList() {
     return pages;
   }
 
+  function clearFilters() {
+    setSearchText("");
+    setSchoolFilter("");
+    setMajorFilter("");
+  }
+
+  async function handleCreate(data) {
+    try {
+      const payload = {
+        title: data.title,
+        student: data.student,
+        studentEmail: data.studentEmail,
+        school: data.school,
+        major: data.major,
+        status: data.status,
+        startDate: data.startDate
+          ? dayjs(data.startDate).format("YYYY-MM-DD")
+          : null,
+        endDate: data.endDate ? dayjs(data.endDate).format("YYYY-MM-DD") : null,
+      };
+
+      await createInternship(payload);
+
+      setNotification({
+        type: "success",
+        message: "Tạo thực tập sinh thành công! 🎉",
+        details: `${data.student} - ${data.title}`,
+      });
+
+      setShowCreate(false);
+      await loadInternships();
+    } catch (error) {
+      console.error("Error creating internship:", error);
+      setNotification({
+        type: "error",
+        message: "Tạo thất bại",
+        details:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Vui lòng thử lại",
+      });
+    }
+  }
+
+  async function handleUpdate(internId, updated) {
+    try {
+      await updateInternship(internId, {
+        title: updated.title,
+        student: updated.student,
+        studentEmail: updated.studentEmail,
+        school: updated.school,
+        major: updated.major,
+        status: updated.status,
+        startDate: updated.startDate,
+        endDate: updated.endDate,
+      });
+
+      setNotification({
+        type: "success",
+        message: "Cập nhật thành công! ✅",
+        details: `${updated.student} - ${updated.title}`,
+      });
+
+      setEditing(null);
+      await loadInternships();
+    } catch (error) {
+      setNotification({
+        type: "error",
+        message: "Cập nhật thất bại",
+        details: error?.response?.data?.message || "Vui lòng thử lại",
+      });
+    }
+  }
+
+  async function handleComplete(internship) {
+    if (!window.confirm("Bạn có chắc muốn đánh dấu hoàn thành?")) return;
+
+    try {
+      await updateInternship(internship.intern_id, {
+        title: internship.title,
+        student: internship.student,
+        studentEmail: internship.studentEmail,
+        school: internship.school,
+        major: internship.major,
+        status: "completed",
+        startDate: internship.startDate,
+        endDate: dayjs().format("YYYY-MM-DD"),
+      });
+
+      setNotification({
+        type: "success",
+        message: "Đã cập nhật trạng thái thành 'Hoàn thành'",
+        details: `${internship.student}`,
+      });
+
+      await loadInternships();
+    } catch (error) {
+      console.error("Error updating internship status:", error);
+      setNotification({
+        type: "error",
+        message: "Cập nhật thất bại",
+        details: error.response?.data?.message || "Vui lòng thử lại",
+      });
+    }
+  }
+
   if (loading) {
     return <div className="loading center">Đang tải...</div>;
   }
 
   return (
-    <div className="page-container">
-      <ToastContainer position="top-right" autoClose={5000} />
+    <div className="page-container internship-list-container">
+
 
       <div className="page-header">
         <h1 className="page-title">Danh sách Thực tập</h1>
@@ -123,16 +235,18 @@ export default function InternshipList() {
         </button>
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div
-          className="form-row"
-          style={{
-            padding: 16,
-            gap: 16,
-            alignItems: "flex-end",
-            flexWrap: "wrap",
-          }}
-        >
+      {notification && (
+        <InlineNotification
+          type={notification.type}
+          message={notification.message}
+          details={notification.details}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
+      {/* Filters */}
+      <div className="card filters-card">
+        <div className="filters-grid">
           <div className="form-group">
             <label className="form-label">Tìm kiếm (Tên/Email)</label>
             <input
@@ -173,213 +287,166 @@ export default function InternshipList() {
             </select>
           </div>
           <div className="form-group">
-            <button
-              type="button"
-              className="btn clear-filters-btn"
-              onClick={() => {
-                setSearchText("");
-                setSchoolFilter("");
-                setMajorFilter("");
-              }}
-            >
+            <label className="form-label">&nbsp;</label>
+            <button className="btn btn-clear" onClick={clearFilters}>
               Xóa bộ lọc
             </button>
           </div>
         </div>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto', padding: '0 1rem' }}>
-          <table className="table" style={{ minWidth: '1000px' }}>
-          <thead>
-            <tr>
-              <th className="table-th">STT</th>
-              <th className="table-th">Vị trí</th>
-              <th className="table-th">Tên sinh viên</th>
-              <th className="table-th">Email</th>
-              <th className="table-th">Trường</th>
-              <th className="table-th">Ngành</th>
-              <th className="table-th">Trạng thái</th>
-              <th className="table-th">Thời gian</th>
-              <th className="table-th">Mentor</th>
-              <th className="table-th">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageItems.length === 0 ? (
-              <tr>
-                <td className="table-td center" colSpan={10}>
-                  Không tìm thấy thực tập sinh.
-                </td>
-              </tr>
-            ) : (
-              pageItems.map((internship, index) => (
-                <tr key={internship.intern_id}>
-                  <td className="table-td">{startIndex + index + 1}</td>
-                  <td className="table-td">{internship.title}</td>
-                  <td className="table-td">{internship.student}</td>
-                  <td className="table-td">{internship.studentEmail}</td>
-                  <td className="table-td">{internship.school || "-"}</td>
-                  <td className="table-td">{internship.major || "-"}</td>
-                  <td className="table-td">
-                    <span
-                      className={`badge ${
-                        internship.status === "active"
-                          ? "badge-success"
-                          : "badge-danger"
-                      }`}
-                    >
-                      {internship.status === "active"
-                        ? "Đang thực tập"
-                        : "Hoàn thành"}
-                    </span>
-                  </td>
-                  <td className="table-td">
-                    {internship.startDate} - {internship.endDate}
-                  </td>
-                  <td className="table-td">{internship.mentorName || "-"}</td>
-                  <td className="table-td">
-                    <button
-                      className="btn btn-success"
-                      style={{ marginRight: 8, marginBottom: 4 }}
-                      onClick={() => setViewing(internship)}
-                    >
-                      Xem
-                    </button>
-                    <button
-                      className="btn btn-warning"
-                      style={{ marginRight: 8, marginBottom: 4 }}
-                      onClick={() => setEditing(internship)}
-                    >
-                      Sửa
-                    </button>
-                    {internship.status === "active" && (
+      {/* Table */}
+      <div className="card">
+        {filteredInternships.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">🔭</div>
+            <div className="empty-text">
+              {internships.length === 0
+                ? "Chưa có thực tập sinh nào"
+                : "Không tìm thấy thực tập sinh phù hợp"}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="table-wrapper">
+              <table className="table internship-table">
+                <thead>
+                  <tr>
+                    <th className="table-th">STT</th>
+                    <th className="table-th">Vị trí</th>
+                    <th className="table-th">Tên sinh viên</th>
+                    <th className="table-th">Email</th>
+                    <th className="table-th">Trường</th>
+                    <th className="table-th">Ngành</th>
+                    <th className="table-th">Trạng thái</th>
+                    <th className="table-th">Thời gian</th>
+                    <th className="table-th">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.map((internship, index) => (
+                    <tr key={internship.intern_id}>
+                      <td className="table-td center">
+                        {startIndex + index + 1}
+                      </td>
+                      <td className="table-td">{internship.title}</td>
+                      <td className="table-td">
+                        <div className="internship-student-info">
+                          <span className="internship-student-name">
+                            {internship.student}
+                          </span>
+                          <span className="internship-student-email">
+                            {internship.studentEmail}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="table-td">{internship.studentEmail}</td>
+                      <td className="table-td">{internship.school || "-"}</td>
+                      <td className="table-td">{internship.major || "-"}</td>
+                      <td className="table-td">
+                        <span
+                          className={`badge ${
+                            internship.status === "active"
+                              ? "badge-success"
+                              : "badge-danger"
+                          }`}
+                        >
+                          {internship.status === "active"
+                            ? "Đang thực tập"
+                            : "Hoàn thành"}
+                        </span>
+                      </td>
+                      <td className="table-td">
+                        {internship.startDate} - {internship.endDate}
+                      </td>
+                      <td className="table-td">
+                        <div className="action-buttons">
+                          <button
+                            className="btn btn-success btn-sm "
+                            onClick={() => setViewing(internship)}
+                          >
+                            Xem
+                          </button>
+                          <button
+                            className="btn btn-warning btn-sm "
+                            onClick={() => setEditing(internship)}
+                          >
+                            Sửa
+                          </button>
+                          {internship.status === "active" && (
+                            <button
+                              className="btn btn-info btn-sm "
+                              onClick={() => handleComplete(internship)}
+                            >
+                              Hoàn thành
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {totalItems === 0 ? 0 : startIndex + 1}–
+                  {Math.min(startIndex + pageSize, totalItems)} trên{" "}
+                  {totalItems}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    ‹ Trước
+                  </button>
+
+                  {getPageNumbers().map((p, idx) =>
+                    p === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
                       <button
-                        className="btn btn-info"
-                        style={{ marginRight: 8, marginBottom: 4 }}
-                        onClick={async () => {
-                          if (
-                            window.confirm(
-                              "Bạn có chắc muốn đánh dấu hoàn thành?"
-                            )
-                          ) {
-                            try {
-                              await updateInternship(internship.intern_id, {
-                                title: internship.title,
-                                student: internship.student,
-                                studentEmail: internship.studentEmail,
-                                school: internship.school,
-                                major: internship.major,
-                                status: "completed",
-                                startDate: internship.startDate,
-                                endDate: dayjs().format("YYYY-MM-DD"),
-                              });
-
-                              toast.success(
-                                "Đã cập nhật trạng thái thành 'Hoàn thành'"
-                              );
-                              loadInternships();
-                            } catch (error) {
-                              console.error(
-                                "Error updating internship status:",
-                                error
-                              );
-                              toast.error(
-                                error.response?.data?.message ||
-                                  "Cập nhật thất bại"
-                              );
-                            }
-                          }
-                        }}
+                        key={p}
+                        className={`btn btn-sm page-btn ${
+                          p === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(p)}
                       >
-                        Hoàn thành
+                        {p}
                       </button>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        </div>
-        <div className="pagination">
-          <div className="pagination-info">
-            Hiển thị {totalItems === 0 ? 0 : startIndex + 1}–
-            {Math.min(startIndex + pageSize, totalItems)} trên {totalItems}
-          </div>
-          <div className="pagination-controls">
-            <button
-              className="btn btn-sm"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            >
-              ‹ Trước
-            </button>
+                    )
+                  )}
 
-            {getPageNumbers().map((p, idx) =>
-              p === "..." ? (
-                <span key={`dots-${idx}`} className="page-dots">
-                  …
-                </span>
-              ) : (
-                <button
-                  key={p}
-                  className={`btn btn-sm page-btn ${
-                    p === currentPage ? "active" : ""
-                  }`}
-                  onClick={() => setCurrentPage(p)}
-                >
-                  {p}
-                </button>
-              )
+                  <button
+                    className="btn btn-secondary  btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                  >
+                    Sau ›
+                  </button>
+                </div>
+              </div>
             )}
-
-            <button
-              className="btn btn-sm"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            >
-              Sau ›
-            </button>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
+      {/* Modals */}
       {showCreate && (
         <CreateInternshipModal
           onClose={() => setShowCreate(false)}
           existingInternships={internships}
-          programs={programs} // ✅ Truyền danh sách programs
-          onCreate={async (data) => {
-            try {
-              const payload = {
-                title: data.title,
-                student: data.student,
-                studentEmail: data.studentEmail,
-                school: data.school,
-                major: data.major,
-                status: data.status,
-                startDate: data.startDate
-                  ? dayjs(data.startDate).format("YYYY-MM-DD")
-                  : null,
-                endDate: data.endDate
-                  ? dayjs(data.endDate).format("YYYY-MM-DD")
-                  : null,
-              };
-
-              await createInternship(payload);
-              toast.success("Tạo thực tập sinh thành công! 🎉");
-              setShowCreate(false);
-              await loadInternships();
-            } catch (error) {
-              console.error("Error creating internship:", error);
-              toast.error(
-                error?.response?.data?.message ||
-                  error?.message ||
-                  "Tạo thất bại"
-              );
-            }
-          }}
+          programs={programs}
+          onCreate={handleCreate}
         />
       )}
 
@@ -390,41 +457,89 @@ export default function InternshipList() {
       {editing && (
         <EditInternshipModal
           data={editing}
-          programs={programs} // ✅ Truyền danh sách programs
+          programs={programs}
           onClose={() => setEditing(null)}
-          onSave={async (updated) => {
-            try {
-              await updateInternship(editing.intern_id, {
-                title: updated.title,
-                student: updated.student,
-                studentEmail: updated.studentEmail,
-                school: updated.school,
-                major: updated.major,
-                status: updated.status,
-                startDate: updated.startDate,
-                endDate: updated.endDate,
-              });
-              toast.success("Cập nhật thành công! ✅");
-              setEditing(null);
-              await loadInternships();
-            } catch (error) {
-              toast.error(
-                error?.response?.data?.message || "Cập nhật thất bại"
-              );
-            }
-          }}
+          onSave={(updated) => handleUpdate(editing.intern_id, updated)}
         />
       )}
     </div>
   );
 }
 
-// ✅ CreateInternshipModal với dropdown programs
+// Inline Notification Component
+function InlineNotification({ type, message, details, onClose }) {
+  const icons = { success: "✅", error: "❌", warning: "⚠️", info: "ℹ️" };
+  const colors = {
+    success: { bg: "#d1fae5", border: "#10b981", text: "#065f46" },
+    error: { bg: "#fee2e2", border: "#ef4444", text: "#991b1b" },
+    warning: { bg: "#fef3c7", border: "#f59e0b", text: "#92400e" },
+    info: { bg: "#dbeafe", border: "#3b82f6", text: "#1e40af" },
+  };
+
+  const style = colors[type] || colors.info;
+
+  return (
+    <div
+      style={{
+        backgroundColor: style.bg,
+        borderLeft: `4px solid ${style.border}`,
+        padding: "16px 20px",
+        borderRadius: "8px",
+        marginBottom: "24px",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: "12px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        animation: "slideDown 0.3s ease-out",
+      }}
+    >
+      <div style={{ fontSize: "24px", flexShrink: 0 }}>{icons[type]}</div>
+      <div style={{ flex: 1 }}>
+        <div
+          style={{
+            fontWeight: "600",
+            color: style.text,
+            fontSize: "16px",
+            marginBottom: "4px",
+          }}
+        >
+          {message}
+        </div>
+        {details && (
+          <div style={{ color: style.text, fontSize: "14px", opacity: 0.8 }}>
+            {details}
+          </div>
+        )}
+      </div>
+      <button
+        onClick={onClose}
+        style={{
+          background: "none",
+          border: "none",
+          color: style.text,
+          cursor: "pointer",
+          fontSize: "20px",
+          padding: "0",
+          lineHeight: "1",
+          opacity: 0.6,
+          transition: "opacity 0.2s",
+        }}
+        onMouseEnter={(e) => (e.target.style.opacity = "1")}
+        onMouseLeave={(e) => (e.target.style.opacity = "0.6")}
+      >
+        ×
+      </button>
+      <style>{`@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+    </div>
+  );
+}
+
+// Create Modal
 function CreateInternshipModal({
   onClose,
   onCreate,
   existingInternships = [],
-  programs = [], // ✅ Nhận danh sách programs
+  programs = [],
 }) {
   const [title, setTitle] = useState("");
   const [student, setStudent] = useState("");
@@ -434,8 +549,6 @@ function CreateInternshipModal({
   const [status, setStatus] = useState("active");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [showCustomTitle, setShowCustomTitle] = useState(false); // ✅ Toggle giữa dropdown và input
-
   const [validationErrors, setValidationErrors] = useState({});
   const [showSelectIntern, setShowSelectIntern] = useState(false);
 
@@ -469,9 +582,7 @@ function CreateInternshipModal({
     const errors = validate(data);
     setValidationErrors(errors);
     if (Object.keys(errors).length > 0) {
-      toast.error(
-        "Vui lòng kiểm tra lại thông tin nhập. Các trường bắt buộc chưa hợp lệ."
-      );
+      toast.error("Vui lòng kiểm tra lại thông tin nhập");
       return;
     }
     onCreate({
@@ -506,37 +617,28 @@ function CreateInternshipModal({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 16,
+            marginBottom: 24,
           }}
         >
           <h2 className="modal-title" style={{ margin: 0 }}>
-            Thêm thực tập
+            Thêm thực tập sinh
           </h2>
           <button
             type="button"
-            className="form-select"
+            className="btn btn-outline btn-sm"
             onClick={() => setShowSelectIntern(true)}
-            style={{
-              width: "auto",
-              padding: "8px 16px",
-              cursor: "pointer",
-              backgroundColor: "white",
-              border: "1px solid #ddd",
-            }}
           >
             Chọn từ danh sách INTERN
           </button>
         </div>
 
         <form onSubmit={onSubmit}>
-          <div className="form-row cols-2-1">
-            {/* ✅ Vị trí với dropdown hoặc input tùy chọn */}
+          <div className="form-row">
             <div className="form-group">
-              <label className="form-label" htmlFor="title">
-                Vị trí <span style={{ color: "red" }}>*</span>
+              <label className="form-label">
+                Vị trí <span className="required">*</span>
               </label>
               <select
-                id="title"
                 className={`form-select ${
                   validationErrors.title ? "input-error" : ""
                 }`}
@@ -553,18 +655,13 @@ function CreateInternshipModal({
               {validationErrors.title && (
                 <div className="error-message">{validationErrors.title}</div>
               )}
-
-              {validationErrors.title && (
-                <div className="error-message">{validationErrors.title}</div>
-              )}
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="studentEmail">
-                Email <span style={{ color: "red" }}>*</span>
+              <label className="form-label">
+                Email <span className="required">*</span>
               </label>
               <input
-                id="studentEmail"
                 type="email"
                 className={`form-input ${
                   validationErrors.studentEmail ? "input-error" : ""
@@ -583,11 +680,10 @@ function CreateInternshipModal({
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label" htmlFor="student">
-                Tên sinh viên <span style={{ color: "red" }}>*</span>
+              <label className="form-label">
+                Tên sinh viên <span className="required">*</span>
               </label>
               <input
-                id="student"
                 className={`form-input ${
                   validationErrors.student ? "input-error" : ""
                 }`}
@@ -599,11 +695,8 @@ function CreateInternshipModal({
               )}
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="school">
-                Trường
-              </label>
+              <label className="form-label">Trường</label>
               <input
-                id="school"
                 className="form-input"
                 value={school}
                 onChange={(e) => setSchool(e.target.value)}
@@ -614,11 +707,8 @@ function CreateInternshipModal({
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label" htmlFor="major">
-                Ngành
-              </label>
+              <label className="form-label">Ngành</label>
               <input
-                id="major"
                 className="form-input"
                 value={major}
                 onChange={(e) => setMajor(e.target.value)}
@@ -626,11 +716,8 @@ function CreateInternshipModal({
               />
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="status">
-                Trạng thái
-              </label>
+              <label className="form-label">Trạng thái</label>
               <select
-                id="status"
                 className="form-select"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
@@ -643,11 +730,10 @@ function CreateInternshipModal({
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label" htmlFor="start">
-                Ngày bắt đầu <span style={{ color: "red" }}>*</span>
+              <label className="form-label">
+                Ngày bắt đầu <span className="required">*</span>
               </label>
               <DatePicker
-                id="start"
                 format="YYYY-MM-DD"
                 value={startDate}
                 onChange={handleDateChange(setStartDate, "startDate")}
@@ -662,11 +748,10 @@ function CreateInternshipModal({
               )}
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="end">
-                Ngày kết thúc <span style={{ color: "red" }}>*</span>
+              <label className="form-label">
+                Ngày kết thúc <span className="required">*</span>
               </label>
               <DatePicker
-                id="end"
                 format="YYYY-MM-DD"
                 value={endDate}
                 onChange={handleDateChange(setEndDate, "endDate")}
@@ -681,10 +766,10 @@ function CreateInternshipModal({
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-outline" onClick={onClose}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>
               Hủy
             </button>
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn btn-primary">
               Tạo
             </button>
           </div>
@@ -711,53 +796,46 @@ function CreateInternshipModal({
   );
 }
 
+// View Modal
 function ViewInternshipModal({ data, onClose }) {
   return (
     <div className="modal-overlay">
       <div className="modal-box">
         <h2 className="modal-title">Thông tin thực tập</h2>
-        <div className="form-row cols-2-1">
-          <div className="form-group">
-            <label className="form-label">Vị trí</label>
-            <div>{data.title}</div>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <div>{data.studentEmail}</div>
-          </div>
+        <div className="info-row">
+          <span className="info-label">Vị trí:</span>
+          <span className="info-value">{data.title}</span>
         </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Sinh viên</label>
-            <div>{data.student}</div>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Trường</label>
-            <div>{data.school || "-"}</div>
-          </div>
+        <div className="info-row">
+          <span className="info-label">Sinh viên:</span>
+          <span className="info-value">{data.student}</span>
         </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Ngành</label>
-            <div>{data.major || "-"}</div>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Trạng thái</label>
-            <div>
-              {data.status === "active" ? "Đang thực tập" : "Hoàn thành"}
-            </div>
-          </div>
+        <div className="info-row">
+          <span className="info-label">Email:</span>
+          <span className="info-value">{data.studentEmail}</span>
         </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Thời gian</label>
-            <div>
-              {data.startDate} - {data.endDate}
-            </div>
-          </div>
+        <div className="info-row">
+          <span className="info-label">Trường:</span>
+          <span className="info-value">{data.school || "-"}</span>
+        </div>
+        <div className="info-row">
+          <span className="info-label">Ngành:</span>
+          <span className="info-value">{data.major || "-"}</span>
+        </div>
+        <div className="info-row">
+          <span className="info-label">Trạng thái:</span>
+          <span className="info-value">
+            {data.status === "active" ? "Đang thực tập" : "Hoàn thành"}
+          </span>
+        </div>
+        <div className="info-row">
+          <span className="info-label">Thời gian:</span>
+          <span className="info-value">
+            {data.startDate} - {data.endDate}
+          </span>
         </div>
         <div className="form-actions">
-          <button className="btn-outline" onClick={onClose}>
+          <button className="btn btn-outline" onClick={onClose}>
             Đóng
           </button>
         </div>
@@ -766,7 +844,7 @@ function ViewInternshipModal({ data, onClose }) {
   );
 }
 
-// ✅ EditInternshipModal với dropdown programs
+// Edit Modal
 function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
   const [title, setTitle] = useState(data.title || "");
   const [student, setStudent] = useState(data.student || "");
@@ -780,16 +858,12 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
   const [endDate, setEndDate] = useState(
     data.endDate ? dayjs(data.endDate) : null
   );
-  const [showCustomTitle, setShowCustomTitle] = useState(
-    !programs.includes(data.title)
-  ); // ✅ Nếu title không có trong list -> cho phép nhập tự do
   const [validationErrors, setValidationErrors] = useState({});
 
   const handleDateChange = (setter, field) => (date) => {
     setter(date);
-    if (validationErrors[field]) {
+    if (validationErrors[field])
       setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
   };
 
   const validate = (d) => {
@@ -848,11 +922,10 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
       <div className="modal-box">
         <h2 className="modal-title">Sửa thông tin thực tập</h2>
         <form onSubmit={onSubmit}>
-          <div className="form-row cols-2-1">
-            {/* ✅ Vị trí với dropdown hoặc input tùy chọn */}
+          <div className="form-row">
             <div className="form-group">
               <label className="form-label">
-                Vị trí <span style={{ color: "red" }}>*</span>
+                Vị trí <span className="required">*</span>
               </label>
               <select
                 className={`form-select ${
@@ -871,15 +944,11 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
               {validationErrors.title && (
                 <div className="error-message">{validationErrors.title}</div>
               )}
-
-              {validationErrors.title && (
-                <div className="error-message">{validationErrors.title}</div>
-              )}
             </div>
 
             <div className="form-group">
               <label className="form-label">
-                Email <span style={{ color: "red" }}>*</span>
+                Email <span className="required">*</span>
               </label>
               <input
                 type="email"
@@ -901,7 +970,7 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">
-                Sinh viên <span style={{ color: "red" }}>*</span>
+                Sinh viên <span className="required">*</span>
               </label>
               <input
                 className={`form-input ${
@@ -949,7 +1018,7 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">
-                Ngày bắt đầu <span style={{ color: "red" }}>*</span>
+                Ngày bắt đầu <span className="required">*</span>
               </label>
               <DatePicker
                 format="YYYY-MM-DD"
@@ -967,7 +1036,7 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
             </div>
             <div className="form-group">
               <label className="form-label">
-                Ngày kết thúc <span style={{ color: "red" }}>*</span>
+                Ngày kết thúc <span className="required">*</span>
               </label>
               <DatePicker
                 format="YYYY-MM-DD"
@@ -984,10 +1053,10 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-outline" onClick={onClose}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>
               Hủy
             </button>
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn btn-primary">
               Lưu
             </button>
           </div>
@@ -997,6 +1066,7 @@ function EditInternshipModal({ data, onClose, onSave, programs = [] }) {
   );
 }
 
+// Select Intern Modal
 function SelectInternModal({ onClose, onSelect, existingInternships = [] }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1014,7 +1084,7 @@ function SelectInternModal({ onClose, onSelect, existingInternships = [] }) {
       setUsers(userList);
     } catch (error) {
       console.error("Error loading INTERN users:", error);
-      alert("Không thể tải danh sách INTERN");
+      toast.error("Không thể tải danh sách INTERN");
     } finally {
       setLoading(false);
     }
@@ -1027,10 +1097,7 @@ function SelectInternModal({ onClose, onSelect, existingInternships = [] }) {
   );
 
   const filteredUsers = users.filter((user) => {
-    if (existingEmails.has(user.email?.toLowerCase())) {
-      return false;
-    }
-
+    if (existingEmails.has(user.email?.toLowerCase())) return false;
     if (!searchText) return true;
     const search = searchText.toLowerCase();
     return (
@@ -1041,10 +1108,10 @@ function SelectInternModal({ onClose, onSelect, existingInternships = [] }) {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-box" style={{ maxWidth: "600px", width: "70%" }}>
+      <div className="modal-box select-intern-modal">
         <h2 className="modal-title">Chọn INTERN từ danh sách người dùng</h2>
 
-        <div className="form-group" style={{ marginBottom: 16 }}>
+        <div className="form-group select-intern-search">
           <input
             className="form-input"
             placeholder="Tìm kiếm theo tên hoặc email..."
@@ -1054,15 +1121,15 @@ function SelectInternModal({ onClose, onSelect, existingInternships = [] }) {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: 20 }}>Đang tải...</div>
+          <div className="loading center" style={{ padding: 20 }}>
+            Đang tải...
+          </div>
         ) : filteredUsers.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 20, color: "#666" }}>
-            Không tìm thấy user có role INTERN
+          <div className="empty" style={{ padding: 20 }}>
+            <div className="empty-text">Không tìm thấy user có role INTERN</div>
           </div>
         ) : (
-          <div
-            style={{ maxHeight: "500px", overflowY: "auto", marginBottom: 16 }}
-          >
+          <div className="select-intern-list">
             <table className="table">
               <thead>
                 <tr>
@@ -1092,7 +1159,7 @@ function SelectInternModal({ onClose, onSelect, existingInternships = [] }) {
         )}
 
         <div className="form-actions">
-          <button className="btn-outline" onClick={onClose}>
+          <button className="btn btn-outline" onClick={onClose}>
             Đóng
           </button>
         </div>

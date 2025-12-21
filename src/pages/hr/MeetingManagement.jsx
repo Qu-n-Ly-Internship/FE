@@ -156,7 +156,9 @@ export default function MeetingManagement() {
           }}
         >
           <div className="form-group">
-            <label className="form-label">Tìm kiếm</label>
+            <label htmlFor="searchFilter" className="form-label">
+              Tìm kiếm
+            </label>
             <input
               className="form-input"
               placeholder="Tìm theo tiêu đề, địa điểm, chương trình"
@@ -180,7 +182,7 @@ export default function MeetingManagement() {
           <div className="form-group">
             <button
               type="button"
-              className="btn clear-filters-btn"
+              className="btn btn-clear"
               onClick={() => {
                 setSearchText("");
                 setStatusFilter("");
@@ -272,7 +274,7 @@ export default function MeetingManagement() {
           </div>
           <div className="pagination-controls">
             <button
-              className="btn btn-sm"
+              className="btn btn-secondary btn-sm"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             >
@@ -298,7 +300,7 @@ export default function MeetingManagement() {
             )}
 
             <button
-              className="btn btn-sm"
+              className="btn btn-secondary btn-sm"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             >
@@ -516,7 +518,7 @@ function CreateMeetingModal({ onClose, onCreate }) {
             <label htmlFor="description">Mô tả cuộc họp</label>
             <textarea
               id="description"
-              className="form-input"
+              className="form-textarea"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Nội dung, chương trình cuộc họp..."

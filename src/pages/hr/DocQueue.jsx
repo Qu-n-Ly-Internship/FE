@@ -14,35 +14,45 @@ export default function DocQueue() {
   const pageSize = 10;
 
   async function load() {
-    setLoading(true);
-    // Chỉ lấy CV chờ duyệt, không lấy documents
-    const cvList = await getPendingCVs();
+    try {
+      setLoading(true);
+      // Chỉ lấy CV chờ duyệt, không lấy documents
+      const cvList = await getPendingCVs();
 
-    // Lọc chỉ lấy CV có status PENDING
-    const filteredCVs = cvList.filter((cv) => cv.status === "PENDING");
+      // Lọc chỉ lấy CV có status PENDING
+      const filteredCVs = cvList.filter((cv) => cv.status === "PENDING");
 
-    // Map CV thành format hiển thị
-    const combinedItems = filteredCVs.map((cv) => ({
-      id: cv.id,
-      type: "CV",
-      fileName: cv.fileName,
-      uploadedAt: cv.uploadedAt,
-      status: cv.status,
-      note: "",
-      userEmail: cv.userEmail,
-      isCV: true,
-      storagePath: cv.storagePath,
-      internName: cv.internName,
-      university: cv.university,
-      phone: cv.phone,
-    }));
+      // Map CV thành format hiển thị
+      const combinedItems = filteredCVs.map((cv) => ({
+        id: cv.id,
+        type: "CV",
+        fileName: cv.fileName,
+        uploadedAt: cv.uploadedAt,
+        status: cv.status,
+        note: "",
+        userEmail: cv.userEmail,
+        isCV: true,
+        storagePath: cv.storagePath,
+        internName: cv.internName,
+        university: cv.university,
+        phone: cv.phone,
+      }));
 
-    setItems(combinedItems);
-    setLoading(false);
+      setItems(combinedItems);
+    } catch (error) {
+      console.error("Load pending CVs error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
+
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [items]);
 
   const handleReview = (document, action) => {
     setReviewing({ ...document, action });
@@ -77,19 +87,20 @@ export default function DocQueue() {
   }
 
   return (
-    <div>
-      <h1 className="page-title" style={{ marginBottom: 12 }}>
-        Hồ sơ chờ duyệt
-      </h1>
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">Hồ sơ chờ duyệt</h1>
+      </div>
+
       <div className="card">
-        <table className="table" style={{ fontSize: 14 }}>
+        <table className="table">
           <thead>
             <tr>
               <th className="table-th">Tài liệu</th>
               <th className="table-th">Tên file</th>
               <th className="table-th">Ngày nộp</th>
               <th className="table-th">Trạng thái</th>
-              <th className="table-th" style={{ width: 200 }}>
+              <th className="table-th center" style={{ width: 200 }}>
                 Thao tác
               </th>
             </tr>
@@ -97,58 +108,63 @@ export default function DocQueue() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={5} className="loading">
+                <td colSpan={5} className="loading center">
                   Đang tải…
                 </td>
               </tr>
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={5} className="empty">
+                <td colSpan={5} className="empty center">
                   Không có hồ sơ chờ duyệt.
                 </td>
               </tr>
             )}
-            {pageItems.map((d) => (
-              <tr key={d.id}>
-                <td className="table-td">{d.type}</td>
-                <td className="table-td">
-                  {d.storagePath ? (
-                    <a
-                      href={d.storagePath}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: "#1976d2", textDecoration: "underline" }}
-                    >
-                      {d.fileName}
-                    </a>
-                  ) : (
-                    d.fileName
-                  )}
-                </td>
-                <td className="table-td">
-                  {new Date(d.uploadedAt).toLocaleDateString()}
-                </td>
-                <td className="table-td">
-                  <StatusBadge status={d.status} />
-                </td>
-                <td className="table-td">
-                  <button
-                    onClick={() => handleReview(d, "APPROVE")}
-                    className="btn btn-duyet"
-                    style={{ marginRight: 8 }}
-                  >
-                    Duyệt
-                  </button>
-                  <button
-                    onClick={() => handleReview(d, "REJECT")}
-                    className="btn btn-tuchoi"
-                  >
-                    Từ chối
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {!loading &&
+              pageItems.map((d) => (
+                <tr key={d.id}>
+                  <td className="table-td">{d.type}</td>
+                  <td className="table-td">
+                    {d.storagePath ? (
+                      <a
+                        href={d.storagePath}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: "var(--primary)",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        {d.fileName}
+                      </a>
+                    ) : (
+                      d.fileName
+                    )}
+                  </td>
+                  <td className="table-td">
+                    {new Date(d.uploadedAt).toLocaleDateString("vi-VN")}
+                  </td>
+                  <td className="table-td">
+                    <StatusBadge status={d.status} />
+                  </td>
+                  <td className="table-td center">
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        onClick={() => handleReview(d, "APPROVE")}
+                        className="btn btn-success"
+                      >
+                        Duyệt
+                      </button>
+                      <button
+                        onClick={() => handleReview(d, "REJECT")}
+                        className="btn btn-danger"
+                      >
+                        Từ chối
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
 
@@ -199,6 +215,7 @@ export default function DocQueue() {
           </div>
         )}
       </div>
+
       {reviewing && (
         <ReviewModal
           document={reviewing}

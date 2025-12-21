@@ -27,11 +27,13 @@ export default function HRLeaveApprovalPage() {
   // Filters
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [dateRangeFilter, setDateRangeFilter] = useState(null);
+
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 15;
+  const pageSize = 10;
 
   useEffect(() => {
     loadLeaveRequests();
@@ -61,16 +63,6 @@ export default function HRLeaveApprovalPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function getLeaveTypeName(type) {
-    const typeMap = {
-      paid: "Có phép",
-      unpaid: "Không phép",
-      sick: "Ốm đau",
-      other: "Khác",
-    };
-    return typeMap[type] || type;
   }
 
   function getStatusBadge(status) {
@@ -110,35 +102,32 @@ export default function HRLeaveApprovalPage() {
       ? req.status?.toLowerCase() === statusFilter.toLowerCase()
       : true;
 
-    const matchesDateRange = dateRangeFilter
-      ? dayjs(req.startDate).isBetween(
-          dateRangeFilter[0],
-          dateRangeFilter[1],
-          "day",
-          "[]"
-        ) ||
-        dayjs(req.endDate).isBetween(
-          dateRangeFilter[0],
-          dateRangeFilter[1],
-          "day",
-          "[]"
-        )
-      : true;
+    const startDate = startDateFilter ? new Date(startDateFilter) : null;
+    const endDate = endDateFilter ? new Date(endDateFilter) : null;
+    const requestDate = new Date(req.startDate);
 
-    return matchesSearch && matchesStatus && matchesDateRange;
+    if (startDate && requestDate < startDate) {
+      return false;
+    }
+    if (endDate && requestDate > endDate) {
+      return false;
+    }
+
+    return matchesSearch && matchesStatus;
   });
 
   // Reset filters
   function clearFilters() {
     setSearchText("");
     setStatusFilter("");
-    setDateRangeFilter(null);
+    setStartDateFilter("");
+    setEndDateFilter("");
   }
 
   // Pagination
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchText, statusFilter, dateRangeFilter]);
+  }, [searchText, statusFilter, startDateFilter, endDateFilter]);
 
   const totalItems = filteredRequests.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -161,27 +150,31 @@ export default function HRLeaveApprovalPage() {
     try {
       await approveLeaveRequest(request.id, {
         hrEmail: user?.email,
-        note: note || ""
+        note: note || "",
       });
 
       // ✅ HIỂN THỊ THÔNG BÁO THÀNH CÔNG
       setNotification({
-        type: 'success',
+        type: "success",
         message: `Đã duyệt yêu cầu nghỉ phép của ${request.internName}`,
-        details: `Từ ${dayjs(request.startDate).format("DD/MM/YYYY")} đến ${dayjs(request.endDate).format("DD/MM/YYYY")}`
+        details: `Từ ${dayjs(request.startDate).format(
+          "DD/MM/YYYY"
+        )} đến ${dayjs(request.endDate).format("DD/MM/YYYY")}`,
       });
 
       setShowApproveModal(null);
       await loadLeaveRequests();
-
     } catch (error) {
       console.error("Lỗi khi duyệt:", error);
 
       // ✅ HIỂN THỊ THÔNG BÁO LỖI
       setNotification({
-        type: 'error',
-        message: 'Duyệt yêu cầu thất bại',
-        details: error?.response?.data?.message || error?.message || 'Vui lòng thử lại'
+        type: "error",
+        message: "Duyệt yêu cầu thất bại",
+        details:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Vui lòng thử lại",
       });
     }
   }
@@ -190,9 +183,9 @@ export default function HRLeaveApprovalPage() {
   async function handleReject(request, reason) {
     if (!reason || reason.trim().length < 10) {
       setNotification({
-        type: 'error',
-        message: 'Lý do từ chối không hợp lệ',
-        details: 'Vui lòng nhập lý do ít nhất 10 ký tự'
+        type: "error",
+        message: "Lý do từ chối không hợp lệ",
+        details: "Vui lòng nhập lý do ít nhất 10 ký tự",
       });
       return;
     }
@@ -200,27 +193,29 @@ export default function HRLeaveApprovalPage() {
     try {
       await rejectLeaveRequest(request.id, {
         hrEmail: user?.email,
-        rejectionReason: reason.trim()
+        rejectionReason: reason.trim(),
       });
 
       // ✅ HIỂN THỊ THÔNG BÁO THÀNH CÔNG
       setNotification({
-        type: 'warning',
+        type: "warning",
         message: `Đã từ chối yêu cầu nghỉ phép của ${request.internName}`,
-        details: `Lý do: ${reason.trim()}`
+        details: `Lý do: ${reason.trim()}`,
       });
 
       setShowRejectModal(null);
       await loadLeaveRequests();
-
     } catch (error) {
       console.error("Lỗi khi từ chối:", error);
 
       // ✅ HIỂN THỊ THÔNG BÁO LỖI
       setNotification({
-        type: 'error',
-        message: 'Từ chối yêu cầu thất bại',
-        details: error?.response?.data?.message || error?.message || 'Vui lòng thử lại'
+        type: "error",
+        message: "Từ chối yêu cầu thất bại",
+        details:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Vui lòng thử lại",
       });
     }
   }
@@ -319,13 +314,21 @@ export default function HRLeaveApprovalPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Lọc theo ngày nghỉ</label>
-            <RangePicker
-              format="DD/MM/YYYY"
-              value={dateRangeFilter}
-              onChange={(dates) => setDateRangeFilter(dates)}
-              className="form-date-range"
-              placeholder={["Từ ngày", "Đến ngày"]}
+            <label className="form-label">Từ ngày</label>
+            <input
+              type="date"
+              className="form-input"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Đến ngày</label>
+            <input
+              type="date"
+              className="form-input"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
             />
           </div>
 
@@ -362,7 +365,7 @@ export default function HRLeaveApprovalPage() {
                     <th className="table-th">Lý do</th>
                     <th className="table-th">Trạng thái</th>
                     <th className="table-th">Ngày tạo</th>
-                    <th className="table-th">Hành động</th>
+                    <th className="table-th center">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -374,7 +377,13 @@ export default function HRLeaveApprovalPage() {
                       <td className="table-td">
                         <strong>{request.internName || "-"}</strong>
                         {request.internEmail && (
-                          <div style={{ fontSize: '0.85em', color: '#666', marginTop: '2px' }}>
+                          <div
+                            style={{
+                              fontSize: "0.85em",
+                              color: "#666",
+                              marginTop: "2px",
+                            }}
+                          >
                             {request.internEmail}
                           </div>
                         )}
@@ -383,7 +392,7 @@ export default function HRLeaveApprovalPage() {
                         {dayjs(request.startDate).format("DD/MM/YYYY")} -{" "}
                         {dayjs(request.endDate).format("DD/MM/YYYY")}
                       </td>
-                      <td className="table-td center">
+                      <td className="table-td ">
                         {calculateDays(request.startDate, request.endDate)} ngày
                       </td>
                       <td className="table-td">
@@ -397,9 +406,9 @@ export default function HRLeaveApprovalPage() {
                       <td className="table-td">
                         {dayjs(request.createdAt).format("DD/MM/YYYY HH:mm")}
                       </td>
-                      <td className="table-td">
+                      <td className="table-td center">
                         {request.status?.toLowerCase() === "pending" ? (
-                          <div className="action-buttons">
+                          <div className="action-buttons center">
                             <button
                               className="btn btn-approve"
                               onClick={() => setShowApproveModal(request)}
@@ -486,33 +495,33 @@ export default function HRLeaveApprovalPage() {
 // ✅ COMPONENT THÔNG BÁO INLINE
 function InlineNotification({ type, message, details, onClose }) {
   const icons = {
-    success: '✅',
-    error: '❌',
-    warning: '⚠️',
-    info: 'ℹ️'
+    success: "✅",
+    error: "❌",
+    warning: "⚠️",
+    info: "ℹ️",
   };
 
   const colors = {
     success: {
-      bg: '#d1fae5',
-      border: '#10b981',
-      text: '#065f46'
+      bg: "#d1fae5",
+      border: "#10b981",
+      text: "#065f46",
     },
     error: {
-      bg: '#fee2e2',
-      border: '#ef4444',
-      text: '#991b1b'
+      bg: "#fee2e2",
+      border: "#ef4444",
+      text: "#991b1b",
     },
     warning: {
-      bg: '#fef3c7',
-      border: '#f59e0b',
-      text: '#92400e'
+      bg: "#fef3c7",
+      border: "#f59e0b",
+      text: "#92400e",
     },
     info: {
-      bg: '#dbeafe',
-      border: '#3b82f6',
-      text: '#1e40af'
-    }
+      bg: "#dbeafe",
+      border: "#3b82f6",
+      text: "#1e40af",
+    },
   };
 
   const style = colors[type] || colors.info;
@@ -522,34 +531,36 @@ function InlineNotification({ type, message, details, onClose }) {
       style={{
         backgroundColor: style.bg,
         borderLeft: `4px solid ${style.border}`,
-        padding: '16px 20px',
-        borderRadius: '8px',
-        marginBottom: '24px',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        animation: 'slideDown 0.3s ease-out'
+        padding: "16px 20px",
+        borderRadius: "8px",
+        marginBottom: "24px",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: "12px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        animation: "slideDown 0.3s ease-out",
       }}
     >
-      <div style={{ fontSize: '24px', flexShrink: 0 }}>
-        {icons[type]}
-      </div>
+      <div style={{ fontSize: "24px", flexShrink: 0 }}>{icons[type]}</div>
       <div style={{ flex: 1 }}>
-        <div style={{
-          fontWeight: '600',
-          color: style.text,
-          fontSize: '16px',
-          marginBottom: '4px'
-        }}>
+        <div
+          style={{
+            fontWeight: "600",
+            color: style.text,
+            fontSize: "16px",
+            marginBottom: "4px",
+          }}
+        >
           {message}
         </div>
         {details && (
-          <div style={{
-            color: style.text,
-            fontSize: '14px',
-            opacity: 0.8
-          }}>
+          <div
+            style={{
+              color: style.text,
+              fontSize: "14px",
+              opacity: 0.8,
+            }}
+          >
             {details}
           </div>
         )}
@@ -557,18 +568,18 @@ function InlineNotification({ type, message, details, onClose }) {
       <button
         onClick={onClose}
         style={{
-          background: 'none',
-          border: 'none',
+          background: "none",
+          border: "none",
           color: style.text,
-          cursor: 'pointer',
-          fontSize: '20px',
-          padding: '0',
-          lineHeight: '1',
+          cursor: "pointer",
+          fontSize: "20px",
+          padding: "0",
+          lineHeight: "1",
           opacity: 0.6,
-          transition: 'opacity 0.2s'
+          transition: "opacity 0.2s",
         }}
-        onMouseEnter={(e) => e.target.style.opacity = '1'}
-        onMouseLeave={(e) => e.target.style.opacity = '0.6'}
+        onMouseEnter={(e) => (e.target.style.opacity = "1")}
+        onMouseLeave={(e) => (e.target.style.opacity = "0.6")}
       >
         ×
       </button>

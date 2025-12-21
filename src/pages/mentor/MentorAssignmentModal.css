@@ -1,0 +1,81 @@
+/* src/pages/mentor/MentorAssignmentModal.css - Standardized with shared styles */
+
+/* Import shared styles */
+@import "../../styles/variables.css";
+@import "../../styles/buttons.css";
+@import "../../styles/forms.css";
+@import "../../styles/cards-and-modals.css";
+
+/* Page specific styles only */
+
+/* Status Display */
+.mentor-status-info {
+  padding: var(--spacing-lg);
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-xl);
+  border: 1px solid var(--border-color);
+}
+
+.mentor-status-info strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Current Mentor Display */
+.current-mentor-name {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.current-mentor-email {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* Assigned Date */
+.assigned-date {
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* Unassign Button Container */
+.unassign-action {
+  margin-top: var(--spacing-md);
+}
+
+/* Success/Error Messages */
+.message-success {
+  color: var(--success);
+  padding: var(--spacing-md);
+  background: var(--success-light);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.message-error {
+  color: var(--danger);
+  padding: var(--spacing-md);
+  background: var(--danger-light);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Loading State */
+.loading-assignment {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mentor-status-info {
+    padding: var(--spacing-md);
+  }
+}

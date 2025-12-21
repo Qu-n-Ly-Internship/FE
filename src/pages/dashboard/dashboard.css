@@ -1,77 +1,276 @@
-/* Dashboard page styles */
+/* dashboard.css - Import các styles chuẩn */
+
+/* Import các file CSS chuẩn */
+@import "../../styles/variables.css";
+@import "../../styles/cards-and-modals.css";
+
+/* ===== DASHBOARD CUSTOM STYLES ===== */
+
+/* Container */
 .dashboard-container {
-  padding: 24px;
+  padding: var(--spacing-2xl);
+  max-width: 1600px;
+  margin: 0 auto;
 }
+
+.dashboard-container.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Title */
 .dashboard-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--primary);
+  letter-spacing: 1px;
 }
+
 .dashboard-desc {
+  margin: 0 0 var(--spacing-2xl) 0;
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+}
+
+/* Stats Cards Row */
+.dashboard-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-3xl);
+}
+
+.dashboard-stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base) ease;
+  min-width: 200px;
+}
+
+.dashboard-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.dashboard-stat-icon {
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.dashboard-stat-info {
+  flex: 1;
+}
+
+.dashboard-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+  color: var(--primary);
+}
+
+.dashboard-stat-label {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Tips Section */
+.dashboard-section {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.dashboard-section-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+  color: var(--primary);
+}
+
+.dashboard-tips-list {
+  padding-left: 0;
+  list-style: none;
   margin: 0;
 }
 
-/* Dashboard biểu đồ thống kê */
+.dashboard-tip-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.dashboard-tip-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.dashboard-tip-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.dashboard-tip-text {
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+}
+
+/* Charts Row */
 .chart-row {
   display: flex;
-  justify-content: center;   /* căn giữa theo chiều ngang */
-  align-items: flex-start;   /* canh đầu hàng ngang */
-  gap: 40px;                 /* khoảng cách giữa 2 biểu đồ */
-  flex-wrap: wrap;           /* xuống hàng khi màn hình nhỏ */
-  margin-top: 40px;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--spacing-3xl);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-3xl);
 }
 
 .chart-box {
-  background-color: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s ease;
+  transition: transform var(--transition-base) ease;
+  min-width: 400px;
 }
 
 .chart-box:hover {
   transform: translateY(-5px);
+  box-shadow: var(--shadow-xl);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+.chart-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+  color: var(--primary);
+  text-align: center;
+}
 
-/* Tablet */
+/* Role Info Section */
+.dashboard-role-info {
+  margin-top: var(--spacing-3xl);
+  padding: var(--spacing-2xl);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid var(--primary);
+}
+
+.dashboard-role-info h3 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xl);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.dashboard-role-info p {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard-stats-row {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .chart-box {
+    min-width: 350px;
+  }
+}
+
 @media (max-width: 992px) {
   .dashboard-container {
-    padding: 20px 16px;
+    padding: var(--spacing-xl) var(--spacing-lg);
   }
+
   .dashboard-title {
-    font-size: 22px;
+    font-size: var(--font-size-2xl);
+  }
+
+  .chart-row {
+    gap: var(--spacing-2xl);
   }
 }
 
-/* Mobile landscape */
 @media (max-width: 768px) {
   .dashboard-container {
-    padding: 16px 12px;
+    padding: var(--spacing-lg) var(--spacing-md);
   }
+
   .dashboard-title {
-    font-size: 20px;
-    margin-bottom: 6px;
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-xs);
   }
+
   .dashboard-desc {
-    font-size: 14px;
+    font-size: var(--font-size-md);
+  }
+
+  .dashboard-stats-row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+
+  .dashboard-stat-card {
+    padding: var(--spacing-lg);
+  }
+
+  .dashboard-stat-icon {
+    font-size: 32px;
+  }
+
+  .dashboard-stat-value {
+    font-size: 24px;
+  }
+
+  .chart-box {
+    min-width: 100%;
+    padding: var(--spacing-lg);
+  }
+
+  .chart-row {
+    gap: var(--spacing-xl);
   }
 }
 
-/* Mobile portrait */
 @media (max-width: 480px) {
   .dashboard-container {
-    padding: 12px 8px;
+    padding: var(--spacing-md) var(--spacing-sm);
   }
+
   .dashboard-title {
-    font-size: 18px;
-    margin-bottom: 4px;
+    font-size: var(--font-size-lg);
   }
+
   .dashboard-desc {
-    font-size: 13px;
+    font-size: var(--font-size-base);
+  }
+
+  .dashboard-stat-value {
+    font-size: 20px;
+  }
+
+  .dashboard-stat-label {
+    font-size: var(--font-size-sm);
   }
 }

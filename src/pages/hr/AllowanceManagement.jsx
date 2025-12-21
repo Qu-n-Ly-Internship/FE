@@ -33,9 +33,42 @@ export default function AllowanceManagement() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   useEffect(() => {
     loadAllowances();
   }, []);
+
+  // Tính toán phân trang
+  const totalItems = allowances.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = allowances.slice(startIndex, startIndex + pageSize);
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
+
+  // Reset về trang đầu khi có thay đổi dữ liệu
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [allowances]);
 
   const loadAllowances = async () => {
     try {
@@ -92,83 +125,181 @@ export default function AllowanceManagement() {
   return (
     <div className="page-container">
       <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Page Header */}
       <div className="page-header">
         <h1 className="page-title">Quản lý Phụ cấp</h1>
         <button
-          className="btn btn-primary btn-sm"
+          className="btn btn-primary"
           onClick={() => setShowCreateModal(true)}
         >
-          Thêm phụ cấp mới
+          ➕ Thêm phụ cấp mới
         </button>
       </div>
 
+      {/* Statistics Cards */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">💰</div>
+          <div className="stat-info">
+            <div className="stat-value">{allowances.length}</div>
+            <div className="stat-label">Tổng phụ cấp</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">✓</div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {allowances.filter((a) => a.paidAt).length}
+            </div>
+            <div className="stat-label">Đã thanh toán</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">⏳</div>
+          <div className="stat-info">
+            <div className="stat-value stat-pending-value">
+              {allowances.filter((a) => !a.paidAt).length}
+            </div>
+            <div className="stat-label">Chưa thanh toán</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-total">💵</div>
+          <div className="stat-info">
+            <div className="stat-value" style={{ fontSize: "20px" }}>
+              {formatCurrency(
+                allowances.reduce((sum, a) => sum + (a.amount || 0), 0)
+              )}
+            </div>
+            <div className="stat-label">Tổng số tiền</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
       <div className="card">
-        <table className="table">
-          <thead>
-            <tr>
-              <th className="table-th">STT</th>
-              <th className="table-th">Tên Thực tập sinh</th>
-              <th className="table-th">Loại phụ cấp</th>
-              <th className="table-th">Số tiền</th>
-              <th className="table-th">Ngày áp dụng</th>
-              <th className="table-th">Ngày thanh toán</th>
-              <th className="table-th">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="7" className="table-td center">
-                  Đang tải...
-                </td>
-              </tr>
-            ) : allowances.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="table-td center">
-                  Chưa có dữ liệu phụ cấp.
-                </td>
-              </tr>
-            ) : (
-              allowances.map((item, index) => (
-                <tr key={item.allowanceId}>
-                  <td className="table-td">{index + 1}</td>
-                  <td className="table-td">{item.internName}</td>
-                  <td className="table-td">{item.allowanceType || "N/A"}</td>
-                  <td className="table-td">{formatCurrency(item.amount)}</td>
-                  <td className="table-td">{formatDate(item.date)}</td>
-                  <td className="table-td">
-                    {item.paidAt ? (
-                      <span style={{ color: "green", fontWeight: "bold" }}>
-                        {formatDate(item.paidAt)}
+        {loading ? (
+          <div className="loading center">Đang tải...</div>
+        ) : allowances.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">💰</div>
+            <div className="empty-text">Chưa có dữ liệu phụ cấp</div>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="table-th">STT</th>
+                  <th className="table-th">Tên Thực tập sinh</th>
+                  <th className="table-th">Loại phụ cấp</th>
+                  <th className="table-th">Số tiền</th>
+                  <th className="table-th">Ngày áp dụng</th>
+                  <th className="table-th center">Ngày thanh toán</th>
+                  <th className="table-th center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.map((item, index) => (
+                  <tr key={item.allowanceId}>
+                    <td className="table-td center">
+                      {startIndex + index + 1}
+                    </td>
+                    <td className="table-td">
+                      <strong>{item.internName}</strong>
+                    </td>
+                    <td className="table-td">{item.allowanceType || "N/A"}</td>
+                    <td className="table-td">
+                      <strong style={{ color: "var(--success)" }}>
+                        {formatCurrency(item.amount)}
+                      </strong>
+                    </td>
+                    <td className="table-td">{formatDate(item.date)}</td>
+                    <td className="table-td center">
+                      {item.paidAt ? (
+                        <span className="badge badge-approved">
+                          {formatDate(item.paidAt)}
+                        </span>
+                      ) : (
+                        <span className="badge badge-pending">
+                          Chưa thanh toán
+                        </span>
+                      )}
+                    </td>
+                    <td className="table-td center">
+                      <div className="action-buttons ">
+                        <button
+                          className="btn btn-danger btn-sm "
+                          onClick={() =>
+                            handleDeleteAllowance(item.allowanceId)
+                          }
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Phân trang */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+                  {Math.min(startIndex + pageSize, totalItems)} trên{" "}
+                  {totalItems}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    ‹ Trước
+                  </button>
+
+                  {getPageNumbers().map((p, idx) =>
+                    p === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
                       </span>
                     ) : (
-                      <span style={{ color: "gray" }}>-</span>
-                    )}
-                  </td>
-                  <td className="table-td">
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDeleteAllowance(item.allowanceId)}
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))
+                      <button
+                        key={p}
+                        className={`btn btn-sm page-btn ${
+                          p === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                  >
+                    Sau ›
+                  </button>
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
 
       {showCreateModal && (
-        <div className="create-allowance-modal-overlay">
-          <div className="create-allowance-modal">
-            <CreateAllowanceModal
-              onClose={() => setShowCreateModal(false)}
-              onCreate={handleCreateAllowance}
-            />
-          </div>
-        </div>
+        <CreateAllowanceModal
+          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreateAllowance}
+        />
       )}
     </div>
   );
@@ -213,64 +344,73 @@ function CreateAllowanceModal({ onClose, onCreate }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <h2 className="modal-title">Thêm Phụ cấp cho Thực tập sinh</h2>
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="form-group">
-            <label htmlFor="intern-select">Thực tập sinh *</label>
-            <div className="input-with-button">
-              <input
-                id="intern-select"
-                type="text"
-                className={`form-input ${
-                  validationErrors.intern ? "input-error" : ""
-                }`}
-                readOnly
-                value={
-                  selectedIntern
-                    ? `${selectedIntern.student} (${selectedIntern.studentEmail})`
-                    : ""
-                }
-                placeholder="Chọn một thực tập sinh từ danh sách"
-              />
-              <button
-                style={{ padding: "6px 12px" }}
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setShowInternModal(true)}
-              >
-                Chọn
-              </button>
-            </div>
-            {validationErrors.intern && (
-              <div className="error-message">{validationErrors.intern}</div>
-            )}
-          </div>
+        <div className="modal-header">
+          <h2 className="modal-title">Thêm Phụ cấp cho Thực tập sinh</h2>
+          <button className="modal-close-btn" onClick={onClose}>
+            ✕
+          </button>
+        </div>
 
-          <div className="form-group">
-            <label htmlFor="allowance-type">Loại phụ cấp *</label>
-            <select
-              id="allowance-type"
-              className={`form-input ${
-                validationErrors.type ? "input-error" : ""
-              }`}
-              value={allowanceType}
-              onChange={(e) => setAllowanceType(e.target.value)}
-            >
-              <option value="Ăn trưa">Phụ cấp ăn trưa</option>
-              <option value="Đi lại">Phụ cấp đi lại</option>
-              <option value="Chuyên cần">Phụ cấp chuyên cần</option>
-              <option value="Khác">Khác</option>
-            </select>
-            {validationErrors.type && (
-              <div className="error-message">{validationErrors.type}</div>
-            )}
-          </div>
-
-          <div className="form-row">
+        <div className="modal-content">
+          <form onSubmit={handleSubmit} noValidate>
             <div className="form-group">
-              <label htmlFor="amount">Số tiền (VND) *</label>
+              <label className="form-label">
+                Thực tập sinh <span className="required">*</span>
+              </label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input
+                  type="text"
+                  className={`form-input ${
+                    validationErrors.intern ? "input-error" : ""
+                  }`}
+                  readOnly
+                  value={
+                    selectedIntern
+                      ? `${selectedIntern.student} (${selectedIntern.studentEmail})`
+                      : ""
+                  }
+                  placeholder="Chọn một thực tập sinh từ danh sách"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowInternModal(true)}
+                >
+                  Chọn
+                </button>
+              </div>
+              {validationErrors.intern && (
+                <div className="error-message">{validationErrors.intern}</div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                Loại phụ cấp <span className="required">*</span>
+              </label>
+              <select
+                className={`form-select ${
+                  validationErrors.type ? "input-error" : ""
+                }`}
+                value={allowanceType}
+                onChange={(e) => setAllowanceType(e.target.value)}
+              >
+                <option value="Ăn trưa">Phụ cấp ăn trưa</option>
+                <option value="Đi lại">Phụ cấp đi lại</option>
+                <option value="Chuyên cần">Phụ cấp chuyên cần</option>
+                <option value="Khác">Khác</option>
+              </select>
+              {validationErrors.type && (
+                <div className="error-message">{validationErrors.type}</div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                Số tiền (VND) <span className="required">*</span>
+              </label>
               <input
-                id="amount"
                 type="number"
                 className={`form-input ${
                   validationErrors.amount ? "input-error" : ""
@@ -284,14 +424,16 @@ function CreateAllowanceModal({ onClose, onCreate }) {
                 <div className="error-message">{validationErrors.amount}</div>
               )}
             </div>
+
             <div className="form-group">
-              <label htmlFor="apply-date">Ngày áp dụng *</label>
+              <label className="form-label">
+                Ngày áp dụng <span className="required">*</span>
+              </label>
               <DatePicker
-                id="apply-date"
-                format="YYYY-MM-DD"
+                format="DD/MM/YYYY"
                 value={applyDate}
                 onChange={(value) => setApplyDate(value)}
-                className="app-date-picker"
+                style={{ width: "100%" }}
                 status={validationErrors.date ? "error" : undefined}
                 showToday={false}
               />
@@ -299,43 +441,43 @@ function CreateAllowanceModal({ onClose, onCreate }) {
                 <div className="error-message">{validationErrors.date}</div>
               )}
             </div>
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="note">Ghi chú</label>
-            <textarea
-              id="note"
-              className="form-input"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Ghi chú thêm (không bắt buộc)"
-              rows="3"
-            />
-          </div>
+            <div className="form-group">
+              <label className="form-label">Ghi chú</label>
+              <textarea
+                className="form-textarea"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ghi chú thêm (không bắt buộc)"
+                rows="3"
+              />
+            </div>
 
-          <div className="form-actions">
-            <button type="button" className="btn-outline" onClick={onClose}>
-              Hủy
-            </button>
-            <button type="submit" className="btn-primary">
-              Lưu
-            </button>
-          </div>
-        </form>
-      </div>
-      {showInternModal && (
-        <div className="intern-selection-modal-overlay">
-          <div className="intern-selection-modal">
-            <InternSelectionModal
-              onClose={() => setShowInternModal(false)}
-              onSelect={(intern) => {
-                console.log("Selected intern:", intern);
-                setSelectedIntern(intern);
-                setShowInternModal(false);
-              }}
-            />
-          </div>
+            <div className="form-actions">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={onClose}
+              >
+                Hủy
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Lưu
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
+
+      {showInternModal && (
+        <InternSelectionModal
+          onClose={() => setShowInternModal(false)}
+          onSelect={(intern) => {
+            console.log("Selected intern:", intern);
+            setSelectedIntern(intern);
+            setShowInternModal(false);
+          }}
+        />
       )}
     </div>
   );

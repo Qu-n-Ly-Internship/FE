@@ -1,36 +1,23 @@
-/* DepartmentManagement.css */
+/* DepartmentManagement.css - Optimized with centralized styles */
 
-.page-container {
-  padding: 2rem;
-}
+/* ===== PAGE LAYOUT ===== */
 
-.page-header {
+.header-left {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
-.page-title {
-  margin: 0;
+.btn-back {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  width: fit-content;
 }
 
-.card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
-}
+/* ===== TABLE SPECIFIC ===== */
 
-.card-padding {
-  padding: 16px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.table-responsive {
+  overflow-x: auto;
 }
 
 .dept-table {
@@ -40,133 +27,178 @@
 
 .dept-table th,
 .dept-table td {
-  padding: 12px;
-  border: 1px solid #ddd;
-  text-align: center;
+  padding: var(--spacing-lg);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .dept-table th {
-  background: #f5f5f5;
-  font-weight: bold;
+  background-color: var(--bg-input);
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.5px;
+}
+
+.dept-table tbody tr {
+  transition: background-color var(--transition-base) ease;
+}
+
+.dept-table tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.dept-table th:first-child,
+.dept-table td:first-child {
+  text-align: center;
+  width: 60px;
+}
+
+.dept-table th:last-child,
+.dept-table td:last-child {
+  text-align: center;
+}
+
+/* ===== MENTOR LIST ===== */
+
+.mentor-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-width: 250px;
 }
 
 .mentor-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
-  background: #f9f9f9;
-  padding: 4px 8px;
-  border-radius: 4px;
+  gap: var(--spacing-md);
+  padding: 10px var(--spacing-md);
+  background-color: #f0f9ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base) ease;
 }
 
-.mentor-button {
-  margin-top: 16px;
-  width: 100%;
-  font-size: 0.75rem;
-  padding: 4px 8px;
+.mentor-item:hover {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+.mentor-name {
+  font-size: var(--font-size-md);
+  color: #1e40af;
+  font-weight: 500;
+  flex: 1;
+}
+
+.mentor-actions {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  gap: 6px;
 }
 
-.modal-box {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 500px;
+.no-mentor {
+  color: var(--text-muted);
+  font-size: var(--font-size-md);
+  text-align: center;
+  padding: var(--spacing-md);
+}
+
+.btn-add-mentor {
   width: 100%;
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
 }
 
-.modal-title {
-  margin: 0 0 20px 0;
-  font-size: 1.25rem;
-}
+/* ===== BUTTON SPECIFIC STYLES ===== */
 
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-}
-
-.form-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.btn-outline {
+.btn-icon {
+  padding: 6px 10px;
+  font-size: 16px;
   background: none;
-  border: 1px solid #007bff;
-  color: #007bff;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
 
-.btn-primary {
-  background: #007bff;
-  border: none;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
+.btn-icon:hover:not(:disabled) {
+  background-color: var(--bg-input);
+  border-color: var(--border-hover);
 }
 
-.btn-warning {
-  background: #ffc107;
-  color: #000;
-  height: 30px;
-  min-width: 60px;
+.btn-move:hover:not(:disabled) {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: var(--primary-light);
 }
 
-.btn-danger {
-  background: #dc3545;
-  color: #fff;
-  margin-left: 4px;
-  min-width: 60px;
+.btn-remove:hover:not(:disabled) {
+  color: var(--danger);
+  border-color: var(--danger);
+  background-color: var(--danger-light);
 }
 
-.btn-xs {
-  font-size: 0.75rem;
-  padding: 2px 4px;
-}
+/* ===== MODAL SPECIFIC ===== */
 
 .mentor-info {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #f0f7ff;
-  border-radius: 8px;
+  padding: var(--spacing-lg);
+  background-color: var(--primary-light);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-xl);
+  color: #1e40af;
+  font-size: var(--font-size-md);
 }
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 8px; /* base padding */
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  line-height: 1;
-  cursor: pointer;
+
+.mentor-info strong {
+  font-weight: 600;
+  margin-right: var(--spacing-sm);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 992px) {
+  .dept-table th,
+  .dept-table td {
+    padding: var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .mentor-list {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-left {
+    width: 100%;
+  }
+
+  .table-responsive {
+    overflow-x: scroll;
+  }
+
+  .dept-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dept-table th,
+  .dept-table td {
+    padding: 10px var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+
+  .mentor-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .mentor-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

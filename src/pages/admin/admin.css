@@ -1,428 +1,258 @@
-/* ================================
-   🌐 ADMIN PANEL GLOBAL STYLE
-   ================================ */
+/* admin.css - Import các styles chuẩn */
+
+/* Import các file CSS chuẩn */
+@import "../../styles/variables.css";
+@import "../../styles/buttons.css";
+@import "../../styles/forms.css";
+@import "../../styles/tables.css";
+@import "../../styles/cards-and-modals.css";
+
+/* ===== CUSTOM STYLES CHO ADMIN ===== */
+
+/* Admin specific variables */
 :root {
   --admin-primary: #0c203f;
-  --admin-success: #34c759;
-  --admin-danger: #ff3b30;
-  --admin-warning: #ffd60a;
-  --admin-bg-light: #f4f8fb;
-  --admin-bg-card: #fff;
-  --admin-border-radius: 12px;
-  --admin-shadow: 0 4px 16px rgba(19, 19, 20, 0.08);
-  --admin-font-main: "Segoe UI", "Roboto", Arial, sans-serif;
 }
 
-/* ================================
-   🧩 CONTAINER & TITLE
-   ================================ */
+/* Container */
 .admin-container {
-  padding: 32px 24px;
-  background: var(--admin-bg-light);
+  padding: var(--spacing-3xl) var(--spacing-2xl);
+  background: var(--bg-light);
   min-height: 100vh;
-  font-family: var(--admin-font-main);
 }
 
 .admin-title {
-  font-size: 28px;
+  margin: 0 0 var(--spacing-2xl) 0;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
-  margin: 0 0 18px 0;
-  color: var(--admin-primary);
+  color: var(--primary);
   letter-spacing: 1px;
 }
 
-/* ================================
-   🔍 TOOLBAR
-   ================================ */
+/* Toolbar */
 .admin-toolbar {
   display: flex;
-  gap: 12px;
-  margin-bottom: 18px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
   align-items: center;
   flex-wrap: wrap;
-}
-
-.admin-input,
-.admin-select {
-  padding: 10px 14px;
-  border: 1px solid #e3eaf2;
-  border-radius: 8px;
-  background: #f8fbff;
-  font-size: 15px;
-  transition: border 0.18s;
-}
-
-.admin-input:focus,
-.admin-select:focus {
-  border-color: var(--admin-primary);
-  outline: none;
-}
-
-.admin-input--sm,
-.admin-select--sm {
-  padding: 7px 12px;
-  font-size: 14px;
 }
 
 .admin-input--wide {
   width: 280px;
 }
 
-/* ================================
-   🔘 BUTTONS
-   ================================ */
-.admin-btn {
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  font-weight: 500;
-  font-family: var(--admin-font-main);
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-  box-shadow: 0 2px 8px rgba(43, 124, 255, 0.07);
-}
-
-.admin-btn--primary {
-  background: var(--admin-primary);
-  color: #ffffff !important;
-}
-.admin-btn--primary:hover {
-  background: #1761c7;
-}
-
-.admin-btn--outline-danger {
-  background: #fff;
-  color: var(--admin-danger);
-  border: 1px solid #ffd6d6;
-}
-.admin-btn--outline-danger:hover {
-  background: #ffeaea;
-}
-
 .admin-total {
   margin-left: auto;
-  font-size: 14px;
-  color: #666;
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
-/* ================================
-   ⚠️ ALERTS
-   ================================ */
+/* Alert */
 .admin-alert {
-  color: var(--admin-danger);
-  margin-bottom: 14px;
-  padding: 10px 14px;
-  background: #ffeaea;
-  border-radius: 8px;
-  font-size: 15px;
+  color: var(--danger);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--danger-light);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
 }
 
 .admin-alert--success {
-  color: var(--admin-success);
-  background: #eafbe7;
+  color: var(--success);
+  background: var(--success-light);
   border: 1px solid #c3e6cb;
-  padding: 14px 18px;
-  border-radius: 8px;
-  margin-bottom: 18px;
 }
 
-/* ================================
-   📋 TABLE
-   ================================ */
+/* Table card */
 .admin-card {
-  background: var(--admin-bg-card);
-  border-radius: var(--admin-border-radius);
-  box-shadow: var(--admin-shadow);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   overflow-x: auto;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-2xl);
 }
 
+/* Table specific */
 .admin-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 15px;
-  background: var(--admin-bg-card);
-  border-radius: var(--admin-border-radius);
-  overflow: hidden;
-  box-shadow: var(--admin-shadow);
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--bg-card);
 }
 
 .admin-thead-row {
-  background: linear-gradient(90deg, #eaf3ff 0%, #f4f8fb 100%);
-  text-align: left;
+  background: linear-gradient(
+    90deg,
+    var(--primary-light) 0%,
+    var(--bg-light) 100%
+  );
 }
 
 .admin-th {
   padding: 14px 12px;
+  text-align: center !important;
+  border-bottom: 2px solid var(--border-color);
   font-weight: 600;
-  color: var(--admin-primary);
-  font-size: 15px;
-  border-bottom: 2px solid #e3eaf2;
+  color: var(--primary);
+  font-size: var(--font-size-md);
+  white-space: nowrap;
 }
 
-/* Role column specific styles */
 .admin-td {
-  padding: 12px;
-  font-size: 14px;
-  border-bottom: 1px solid #e3eaf2;
-  background: #fff;
-  transition: background 0.2s;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--font-size-base);
+  background: var(--bg-card);
+  transition: background var(--transition-fast);
   vertical-align: middle;
-  text-align: left;
-}
-
-/* Style for the role display text */
-.admin-role-display,
-.admin-status-display {
-  display: inline-block;
-  padding: 6px 12px;
-  font-size: 14px;
-  color: #333;
-  margin-left: 8px;
-  min-width: 120px;
-  text-align: left;
-  background: #fff;
-  border: 1px solid #e3eaf2;
-  border-radius: 4px;
-  height: 32px;
-  line-height: 20px;
-  box-sizing: border-box;
-}
-
-/* Style for the role select dropdown */
-.admin-select--sm {
-  margin-left: 8px; /* Match the left margin of the role display */
-  min-width: 120px; /* Ensure consistent width */
-  text-align: left;
-}
-
-/* Ensure the role column header aligns with the content */
-th:nth-child(4) {
-  padding-left: 20px; /* Match the left padding of the role content */
+  text-align: center !important;
 }
 
 .admin-tr {
-  transition: background 0.2s;
-}
-.admin-tr:hover .admin-td {
-  background: #f0f6ff;
+  transition: background var(--transition-fast);
 }
 
-.admin-empty,
-.admin-loading {
-  padding: 14px;
-  color: #888;
-  font-size: 15px;
-  text-align: center;
+.admin-tr:hover .admin-td {
+  background: var(--bg-hover);
 }
 
 .admin-th:first-child,
 .admin-td:first-child {
   text-align: center;
+  width: 60px;
 }
 
-/* ================================
-   🧱 MODAL FORM
-   ================================ */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(213, 218, 226, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+.admin-td:last-child {
+  text-align: center;
+  width: 150px;
 }
 
-.modal-box {
-  background: var(--admin-bg-card);
-  padding: 32px 24px;
-  border-radius: 16px;
-  width: 420px;
-  max-width: 95vw;
-  box-shadow: var(--admin-shadow);
-}
-
-.modal-title {
-  margin: 0 0 18px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--admin-primary);
-}
-
-/* ================================
-   🧾 FORM ELEMENTS
-   ================================ */
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 15px;
-  color: #222;
-  font-weight: 500;
-}
-
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #e3eaf2;
-  border-radius: 8px;
+/* Role & Status display */
+.admin-role-display,
+.admin-status-display {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+  margin-left: 8px;
+  min-width: 120px;
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  height: 32px;
+  line-height: 20px;
   box-sizing: border-box;
-  font-size: 15px;
-  background: #f8fbff;
-  transition: border 0.18s;
 }
 
-.form-input:focus,
-.form-select:focus {
-  border-color: var(--admin-primary);
-  outline: none;
+.admin-select--sm {
+  margin-left: 8px;
+  min-width: 120px;
+  padding: 6px 12px;
+  font-size: var(--font-size-md);
+  height: 32px;
 }
 
-.form-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
+/* Empty & Loading states */
+.admin-empty,
+.admin-loading {
+  padding: var(--spacing-2xl);
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+  text-align: center;
 }
 
+/* Form hint */
 .form-hint {
-  color: #666;
-  font-size: 13px;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
 }
 
-.form-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end !important;
-  margin-top: 12px;
-  align-items: center;
-}
-
-/* 🟥 LỖI DỮ LIỆU NHẬP */
-.form-error {
-  color: var(--admin-danger);
-  font-size: 14px;
-  margin-top: 4px;
-  font-weight: 500;
-}
-
-/* ================================
-   🧠 BUTTON STYLES
-   ================================ */
-.btn-outline {
-  padding: 10px 18px;
-  border: 1px solid #e3eaf2;
-  background: #fff;
-  border-radius: 8px;
-  cursor: pointer;
-  color: var(--admin-primary);
-  font-weight: 500;
-}
-
-.btn-outline:hover {
-  background: #eaf3ff;
-  color: #1761c7;
-}
-
-.btn-primary {
-  padding: 10px 18px;
-  border: 1px solid transparent;
-  background: var(--admin-primary);
-  color: #fff;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  margin-top: 12px;
-}
-
-.btn-primary:hover {
-  background: #1761c7;
-}
-
+/* Inline button variations */
 .btn-inline {
   padding: 7px 12px;
-  border-radius: 8px;
-  border: 1px solid #e3eaf2;
-  background: #fff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
   cursor: pointer;
-  font-size: 13px;
-  color: var(--admin-primary);
+  font-size: var(--font-size-sm);
+  color: var(--primary);
   font-weight: 500;
-  transition: background 0.18s, color 0.18s;
+  transition: all var(--transition-fast);
 }
 
 .btn-inline:hover {
-  background: #eaf3ff;
-  color: #1761c7;
+  background: var(--primary-light);
+  color: var(--primary-hover);
 }
 
 .btn-inline--danger {
-  color: var(--admin-danger);
+  color: var(--danger);
   border-color: #ffd6d6;
 }
 
 .btn-inline--danger:hover {
-  background: #ffeaea;
-  color: #ff3b30;
+  background: var(--danger-light);
+  color: var(--danger);
 }
 
-/* ================================
-   📱 RESPONSIVE DESIGN
-   ================================ */
+.btn-inline--danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-/* Tablet and smaller desktop */
+/* Form error display */
+.form-error {
+  color: var(--danger);
+  font-size: var(--font-size-md);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
 @media (max-width: 1200px) {
   .admin-container {
-    padding: 24px 18px;
+    padding: var(--spacing-2xl) var(--spacing-xl);
   }
   .admin-input--wide {
     width: 240px;
   }
 }
 
-/* Tablet */
 @media (max-width: 992px) {
   .admin-container {
-    padding: 20px 16px;
+    padding: var(--spacing-xl) var(--spacing-lg);
   }
   .admin-toolbar {
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
+    gap: var(--spacing-lg);
   }
   .admin-input--wide {
     width: 100%;
   }
   .admin-total {
     margin-left: 0;
-    margin-top: 8px;
+    margin-top: var(--spacing-sm);
   }
 }
 
-/* Mobile landscape */
 @media (max-width: 768px) {
   .admin-container {
-    padding: 16px 12px;
+    padding: var(--spacing-lg) var(--spacing-md);
   }
   .admin-title {
-    font-size: 24px;
-    margin-bottom: 16px;
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-lg);
   }
   .admin-card {
-    margin-bottom: 16px;
-    border-radius: 8px;
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--radius-md);
   }
   .admin-table {
-    font-size: 14px;
+    font-size: var(--font-size-sm);
   }
   .admin-th,
   .admin-td {
@@ -430,43 +260,30 @@ th:nth-child(4) {
   }
   .modal-box {
     width: 95vw;
-    padding: 24px 16px;
-    margin: 16px;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    margin: var(--spacing-lg);
   }
   .modal-title {
-    font-size: 18px;
-  }
-  .form-actions {
-    flex-direction: column-reverse;
-    gap: 8px;
-  }
-  .form-actions .btn-primary,
-  .form-actions .btn-outline {
-    width: 100%;
+    font-size: var(--font-size-lg);
   }
 }
 
-/* Mobile portrait */
 @media (max-width: 480px) {
   .admin-container {
-    padding: 12px 8px;
+    padding: var(--spacing-md) var(--spacing-sm);
   }
   .admin-title {
-    font-size: 20px;
+    font-size: var(--font-size-xl);
   }
   .admin-table {
-    font-size: 13px;
+    font-size: var(--font-size-xs);
   }
   .admin-th,
   .admin-td {
     padding: 8px 6px;
   }
-  .admin-btn {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
   .btn-inline {
     padding: 6px 10px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 }

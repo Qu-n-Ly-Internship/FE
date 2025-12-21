@@ -1,5 +1,7 @@
-// src/components/HR/HRProjectManagement.js
+// src/pages/hr/MentorManagement.jsx
 import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   getAllProjects,
   addInternToProject,
@@ -17,10 +19,8 @@ export default function HRProjectManagement() {
   const [programs, setPrograms] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedProgramId, setSelectedProgramId] = useState("");
@@ -29,26 +29,26 @@ export default function HRProjectManagement() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferData, setTransferData] = useState(null);
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   useEffect(() => {
     loadProjects();
     loadPrograms();
   }, []);
 
-  // Load departments when program changes
   useEffect(() => {
     if (selectedProgramId) {
       loadDepartments(selectedProgramId);
-      // Load projects filtered by program
       loadProjectsByFilter(selectedProgramId, selectedDepartmentId);
     } else {
       setDepartments([]);
       setSelectedDepartmentId("");
-      // Load all projects when no program selected
       loadProjects();
     }
   }, [selectedProgramId]);
 
-  // Load projects when department changes
   useEffect(() => {
     if (selectedProgramId) {
       loadProjectsByFilter(selectedProgramId, selectedDepartmentId);
@@ -76,13 +76,12 @@ export default function HRProjectManagement() {
 
   const loadProjects = async () => {
     setLoading(true);
-    setError(null);
     try {
       const data = await getAllProjects();
       setProjects(data);
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Không thể tải danh sách project"
+      toast.error(
+        err.response?.data?.message || "Không thể tải danh sách dự án"
       );
       console.error("Error loading projects:", err);
     } finally {
@@ -92,13 +91,12 @@ export default function HRProjectManagement() {
 
   const loadProjectsByFilter = async (programId, departmentId = null) => {
     setLoading(true);
-    setError(null);
     try {
       const data = await filterProjects(programId, departmentId);
       setProjects(data);
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Không thể tải danh sách project"
+      toast.error(
+        err.response?.data?.message || "Không thể tải danh sách dự án"
       );
       console.error("Error filtering projects:", err);
     } finally {
@@ -109,76 +107,63 @@ export default function HRProjectManagement() {
   const handleAddIntern = (project) => {
     setSelectedProject(project);
     setShowModal(true);
-    setSuccessMessage("");
-    setError(null);
   };
 
   const handleSelectIntern = async (intern) => {
     if (!selectedProject) return;
 
     setLoading(true);
-    setError(null);
-    setSuccessMessage("");
 
     try {
       const internId =
         intern?.intern_id || intern?.internProfileId || intern?.id;
 
       if (!internId) {
-        setError("Không tìm thấy ID thực tập sinh!");
+        toast.error("Không tìm thấy ID thực tập sinh!");
         setLoading(false);
         return;
       }
 
-      // 🚫 Kiểm tra intern đã có project chưa
       if (intern.programId || intern.projectId || intern.currentProject) {
-        setError("Thực tập sinh này đã thuộc một project khác!");
+        toast.error("Thực tập sinh này đã thuộc một dự án khác!");
         setLoading(false);
         return;
       }
 
       await addInternToProject(selectedProject.id, internId);
 
-      setSuccessMessage(
-        `Đã thêm ${intern.student || intern.fullName} vào project ${
+      toast.success(
+        `Đã thêm ${intern.student || intern.fullName} vào dự án ${
           selectedProject.title
         }`
       );
       setShowModal(false);
 
-      // Reload lại danh sách project
       if (selectedProgramId) {
         await loadProjectsByFilter(selectedProgramId, selectedDepartmentId);
       } else {
         await loadProjects();
       }
-
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
     } catch (err) {
       console.error("Error adding intern:", err);
-      setError(
-        err.response?.data?.message || "Không thể thêm intern vào project"
+      toast.error(
+        err.response?.data?.message || "Không thể thêm thực tập sinh vào dự án"
       );
     } finally {
       setLoading(false);
     }
   };
 
-
   const handleRemoveIntern = async (internId, internName, projectTitle) => {
     if (
       !window.confirm(
-        `Bạn có chắc muốn xóa "${internName}" khỏi project "${projectTitle}"?`
+        `Bạn có chắc muốn xóa "${internName}" khỏi dự án "${projectTitle}"?`
       )
     ) {
       return;
     }
 
     setLoading(true);
-    setError(null);
-    setSuccessMessage("");
     setShowInternMenu(null);
 
     let isSuccess = false;
@@ -197,11 +182,12 @@ export default function HRProjectManagement() {
         isSuccess = true;
       } else {
         console.error("Real error:", err);
-        setError(err.response?.data?.message || "Không thể xóa intern");
+        toast.error(
+          err.response?.data?.message || "Không thể xóa thực tập sinh"
+        );
       }
     }
 
-    // Reload projects while maintaining filters
     if (selectedProgramId) {
       await loadProjectsByFilter(selectedProgramId, selectedDepartmentId);
     } else {
@@ -209,10 +195,7 @@ export default function HRProjectManagement() {
     }
 
     if (isSuccess) {
-      setSuccessMessage(`Đã xóa ${internName} khỏi project`);
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
+      toast.success(`Đã xóa ${internName} khỏi dự án`);
     }
 
     setLoading(false);
@@ -228,8 +211,6 @@ export default function HRProjectManagement() {
     if (!transferData || !newProjectId) return;
 
     setLoading(true);
-    setError(null);
-    setSuccessMessage("");
 
     let isSuccess = false;
 
@@ -247,11 +228,12 @@ export default function HRProjectManagement() {
         isSuccess = true;
       } else {
         console.error("Real error:", err);
-        setError(err.response?.data?.message || "Không thể chuyển intern");
+        toast.error(
+          err.response?.data?.message || "Không thể chuyển thực tập sinh"
+        );
       }
     }
 
-    // Reload projects while maintaining filters
     if (selectedProgramId) {
       await loadProjectsByFilter(selectedProgramId, selectedDepartmentId);
     } else {
@@ -260,15 +242,11 @@ export default function HRProjectManagement() {
 
     if (isSuccess) {
       const newProject = projects.find((p) => p.id === newProjectId);
-      setSuccessMessage(
-        `Đã chuyển ${transferData.internName} sang project "${newProject?.title}"`
+      toast.success(
+        `Đã chuyển ${transferData.internName} sang dự án "${newProject?.title}"`
       );
       setShowTransferModal(false);
       setTransferData(null);
-
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
     }
 
     setLoading(false);
@@ -282,6 +260,7 @@ export default function HRProjectManagement() {
     }
   }, [showInternMenu]);
 
+  // Lọc dự án
   const filteredProjects = projects.filter((project) => {
     const matchSearch =
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -297,6 +276,38 @@ export default function HRProjectManagement() {
     return matchSearch && matchStatus;
   });
 
+  // Tính toán phân trang
+  const totalItems = filteredProjects.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = filteredProjects.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
+
+  // Reset về trang đầu khi có thay đổi bộ lọc
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, selectedProgramId, selectedDepartmentId]);
+
   const getStatusInfo = (project) => {
     const current = project.internNames?.length || 0;
     const total = project.capacity || 0;
@@ -310,355 +321,389 @@ export default function HRProjectManagement() {
     };
   };
 
-  return (
-    <div className="hr-project-management">
-      <div className="hr-project-container">
-        <div className="hr-project-header">
-          <div>
-            <h1>Quản lý Dự án</h1>
-            <p className="header-subtitle">
-              Quản lý và phân công thực tập sinh vào các dự án
-            </p>
-          </div>
-          <button
-            className="btn-refresh"
-            onClick={() => {
-              setSelectedProgramId("");
-              setSelectedDepartmentId("");
-              setSearchTerm("");
-              setFilterStatus("all");
-              loadProjects();
-            }}
-            disabled={loading}
-          >
-            🔄 Làm mới
-          </button>
-        </div>
+  // Calculate statistics
+  const stats = {
+    total: filteredProjects.length,
+    totalInterns: filteredProjects.reduce(
+      (sum, p) => sum + (p.internNames?.length || 0),
+      0
+    ),
+    totalCapacity: filteredProjects.reduce(
+      (sum, p) => sum + (p.capacity || 0),
+      0
+    ),
+    availableProjects: filteredProjects.filter(
+      (p) => (p.internNames?.length || 0) < p.capacity
+    ).length,
+  };
 
-        <div className="hr-project-filters">
-          <div className="filter-search">
+  return (
+    <div className="page-container">
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Page Header */}
+      <div className="page-header">
+        <h1 className="page-title">Quản lý Dự án</h1>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            setSelectedProgramId("");
+            setSelectedDepartmentId("");
+            setSearchTerm("");
+            setFilterStatus("all");
+            setCurrentPage(1);
+            loadProjects();
+          }}
+          disabled={loading}
+        >
+          🔄 Làm mới
+        </button>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">📊</div>
+          <div className="stat-info">
+            <div className="stat-value">{stats.total}</div>
+            <div className="stat-label">Tổng dự án</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">👥</div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {stats.totalInterns}
+            </div>
+            <div className="stat-label">Tổng thực tập sinh</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-total">🎯</div>
+          <div className="stat-info">
+            <div className="stat-value">{stats.totalCapacity}</div>
+            <div className="stat-label">Tổng sức chứa</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">✓</div>
+          <div className="stat-info">
+            <div className="stat-value stat-pending-value">
+              {stats.availableProjects}
+            </div>
+            <div className="stat-label">Dự án còn chỗ</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters Card */}
+      <div className="card filters-card">
+        <div className="filters-grid-mentor">
+          {/* Search */}
+          <div className="form-group">
+            <label className="form-label">Tìm kiếm</label>
             <input
               type="text"
-              placeholder="🔍 Tìm kiếm dự án..."
+              className="form-input"
+              placeholder="🔍 Tìm theo tên hoặc mô tả..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
             />
           </div>
 
-          <div className="filter-dropdowns">
-            <div className="dropdown-container">
-              <div className={`dropdown ${selectedProgramId ? 'active' : ''}`}>
-                <select
-                  className="dropdown-select"
-                  value={selectedProgramId}
-                  onChange={(e) => setSelectedProgramId(e.target.value)}
-                >
-                  <option value="">📋 Tất cả Program</option>
-                  {programs.map((program) => (
-                    <option key={program.id} value={program.id}>
-                      {program.programName}
-                    </option>
-                  ))}
-                </select>
-                <span className="dropdown-arrow">▼</span>
-              </div>
-            </div>
-
-            <div className="dropdown-container">
-              <div className={`dropdown ${!selectedProgramId ? 'disabled' : ''} ${selectedDepartmentId ? 'active' : ''}`}>
-                <select
-                  className="dropdown-select"
-                  value={selectedDepartmentId}
-                  onChange={(e) => setSelectedDepartmentId(e.target.value)}
-                  disabled={!selectedProgramId}
-                >
-                  <option value="">🏢 Tất cả Department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.departmentName}
-                    </option>
-                  ))}
-                </select>
-                <span className="dropdown-arrow">▼</span>
-              </div>
-            </div>
+          {/* Program Filter */}
+          <div className="form-group">
+            <label className="form-label">Chương trình</label>
+            <select
+              className="form-select"
+              value={selectedProgramId}
+              onChange={(e) => setSelectedProgramId(e.target.value)}
+            >
+              <option value="">📋 Tất cả chương trình</option>
+              {programs.map((program) => (
+                <option key={program.id} value={program.id}>
+                  {program.programName}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="filter-buttons">
-            <button
-              className={`filter-btn ${filterStatus === "all" ? "active" : ""}`}
-              onClick={() => setFilterStatus("all")}
+          {/* Department Filter */}
+          <div className="form-group">
+            <label className="form-label">Phòng ban</label>
+            <select
+              className="form-select"
+              value={selectedDepartmentId}
+              onChange={(e) => setSelectedDepartmentId(e.target.value)}
+              disabled={!selectedProgramId}
             >
-              Tất cả ({projects.length})
-            </button>
-            <button
-              className={`filter-btn ${
-                filterStatus === "available" ? "active" : ""
-              }`}
-              onClick={() => setFilterStatus("available")}
-            >
-              Còn chỗ (
-              {
-                projects.filter(
-                  (p) => (p.internNames?.length || 0) < p.capacity
-                ).length
-              }
-              )
-            </button>
-            <button
-              className={`filter-btn ${
-                filterStatus === "full" ? "active" : ""
-              }`}
-              onClick={() => setFilterStatus("full")}
-            >
-              Đã đủ (
-              {
-                projects.filter(
-                  (p) => (p.internNames?.length || 0) >= p.capacity
-                ).length
-              }
-              )
-            </button>
+              <option value="">🏢 Tất cả phòng ban</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.departmentName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Status Filter Buttons */}
+          <div className="form-group">
+            <label className="form-label">Trạng thái</label>
+            <div className="filter-buttons">
+              <button
+                className={`btn btn-sm filter-btn ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
+                onClick={() => setFilterStatus("all")}
+              >
+                Tất cả
+              </button>
+              <button
+                className={`btn btn-sm filter-btn ${
+                  filterStatus === "available" ? "active" : ""
+                }`}
+                onClick={() => setFilterStatus("available")}
+              >
+                Còn chỗ
+              </button>
+              <button
+                className={`btn btn-sm filter-btn ${
+                  filterStatus === "full" ? "active" : ""
+                }`}
+                onClick={() => setFilterStatus("full")}
+              >
+                Đã đủ
+              </button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {successMessage && (
-          <div className="alert alert-success">
-            <span className="alert-icon">✓</span>
-            {successMessage}
-          </div>
-        )}
-
-        {error && (
-          <div className="alert alert-error">
-            <span className="alert-icon">✗</span>
-            {error}
-          </div>
-        )}
-
-        {loading && !showModal ? (
-          <div className="loading-container">
+      {/* Projects Grid */}
+      <div className="card">
+        {loading ? (
+          <div className="loading center">
             <div className="spinner"></div>
             <p>Đang tải dữ liệu...</p>
           </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">📂</div>
+            <div className="empty-text">
+              {projects.length === 0
+                ? "Chưa có dự án nào"
+                : "Không tìm thấy dự án phù hợp"}
+            </div>
+          </div>
         ) : (
-          <>
-            <div className="hr-project-grid">
-              {filteredProjects.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-icon">📂</div>
-                  <h3>Không tìm thấy dự án nào</h3>
-                  <p>Thử thay đổi bộ lọc hoặc tìm kiếm</p>
-                </div>
-              ) : (
-                filteredProjects.map((project) => {
-                  const status = getStatusInfo(project);
-                  return (
-                    <div key={project.id} className="hr-project-card">
-                      <div className="card-header">
-                        <h3>{project.title}</h3>
-                        {status.isFull && (
-                          <span className="badge-full">Đã đủ</span>
-                        )}
+          <div className="hr-project-grid">
+            {currentItems.map((project) => {
+              const status = getStatusInfo(project);
+              return (
+                <div key={project.id} className="hr-project-card">
+                  <div className="card-header">
+                    <h3>{project.title}</h3>
+                    {status.isFull && <span className="badge-full">Đã đủ</span>}
+                  </div>
+
+                  <p className="card-description">
+                    {project.description || "Chưa có mô tả"}
+                  </p>
+
+                  <div className="progress-section">
+                    <div className="progress-header">
+                      <span className="progress-label">
+                        Số lượng thực tập sinh
+                      </span>
+                      <span className="progress-count">
+                        {status.current}/{status.total}
+                      </span>
+                    </div>
+                    <div className="progress-bar">
+                      <div
+                        className={`progress-fill ${
+                          status.isFull ? "full" : ""
+                        }`}
+                        style={{
+                          width: `${Math.min(status.percentage, 100)}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {project.mentorName && (
+                    <div className="card-info-item">
+                      <span className="info-icon">👨‍🏫</span>
+                      <span className="info-text">
+                        <strong>Mentor:</strong> {project.mentorName}
+                      </span>
+                    </div>
+                  )}
+
+                  {project.internNames && project.internNames.length > 0 && (
+                    <div className="intern-section">
+                      <div className="intern-header">
+                        <span className="intern-icon">👥</span>
+                        <span className="intern-label">Thực tập sinh:</span>
                       </div>
-
-                      <p className="card-description">
-                        {project.description || "Chưa có mô tả"}
-                      </p>
-
-                      <div className="progress-section">
-                        <div className="progress-header">
-                          <span className="progress-label">
-                            Số lượng thực tập sinh
-                          </span>
-                          <span className="progress-count">
-                            {status.current}/{status.total}
-                          </span>
-                        </div>
-                        <div className="progress-bar">
+                      <div className="intern-tags">
+                        {project.internNames.slice(0, 5).map((intern) => (
                           <div
-                            className={`progress-fill ${
-                              status.isFull ? "full" : ""
-                            }`}
-                            style={{
-                              width: `${Math.min(status.percentage, 100)}%`,
+                            key={intern.id}
+                            className="intern-tag-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowInternMenu({
+                                projectId: project.id,
+                                projectTitle: project.title,
+                                internName: intern.fullName,
+                                internId: intern.id,
+                              });
                             }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {project.mentorName && (
-                        <div className="card-info-item">
-                          <span className="info-icon">👨‍🏫</span>
-                          <span className="info-text">
-                            <strong>Mentor:</strong> {project.mentorName}
-                          </span>
-                        </div>
-                      )}
-
-                      {project.internNames &&
-                        project.internNames.length > 0 && (
-                          <div className="intern-section">
-                            <div className="intern-header">
-                              <span className="intern-icon">👥</span>
-                              <span className="intern-label">
-                                Thực tập sinh:
-                              </span>
-                            </div>
-                            <div className="intern-tags">
-                              {project.internNames.slice(0, 5).map((intern) => (
+                          >
+                            <span className="intern-tag">
+                              {intern.fullName}
+                            </span>
+                            {showInternMenu?.internId === intern.id &&
+                              showInternMenu?.projectId === project.id && (
                                 <div
-                                  key={intern.id}
-                                  className="intern-tag-item"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowInternMenu({
-                                      projectId: project.id,
-                                      projectTitle: project.title,
-                                      internName: intern.fullName,
-                                      internId: intern.id,
-                                    });
-                                  }}
+                                  className="intern-menu"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  <span className="intern-tag">
-                                    {intern.fullName}
-                                  </span>
-                                  {showInternMenu?.internId === intern.id &&
-                                    showInternMenu?.projectId ===
-                                      project.id && (
-                                      <div
-                                        className="intern-menu"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <button
-                                          className="menu-item transfer"
-                                          onClick={() =>
-                                            handleOpenTransfer(
-                                              intern.id,
-                                              intern.fullName,
-                                              project.id
-                                            )
-                                          }
-                                        >
-                                          🔄 Chuyển sang project khác
-                                        </button>
-                                        <button
-                                          className="menu-item remove"
-                                          onClick={() =>
-                                            handleRemoveIntern(
-                                              intern.id,
-                                              intern.fullName,
-                                              project.title
-                                            )
-                                          }
-                                        >
-                                          🗑️ Xóa khỏi project
-                                        </button>
-                                      </div>
-                                    )}
-                                </div>
-                              ))}
-                              {project.internNames.length > 5 && (
-                                <div className="intern-tag-wrapper">
-                                  <span className="intern-tag more">
-                                    +{project.internNames.length - 5} khác
-                                  </span>
-                                  <div className="intern-tooltip">
-                                    <div className="tooltip-header">
-                                      Tất cả thực tập sinh (
-                                      {project.internNames.length})
-                                    </div>
-                                    <div className="tooltip-list">
-                                      {project.internNames.map(
-                                        (intern, index) => (
-                                          <div
-                                            key={intern.id}
-                                            className="tooltip-item"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setShowInternMenu({
-                                                projectId: project.id,
-                                                projectTitle: project.title,
-                                                internName: intern.fullName,
-                                                internId: intern.id,
-                                              });
-                                            }}
-                                          >
-                                            <span className="tooltip-number">
-                                              {index + 1}.
-                                            </span>
-                                            <span className="tooltip-name">
-                                              {intern.fullName}
-                                            </span>
-                                            <span className="tooltip-action">
-                                              ⋮
-                                            </span>
-                                          </div>
-                                        )
-                                      )}
-                                    </div>
-                                  </div>
+                                  <button
+                                    className="menu-item transfer"
+                                    onClick={() =>
+                                      handleOpenTransfer(
+                                        intern.id,
+                                        intern.fullName,
+                                        project.id
+                                      )
+                                    }
+                                  >
+                                    🔄 Chuyển sang dự án khác
+                                  </button>
+                                  <button
+                                    className="menu-item remove"
+                                    onClick={() =>
+                                      handleRemoveIntern(
+                                        intern.id,
+                                        intern.fullName,
+                                        project.title
+                                      )
+                                    }
+                                  >
+                                    🗑️ Xóa khỏi dự án
+                                  </button>
                                 </div>
                               )}
+                          </div>
+                        ))}
+                        {project.internNames.length > 5 && (
+                          <div className="intern-tag-wrapper">
+                            <span className="intern-tag more">
+                              +{project.internNames.length - 5} khác
+                            </span>
+                            <div className="intern-tooltip">
+                              <div className="tooltip-header">
+                                Tất cả thực tập sinh (
+                                {project.internNames.length})
+                              </div>
+                              <div className="tooltip-list">
+                                {project.internNames.map((intern, index) => (
+                                  <div
+                                    key={intern.id}
+                                    className="tooltip-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowInternMenu({
+                                        projectId: project.id,
+                                        projectTitle: project.title,
+                                        internName: intern.fullName,
+                                        internId: intern.id,
+                                      });
+                                    }}
+                                  >
+                                    <span className="tooltip-number">
+                                      {index + 1}.
+                                    </span>
+                                    <span className="tooltip-name">
+                                      {intern.fullName}
+                                    </span>
+                                    <span className="tooltip-action">⋮</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         )}
-
-                      <button
-                        className={`btn-add-intern ${
-                          status.isFull ? "disabled" : ""
-                        }`}
-                        onClick={() => handleAddIntern(project)}
-                        disabled={status.isFull || loading}
-                      >
-                        {status.isFull
-                          ? "✓ Đã đủ số lượng"
-                          : "+ Thêm thực tập sinh"}
-                      </button>
+                      </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  )}
 
-            <div className="stats-summary">
-              <div className="stat-card">
-                <div className="stat-icon">📊</div>
-                <div className="stat-content">
-                  <div className="stat-label">Tổng dự án</div>
-                  <div className="stat-value">{filteredProjects.length}</div>
+                  <button
+                    className={`btn-add-intern btn-md${
+                      status.isFull ? "disabled" : ""
+                    }`}
+                    onClick={() => handleAddIntern(project)}
+                    disabled={status.isFull || loading}
+                  >
+                    {status.isFull
+                      ? "✓ Đã đủ số lượng"
+                      : "+ Thêm thực tập sinh"}
+                  </button>
                 </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">👥</div>
-                <div className="stat-content">
-                  <div className="stat-label">Tổng thực tập sinh</div>
-                  <div className="stat-value">
-                    {filteredProjects.reduce(
-                      (sum, p) => sum + (p.internNames?.length || 0),
-                      0
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">🎯</div>
-                <div className="stat-content">
-                  <div className="stat-label">Tổng capacity</div>
-                  <div className="stat-value">
-                    {filteredProjects.reduce(
-                      (sum, p) => sum + (p.capacity || 0),
-                      0
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
+              );
+            })}
+          </div>
         )}
       </div>
 
+      {/* Phân trang */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <div className="pagination-info">
+            Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+            {Math.min(startIndex + pageSize, totalItems)} trên {totalItems}
+          </div>
+          <div className="pagination-controls">
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
+              ‹ Trước
+            </button>
+
+            {getPageNumbers().map((p, idx) =>
+              p === "..." ? (
+                <span key={`dots-${idx}`} className="page-dots">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  className={`btn btn-sm page-btn ${
+                    p === currentPage ? "active" : ""
+                  }`}
+                  onClick={() => setCurrentPage(p)}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Sau ›
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Intern Selection Modal */}
       {showModal && (
         <InternSelectionModal
           onClose={() => setShowModal(false)}
@@ -666,33 +711,35 @@ export default function HRProjectManagement() {
         />
       )}
 
+      {/* Transfer Modal */}
       {showTransferModal && transferData && (
         <div
           className="modal-overlay"
           onClick={() => setShowTransferModal(false)}
         >
           <div
-            className="modal-content transfer-modal"
+            className="modal-box"
             onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "600px" }}
           >
             <div className="modal-header">
-              <h2>🔄 Chuyển thực tập sinh</h2>
+              <h2 className="modal-title">🔄 Chuyển thực tập sinh</h2>
               <button
-                className="btn-close"
+                className="modal-close-btn"
                 onClick={() => setShowTransferModal(false)}
               >
-                ×
+                ✕
               </button>
             </div>
 
-            <div className="modal-body">
+            <div className="modal-content">
               <div className="transfer-info">
                 <div className="info-badge">
                   <span className="badge-icon">👤</span>
                   <span className="badge-text">{transferData.internName}</span>
                 </div>
                 <div className="arrow-icon">→</div>
-                <div className="info-label">Chọn project đích</div>
+                <div className="info-label">Chọn dự án đích</div>
               </div>
 
               <div className="project-select-list">

@@ -10,36 +10,41 @@ function getCurrentUserId() {
 }
 
 const NotificationService = {
-  connectSSE(userId, onMessage, onError) {
+  /**
+   * 📡 Kết nối SSE
+   */
+  connectSSE(userId, onNotification) {
     const url = `${
       import.meta.env.VITE_API_BASE_URL || "http://codeft.duckdns.org:8090/api"
     }/notifications/stream/${userId}`;
 
+    console.log("🔌 Connecting SSE:", url);
     const eventSource = new EventSource(url);
 
     eventSource.addEventListener("notification", (event) => {
       try {
         const data = JSON.parse(event.data);
-        onMessage && onMessage(data);
+        console.log("🔔 NOTIFICATION RECEIVED:", data);
+        onNotification && onNotification(data);
       } catch (err) {
-        console.error("❌ SSE JSON parse error", err);
+        console.error("❌ SSE parse error:", err);
       }
     });
 
+    eventSource.addEventListener("open", () => {
+      console.log("✅ SSE Connected");
+    });
+
     eventSource.onerror = (err) => {
-      console.error("❌ SSE connection error:", err);
-      onError && onError(err);
-      // Không đóng SSE để client tự reconnect
+      console.error("❌ SSE Error:", err);
+      // EventSource tự động reconnect
     };
 
     return eventSource;
   },
 
   /**
-   * ============================
-   * 📥 2. Lấy toàn bộ thông báo
-   * GET /api/notifications/{userId}?status=UNREAD
-   * ============================
+   * 📥 Lấy danh sách notifications
    */
   async getNotifications(status = null) {
     const userId = getCurrentUserId();
@@ -48,10 +53,7 @@ const NotificationService = {
   },
 
   /**
-   * ============================
-   * 🔢 3. Đếm số thông báo chưa đọc
-   * GET /api/notifications/{userId}/unread-count
-   * ============================
+   * 🔢 Đếm số unread
    */
   async getUnreadCount() {
     const userId = getCurrentUserId();
@@ -59,20 +61,14 @@ const NotificationService = {
   },
 
   /**
-   * ============================
-   * 📌 4. Đánh dấu đã đọc 1 notification
-   * PUT /api/notifications/{id}/read
-   * ============================
+   * ✅ Đánh dấu đã đọc
    */
   async markAsRead(notificationId) {
     return api.put(`/notifications/${notificationId}/read`);
   },
 
   /**
-   * ============================
-   * 📌 5. Đánh dấu toàn bộ đã đọc
-   * PUT /api/notifications/{userId}/read-all
-   * ============================
+   * ✅ Đánh dấu tất cả đã đọc
    */
   async markAllAsRead() {
     const userId = getCurrentUserId();
@@ -80,10 +76,7 @@ const NotificationService = {
   },
 
   /**
-   * ============================
-   * 🚀 6. Gửi test notification
-   * POST /api/notifications/send
-   * ============================
+   * 🧪 Test gửi notification
    */
   async sendTest(payload) {
     return api.post(`/notifications/send`, payload);

@@ -1,548 +1,112 @@
-/* Chủ đề quản lý thực tập sinh - cải tiến giao diện */
-:root {
-  --primary: #2b7cff;
-  --success: #34c759;
-  --danger: #ff3b30;
-  --warning: #ffd60a;
-  --info: #5ac8fa;
-  --bg-light: #f4f8fb;
-  --bg-card: #fff;
-  --border-radius: 10px;
-  --shadow: 0 4px 16px rgba(43, 124, 255, 0.08);
-  --font-main: "Segoe UI", "Roboto", Arial, sans-serif;
+/* InternshipList.css - Import các styles chuẩn */
+
+/* Import các file CSS chuẩn */
+@import "../../styles/variables.css";
+@import "../../styles/buttons.css";
+@import "../../styles/tables.css";
+@import "../../styles/forms.css";
+@import "../../styles/cards-and-modals.css";
+
+/* ===== CUSTOM STYLES CHỈ DÀNH CHO INTERNSHIP LIST ===== */
+
+/* Page-specific overrides nếu cần */
+.internship-list-container {
+  /* Container-specific styles */
 }
 
-/* Thêm vào InternshipList.css hoặc file CSS chung */
-
-.input-error {
-  border-color: #dc3545 !important; /* Màu đỏ */
-}
-
-.error-message {
-  color: #dc3545; /* Màu đỏ */
-  font-size: 0.85rem;
-  margin-top: 4px;
-}
-
-body {
-  font-family: var(--font-main);
-  background: var(--bg-light);
-  color: #222;
-}
-
-.page-container {
-  padding: 0;
-  background: transparent;
-  min-height: auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: 1px;
-}
-
-.card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  padding: 24px;
-  margin-bottom: 24px;
-  transition: box-shadow 0.2s;
-}
-.card:hover {
-  box-shadow: 0 8px 24px rgba(43, 124, 255, 0.15);
-}
-
-.table-container {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin: 0 -24px;
-  padding: 0 24px;
-}
-
-.table {
-  width: 100%;
-  min-width: 1000px; /* Ensures table doesn't collapse too much */
-  border-collapse: separate;
-  border-spacing: 0;
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  table-layout: auto; /* Changed from fixed to auto to handle content better */
-}
-
-.table thead {
-  background: linear-gradient(90deg, #eaf3ff 0%, #f4f8fb 100%);
-}
-
-.table-th {
-  padding: 14px 12px;
-  text-align: left;
-  border-bottom: 2px solid #e3eaf2;
-  font-weight: 600;
-  color: var(--primary);
-  font-size: 15px;
-}
-
-.table-td {
-  padding: 12px;
-  border-bottom: 1px solid #e3eaf2;
-  font-size: 14px;
-  background: #fff;
-  transition: background 0.2s;
-}
-.table tr:hover .table-td {
-  background: #f0f6ff;
-}
-
-.btn {
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: var(--font-main);
-  font-weight: 500;
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-  box-shadow: 0 2px 8px rgba(43, 124, 255, 0.07);
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: #fff;
-}
-.btn-primary:hover {
-  background: #1761c7;
-}
-
-.btn-sm {
-  padding: 7px 16px;
-  font-size: 14px;
-  line-height: 1.2;
-  width: auto;
-  flex-shrink: 0;
-}
-
-.btn-success {
-  background: var(--success);
-  color: #fff;
-  padding: 5px 12px;
-  font-size: 13px;
-}
-.btn-success:hover {
-  background: #28a745;
-}
-
-/* Button styles for action buttons in table */
-.table .btn-success,
-.table .btn-warning {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 60px;
-  height: 32px;
-  padding: 0 12px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 4px;
-  margin: 4px 4px;
-  transition: all 0.2s ease;
-}
-
-.table .btn-success {
-  background: var(--success);
-  color: #fff;
-  border: 1px solid #28a745;
-}
-
-.table .btn-success:hover {
-  background: #28a745;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.table .btn-warning {
-  background: var(--warning);
-  color: #222;
-  border: 1px solid #e6b800;
-}
-
-.table .btn-warning:hover {
-  background: #e6b800;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Hoàn thành button style - matches Sửa button */
-.table .btn-info {
-  background: #17a2b8;
-  color: #fff;
-  border: 1px solid #138496;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 60px;
-  height: 32px;
-  padding: 0 12px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 4px;
-  margin: 4px 4px;
-  transition: all 0.2s ease;
-}
-
-.table .btn-info:hover {
-  background: #138496;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Ensure buttons in table cells have consistent spacing */
-.table-td {
-  vertical-align: middle;
-}
-
-/* Remove inline margins and use flex for better alignment */
-.table-td > div {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.btn-outline-danger {
-  background: #fff;
-  color: var(--danger);
-  border: 1px solid #ffd6d6;
-  padding: 5px 12px;
-  font-size: 13px;
-}
-.btn-outline-danger:hover {
-  background: #ffeaea;
-}
-
-.clear-filters-btn {
-  background: #eaf3ff;
-  color: var(--primary);
-  padding: 7px 16px;
-  font-size: 14px;
-  border: 1px solid #d0d4d9;
-  border-radius: 6px;
-  font-weight: 500;
-}
-.clear-filters-btn:hover {
-  background: #dbeaff;
-  color: #1761c7;
-}
-
-.badge {
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  display: inline-block;
-  font-weight: 500;
-}
-
-.badge-success {
-  background: #eafbe7;
-  color: var(--success);
-}
-
-.badge-danger {
-  background: #ffeaea;
-  color: var(--danger);
-}
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  gap: 12px;
-}
-
-.pagination-info {
-  color: #555;
-  font-size: 14px;
-}
-
-.pagination-controls {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.page-btn {
-  min-width: 34px;
-  padding: 6px 10px;
-  border: 1px solid #ddd;
-  background: #fff;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-.page-btn.active {
-  border-color: #2b7cff;
-  background: #eaf2ff;
-  font-weight: 600;
-}
-
-.page-dots {
-  padding: 0 6px;
-  color: #777;
-}
-.table-td:first-child,
-.table-th:first-child {
+/* Custom cho bảng internship */
+.internship-table .table-td:first-child {
   text-align: center;
   width: 60px;
 }
 
-/* Dark mode, scoped only to the clear filters button */
-@media (prefers-color-scheme: dark) {
-  .clear-filters-btn {
-    background: #f4f4f4;
-    color: #303031;
-    border-color: #f5f5f5;
-  }
-  .clear-filters-btn:hover {
-    background: #ffffff;
-  }
-
-  /* Dark mode styling for pagination buttons */
-  .pagination .btn {
-    background: #ffffff;
-    color: #2f2f2f;
-    border: 1px solid #fdfeff;
-  }
-  .pagination .btn:hover:not(:disabled) {
-    background: #1c79ea;
-    color: black;
-  }
-  .pagination .btn:disabled {
-    background: #fdfeff;
-    color: #4a5568;
-    cursor: not-allowed;
-  }
-}
-/* Light mode, scoped only to the clear filters button */
-@media (prefers-color-scheme: light) {
-  .clear-filters-btn {
-    background: #f4f4f4;
-    color: #303031;
-    border-color: #f5f5f5;
-  }
-  .clear-filters-btn:hover {
-    background: #ffffff;
-  }
-
-  /* Light mode styling for pagination buttons */
-  .pagination .btn {
-    background: #ffffff;
-    color: #2f2f2f;
-    border: 1px solid #fdfeff;
-  }
-  .pagination .btn:hover:not(:disabled) {
-    background: #1c79ea;
-    color: black;
-  }
-  .pagination .btn:disabled {
-    background: #fdfeff;
-    color: #4a5568;
-    cursor: not-allowed;
-  }
-}
-
-.center {
-  text-align: center;
-}
-
-.loading,
-.empty {
-  padding: 32px;
-  color: #888;
-  font-size: 16px;
-}
-
-/* Shared modal + form styles for list pages */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(43, 124, 255, 0.12);
+.internship-student-info {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.modal-box {
-  background: var(--bg-card);
-  padding: 32px 24px;
-  border-radius: 16px;
-  width: 520px;
-  max-width: 95vw;
-  box-shadow: var(--shadow);
+.internship-student-name {
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.modal-title {
-  margin: 0 0 18px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--primary);
+.internship-student-email {
+  font-size: 0.85em;
+  color: var(--text-secondary);
 }
 
-.form-group {
+/* Status badges specific to internship */
+.internship-status-active {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.internship-status-completed {
+  background: var(--bg-gray);
+  color: var(--text-secondary);
+}
+
+/* Modal select intern styles */
+.select-intern-modal {
+  max-width: 600px;
+  width: 90%;
+}
+
+.select-intern-search {
   margin-bottom: 16px;
 }
 
-.form-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 15px;
-  color: #222;
-  font-weight: 500;
+.select-intern-list {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: 16px;
 }
 
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #e3eaf2;
-  border-radius: 8px;
-  box-sizing: border-box;
-  font-size: 15px;
-  background: #f8fbff;
-  transition: border 0.18s;
+/* Toast Notification Styles - Override if needed */
+.Toastify__toast {
+  font-family: var(--font-main);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
 }
 
-.form-input:focus,
-.form-select:focus {
-  border-color: var(--primary);
-  outline: none;
+.Toastify__toast-container {
+  z-index: var(--z-toast);
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+.Toastify__close-button {
+  opacity: 0.7;
 }
 
-.form-actions {
-  display: flex !important;
-  gap: 10px;
-  justify-content: flex-end !important;
-  margin-top: 12px;
+.Toastify__close-button:hover {
+  opacity: 1;
 }
 
-.btn-outline {
-  background: #fff;
-  border: 1px solid #e3eaf2;
-  color: var(--primary);
-  margin-top: 12px;
-}
-.btn-outline:hover {
-  background: #eaf3ff;
-  color: #1761c7;
+.Toastify__progress-bar {
+  height: 4px;
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
-
-/* Tablet */
-@media (max-width: 992px) {
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .modal-box {
-    width: 480px;
-  }
+.Toastify__toast--success {
+  background: var(--success);
 }
 
-/* Mobile landscape */
+.Toastify__toast--error {
+  background: var(--danger);
+}
+
+/* Responsive overrides specific to internship */
 @media (max-width: 768px) {
-  .page-title {
-    font-size: 24px;
+  .internship-student-info {
+    gap: 1px;
   }
-  .card {
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  .table-container {
-    overflow-x: auto;
-  }
-  .table {
-    font-size: 13px;
-  }
-  .table-th,
-  .table-td {
-    padding: 10px 8px;
-  }
-  .btn {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-  .btn-sm {
-    padding: 5px 12px;
-    font-size: 12px;
-  }
-  .modal-box {
-    width: 95vw;
-    padding: 20px 16px;
-  }
-  .modal-title {
-    font-size: 18px;
-  }
-  .form-actions {
-    flex-direction: column-reverse;
-    gap: 8px;
-  }
-  .form-actions .btn {
-    width: 100%;
+
+  .internship-student-email {
+    font-size: 0.8em;
   }
 }
 
-/* Mobile portrait */
 @media (max-width: 480px) {
-  .page-title {
-    font-size: 20px;
-  }
-  .card {
-    padding: 12px;
-    border-radius: 8px;
-  }
-  .table {
-    font-size: 12px;
-  }
-  .table-th,
-  .table-td {
-    padding: 8px 6px;
-  }
-  .btn {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-  .modal-box {
-    width: 100vw;
-    padding: 16px 12px;
-    margin: 8px;
-  }
-  .modal-title {
-    font-size: 16px;
-  }
-  .form-input,
-  .form-select {
-    font-size: 14px;
-    padding: 8px 10px;
+  .internship-table .table-td:first-child {
+    width: 40px;
   }
 }

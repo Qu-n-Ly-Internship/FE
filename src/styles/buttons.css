@@ -1,0 +1,281 @@
+/* src/styles/buttons.css - Standardized Button Styles */
+@import "./variables.css";
+/* Base Button */
+.btn {
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-weight: 500;
+  transition: all var(--transition-base) ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+  margin-top: 0px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(43, 124, 255, 0.2);
+}
+
+/* Button Sizes */
+.btn-xs {
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: var(--font-size-sm);
+}
+
+.btn-md {
+  padding: 8px 16px;
+  font-size: var(--font-size-base);
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: var(--font-size-lg);
+}
+
+/* Primary Button */
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-button);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(43, 124, 255, 0.4);
+}
+
+/* Success/Approve Button */
+.btn-success,
+.btn-approve {
+  background: var(--success);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(52, 199, 89, 0.3);
+}
+
+.btn-success:hover:not(:disabled),
+.btn-approve:hover:not(:disabled) {
+  background: var(--success-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(52, 199, 89, 0.4);
+}
+
+/* Danger/Reject Button */
+.btn-danger,
+.btn-reject {
+  background: var(--danger);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.3);
+}
+
+.btn-danger:hover:not(:disabled),
+.btn-reject:hover:not(:disabled) {
+  background: var(--danger-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(255, 59, 48, 0.4);
+}
+
+/* Warning Button */
+.btn-warning {
+  background: var(--warning);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(255, 149, 0, 0.3);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: var(--warning-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(255, 149, 0, 0.4);
+}
+
+/* Info Button */
+.btn-info {
+  background: var(--info);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(90, 200, 250, 0.3);
+}
+
+.btn-info:hover:not(:disabled) {
+  background: var(--info-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(90, 200, 250, 0.4);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: var(--bg-gray);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e8e8e8;
+  border-color: var(--border-hover);
+}
+
+/* Outline Button */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  margin: 0px;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--bg-input);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Clear/Reset Button */
+.btn-clear {
+  background: #f4f4f4 !important;
+  color: #303031 !important;
+  border: 1px solid #e3eaf2 !important;
+  font-weight: 500;
+}
+
+.btn-clear:hover:not(:disabled) {
+  background: #e8e8e8 !important;
+  border-color: #d0d5dd !important;
+  transform: none;
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  padding: 8px 12px;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--primary-light);
+}
+
+/* Link Button */
+.btn-link {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  text-decoration: underline;
+  padding: 0;
+}
+
+.btn-link:hover:not(:disabled) {
+  color: var(--primary-hover);
+}
+
+/* Icon Buttons */
+.btn-icon {
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.btn-icon.btn-sm {
+  padding: 6px;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+/* Button with Icon */
+.btn .icon {
+  margin-right: 6px;
+}
+
+.btn .icon:only-child {
+  margin-right: 0;
+}
+
+/* Button Groups */
+.btn-group {
+  display: inline-flex;
+  gap: var(--spacing-sm);
+}
+
+.btn-group .btn {
+  flex: 1;
+}
+
+/* Action Buttons (for tables) */
+.action-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-top: 0px;
+}
+
+.action-buttons .btn {
+  min-width: 80px;
+  white-space: nowrap;
+}
+
+/*Action Buttons Centered*/
+.action-buttons.center {
+  justify-content: center;
+}
+
+/* Full Width Button */
+.btn-block {
+  width: 100%;
+  display: flex;
+}
+
+/* Loading State */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: button-spin 0.6s linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+  }
+}

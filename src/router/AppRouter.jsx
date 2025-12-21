@@ -50,17 +50,7 @@ import MyDocuments from "../pages/students/MyDocuments";
 export default function AppRouter() {
   return (
     <BrowserRouter>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+
 
       <Routes>
         {/* 🌐 Public Routes */}

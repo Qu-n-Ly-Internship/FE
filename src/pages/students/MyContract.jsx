@@ -12,7 +12,7 @@ export default function MyContract() {
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState(null);
   const [confirming, setConfirming] = useState(false);
-  const [notFound, setNotFound] = useState(false); // ✅ Thêm state để track 404
+  const [notFound, setNotFound] = useState(false);
 
   const user = useAuthStore((state) => state.user);
   const internId = user?.internId || user?.id;
@@ -20,7 +20,7 @@ export default function MyContract() {
   const load = async () => {
     try {
       setLoading(true);
-      setNotFound(false); // Reset trạng thái 404
+      setNotFound(false);
 
       if (!internId) {
         console.log("❌ Không tìm thấy ID thực tập sinh");
@@ -28,15 +28,13 @@ export default function MyContract() {
       }
 
       const res = await getDocUrlsByIntern(internId);
-     
+
       let contractData = null;
 
       if (Array.isArray(res)) {
-
         contractData = res[0] || null;
         console.log("📄 Extracted from array:", contractData);
       } else if (res && typeof res === "object") {
-        // Nếu là object, kiểm tra có data/contract field không
         contractData = res.data || res.contract || res;
         console.log("📄 Extracted from object:", contractData);
       }
@@ -44,7 +42,6 @@ export default function MyContract() {
       console.log("📄 Final contract data:", contractData);
       setContract(contractData);
 
-      // ✅ Nếu không có contract data (200 nhưng rỗng) → coi như chưa có hợp đồng
       if (!contractData) {
         setNotFound(true);
         console.log("ℹ️ Intern chưa có hợp đồng (200 - empty data)");
@@ -53,14 +50,12 @@ export default function MyContract() {
       console.error("❌ Lỗi tải hợp đồng:", e);
       console.error("❌ Error response:", e?.response);
 
-      // ✅ Kiểm tra nếu là lỗi 404
       if (e?.response?.status === 404) {
         setNotFound(true);
         console.log("ℹ️ Intern chưa có hợp đồng (404)");
         return;
       }
 
-      // ✅ Các lỗi khác cũng set notFound (CORS, Network, 500...)
       setNotFound(true);
       console.error(
         "❌ Lỗi khi tải hợp đồng:",
@@ -78,7 +73,6 @@ export default function MyContract() {
   }, [internId]);
 
   const handleConfirmContract = async () => {
-    // ✅ Kiểm tra nhiều field có thể có
     const documentId =
       contract?.document_id || contract?.id || contract?.documentId;
 
@@ -96,7 +90,6 @@ export default function MyContract() {
 
       toast.success("✅ Hợp đồng đã được xác nhận thành công.");
 
-      // Cập nhật trạng thái frontend
       setContract((prev) => ({
         ...prev,
         status: "ACCEPTED",
@@ -115,121 +108,117 @@ export default function MyContract() {
   };
 
   return (
-    <div className="page-container">
-      <h1 className="page-title" style={{ marginBottom: 12 }}>
-        Hợp đồng của tôi
-      </h1>
+    <div className="page-container ">
+      {/* Page Header */}
+      <div className="page-header">
+        <h1 className="page-title">Hợp đồng của tôi</h1>
+      </div>
 
-      <div className="card" style={{ padding: 16 }}>
-        {loading && <div className="loading">Đang tải dữ liệu…</div>}
+      <div className="card">
+        {loading && <div className="loading center">Đang tải dữ liệu…</div>}
 
-        {/* ✅ Hiển thị giao diện đặc biệt cho 404 */}
+        {/* Not Found State */}
         {!loading && notFound && (
-          <div style={{ textAlign: "center", padding: "32px 16px" }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>📄</div>
-            <h3 style={{ marginBottom: 8, color: "#666" }}>
-              Thực tập sinh chưa có hợp đồng thực tập
-            </h3>
-            <p style={{ color: "#999", marginBottom: 24 }}>
-              Vui lòng liên hệ với phòng nhân sự để được hỗ trợ.
-            </p>
+          <div className="contract-empty">
+            <div className="contract-empty-icon">📄</div>
+            <h3>Thực tập sinh chưa có hợp đồng thực tập</h3>
+            <p>Vui lòng liên hệ với phòng nhân sự để được hỗ trợ.</p>
             <button className="btn btn-primary" onClick={load}>
               🔄 Kiểm tra lại
             </button>
           </div>
         )}
 
+        {/* No Contract State */}
         {!loading && !contract && !notFound && (
           <div className="empty">⚠️ Không tìm thấy hợp đồng.</div>
         )}
 
+        {/* Contract Details */}
         {!loading && contract && (
-          <div style={{ fontSize: 14 }}>
-            <div style={{ marginBottom: 8 }}>
-              <strong>Người phụ trách:</strong>{" "}
-              {contract.name_hr ||
-                contract.hr_name ||
-                contract.hrName ||
-                "Không rõ"}
+          <>
+            <div className="contract-info">
+              <div className="contract-row">
+                <div className="contract-label">Người phụ trách:</div>
+                <div className="contract-value">
+                  {contract.name_hr ||
+                    contract.hr_name ||
+                    contract.hrName ||
+                    "Không rõ"}
+                </div>
+              </div>
+
+              <div className="contract-row">
+                <div className="contract-label">Trạng thái:</div>
+                <div className="contract-value">
+                  <span
+                    className={`status-badge ${
+                      contract.status === "ACCEPTED"
+                        ? "status-approved"
+                        : "status-pending"
+                    }`}
+                  >
+                    {contract.status
+                      ? contract.status.toUpperCase()
+                      : "Không rõ"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="contract-row">
+                <div className="contract-label">Ngày tải:</div>
+                <div className="contract-value">
+                  {contract.uploaded_at || contract.uploadedAt
+                    ? new Date(
+                        contract.uploaded_at || contract.uploadedAt
+                      ).toLocaleString("vi-VN")
+                    : "-"}
+                </div>
+              </div>
+
+              <div className="contract-row">
+                <div className="contract-label">File hợp đồng:</div>
+                <div className="contract-value">
+                  {contract.file_url || contract.fileUrl ? (
+                    <a
+                      href={contract.file_url || contract.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="contract-link"
+                    >
+                      📄 Xem hợp đồng
+                    </a>
+                  ) : (
+                    "Không có file"
+                  )}
+                </div>
+              </div>
             </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>Trạng thái:</strong>{" "}
-              {contract.status ? contract.status.toUpperCase() : "Không rõ"}
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>Ngày tải:</strong>{" "}
-              {contract.uploaded_at || contract.uploadedAt
-                ? new Date(
-                    contract.uploaded_at || contract.uploadedAt
-                  ).toLocaleString("vi-VN")
-                : "-"}
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <strong>File hợp đồng:</strong>{" "}
-              {contract.file_url || contract.fileUrl ? (
-                <a
-                  href={contract.file_url || contract.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-link"
-                >
-                  Xem hợp đồng
-                </a>
+
+            <div className="contract-actions">
+              {contract.status === "ACCEPTED" ? (
+                <button className="btn btn-success" disabled>
+                  ✅ Đã xác nhận
+                </button>
               ) : (
-                "Không có file"
+                <button
+                  className="btn btn-primary"
+                  disabled={confirming}
+                  onClick={handleConfirmContract}
+                >
+                  {confirming ? "Đang xác nhận…" : "Xác nhận hợp đồng"}
+                </button>
               )}
+
+              <button className="btn btn-outline" onClick={load}>
+                🔄 Làm mới
+              </button>
             </div>
-
-            {contract.status === "ACCEPTED" ? (
-              <button
-                className="btn btn-success"
-                disabled
-                style={{
-                  width: "100%",
-                  padding: "12px 24px",
-                  fontSize: "16px",
-                  fontWeight: "600",
-                }}
-              >
-                ✅ Đã xác nhận
-              </button>
-            ) : (
-              <button
-                className="btn btn-primary"
-                disabled={confirming}
-                onClick={handleConfirmContract}
-                style={{
-                  width: "100%",
-                  padding: "12px 24px",
-                  fontSize: "16px",
-                  fontWeight: "600",
-                }}
-              >
-                {confirming ? "Đang xác nhận…" : "Xác nhận hợp đồng"}
-              </button>
-            )}
-          </div>
-        )}
-
-        {!loading && !notFound && (
-          <div style={{ marginTop: 16 }}>
-            <button className="btn btn-outline" onClick={load}>
-              🔄 Làm mới
-            </button>
-          </div>
+          </>
         )}
       </div>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="colored"
-      />
+
     </div>
   );
 }

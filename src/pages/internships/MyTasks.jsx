@@ -1,74 +1,66 @@
 import { useEffect, useState } from "react";
-import { updateTaskStatus } from "../../services/taskService";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import { updateTaskStatus } from "../../services/taskService";
 import "./MyTasks.css";
+
+// Priority mapping
+const PRIORITY_MAP = {
+  HIGH: { label: "Cao", class: "priority-high" },
+  MEDIUM: { label: "Trung bình", class: "priority-medium" },
+  LOW: { label: "Thấp", class: "priority-low" },
+};
+
+// Status mapping
+const STATUS_MAP = {
+  NEW: { label: "Chưa bắt đầu", class: "status-pending" },
+  IN_PROGRESS: { label: "Đang thực hiện", class: "status-progress" },
+  COMPLETED: { label: "Hoàn thành", class: "status-done" },
+};
 
 export default function MyTasks() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     loadTasks();
   }, []);
 
   const getUserId = () => {
-    // ✅ Thử nhiều cách lấy userId
+    // Try multiple ways to get userId
 
-    // Cách 1: Từ localStorage "auth-storage" (Zustand)
+    // Method 1: From localStorage "auth-storage" (Zustand)
     const authStorageStr = localStorage.getItem("auth-storage");
     if (authStorageStr) {
       try {
         const authStorage = JSON.parse(authStorageStr);
-        console.log("Auth storage:", authStorage);
-
-        // Lấy từ state.user.id
-        if (
-          authStorage.state &&
-          authStorage.state.user &&
-          authStorage.state.user.id
-        ) {
-          const userId = authStorage.state.user.id;
-          console.log("Found userId from auth-storage:", userId);
-          return userId;
+        if (authStorage.state?.user?.id) {
+          return authStorage.state.user.id;
         }
       } catch (e) {
         console.error("Error parsing auth-storage:", e);
       }
     }
 
-    // Cách 2: Từ localStorage "user"
+    // Method 2: From localStorage "user"
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-        console.log("User from localStorage:", user);
-
-        // Thử nhiều key có thể chứa userId
         const userId = user.userId || user.id || user.user_id || user.USER_ID;
-        if (userId) {
-          console.log("Found userId:", userId);
-          return userId;
-        }
+        if (userId) return userId;
       } catch (e) {
         console.error("Error parsing user from localStorage:", e);
       }
     }
 
-    // Cách 3: Từ localStorage "userId" trực tiếp
+    // Method 3: Direct from localStorage "userId"
     const userIdDirect = localStorage.getItem("userId");
-    if (userIdDirect) {
-      console.log("Found userId directly:", userIdDirect);
-      return userIdDirect;
-    }
-
-    // Cách 4: Log tất cả localStorage để debug
-    console.log("All localStorage keys:", Object.keys(localStorage));
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      console.log(`localStorage[${key}]:`, localStorage.getItem(key));
-    }
+    if (userIdDirect) return userIdDirect;
 
     return null;
   };
@@ -87,18 +79,13 @@ export default function MyTasks() {
         return;
       }
 
-      console.log("Loading tasks for userId:", userId);
-
-      // ✅ Gọi API với userId
       const response = await axios.get(
         `http://codeft.duckdns.org:8090/api/tasks/my-tasks?userId=${userId}`
       );
 
-      console.log("Tasks response:", response.data);
-
       if (response.data.success) {
         setTasks(response.data.data || []);
-        if (response.data.data && response.data.data.length > 0) {
+        if (response.data.data?.length > 0) {
           toast.success(`Đã tải ${response.data.data.length} công việc`);
         } else {
           toast.info("Bạn chưa có công việc nào được giao");
@@ -113,18 +100,12 @@ export default function MyTasks() {
       console.error("Error loading tasks:", error);
 
       if (error.response) {
-        // Server trả về error
-        console.error("Error response:", error.response.data);
         toast.error(
           error.response.data.message || "Không thể tải danh sách công việc."
         );
       } else if (error.request) {
-        // Request được gửi nhưng không có response
-        console.error("No response:", error.request);
         toast.error("Không thể kết nối đến server.");
       } else {
-        // Lỗi khác
-        console.error("Error:", error.message);
         toast.error("Đã xảy ra lỗi: " + error.message);
       }
 
@@ -137,15 +118,10 @@ export default function MyTasks() {
   const handleStatusChange = async (taskId, newStatus) => {
     setUpdating(true);
     try {
-      console.log("Updating task:", taskId, "to status:", newStatus);
-
       const response = await updateTaskStatus(taskId, newStatus);
-
-      console.log("Update response:", response);
 
       if (response.success) {
         toast.success("Cập nhật trạng thái thành công!");
-        // Cập nhật UI ngay
         setTasks((prev) =>
           prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
         );
@@ -160,115 +136,251 @@ export default function MyTasks() {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "Chưa có";
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
+
+  const getPriorityInfo = (priority) => {
+    return PRIORITY_MAP[priority] || { label: priority, class: "priority-low" };
+  };
+
+  const getStatusInfo = (status) => {
+    return STATUS_MAP[status] || { label: status, class: "status-pending" };
+  };
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentTasks = tasks.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(tasks.length / pageSize);
+
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i);
+    }
+    return pageNumbers;
+  };
+
   if (loading) {
     return (
-      <div className="mytasks-container">
-        <p>Đang tải dữ liệu...</p>
+      <div className="page-container mytasks-container">
+        <div className="loading center">Đang tải dữ liệu...</div>
       </div>
     );
   }
 
   return (
-    <div className="mytasks-container">
-      <h2 className="mytasks-title">📋 Công việc của tôi</h2>
+    <div className="page-container">
 
-      {tasks.length === 0 ? (
-        <p>Không có công việc nào được giao.</p>
-      ) : (
-        <table className="mytasks-table">
-          <thead>
-            <tr>
-              <th>Tên công việc</th>
-              <th>Mô tả</th>
-              <th>Ưu tiên</th>
-              <th>
-                <span style={{ marginLeft: 12 }}>Trạng thái</span>
-              </th>
-              <th>Hạn chót</th>
-              <th>
-                <span style={{ marginLeft: 15 }}>Thao tác</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task) => (
-              <tr key={task.id}>
-                <td>{task.title}</td>
-                <td>{task.description}</td>
-                <td>
-                  <span
-                    className={`priority priority-${task.priority?.toLowerCase()}`}
+      <div className="page-header">
+        <h1 className="page-title mytasks-title">Công việc của tôi</h1>
+      </div>
+
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">📋</div>
+          <div className="stat-info">
+            <div className="stat-value">{tasks.length}</div>
+            <div className="stat-label">Tổng nhiệm vụ</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-wait-icon">⏳</div>
+          <div className="stat-info">
+            <div className="stat-value stat-wait-value">
+              {
+                tasks.filter(
+                  (t) => t.status === "PENDING" || t.status === "NEW"
+                ).length
+              }
+            </div>
+            <div className="stat-label">Chờ xử lý</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">✓</div>
+          <div className="stat-info">
+            <div className="stat-value stat-pending-value">
+              {tasks.filter((t) => t.status === "IN_PROGRESS").length}
+            </div>
+            <div className="stat-label">Đang thực hiện</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">✅</div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {tasks.filter((t) => t.status === "COMPLETED").length}
+            </div>
+            <div className="stat-label">Đã hoàn thành</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        {tasks.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">📝</div>
+            <div className="empty-text">
+              Bạn chưa có công việc nào được giao
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="table-wrapper">
+              <table className="table mytasks-table">
+                <thead>
+                  <tr>
+                    <th className="table-th">Tên công việc</th>
+                    <th className="table-th">Mô tả</th>
+                    <th className="table-th">Ưu tiên</th>
+                    <th className="table-th">Trạng thái</th>
+                    <th className="table-th">Hạn chót</th>
+                    <th className="table-th center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentTasks.map((task) => {
+                    const priorityInfo = getPriorityInfo(task.priority);
+                    const statusInfo = getStatusInfo(task.status);
+
+                    return (
+                      <tr key={task.id}>
+                        <td className="table-td">
+                          <strong>{task.title}</strong>
+                        </td>
+                        <td className="table-td">{task.description || "-"}</td>
+                        <td className="table-td">
+                          <span
+                            className={`priority-badge ${priorityInfo.class}`}
+                          >
+                            {priorityInfo.label}
+                          </span>
+                        </td>
+                        <td className="table-td">
+                          <span
+                            className={`mytasks-status-badge ${statusInfo.class}`}
+                          >
+                            {statusInfo.label}
+                          </span>
+                        </td>
+                        <td className="table-td">
+                          <span className="mytasks-deadline">
+                            {formatDate(task.dueDate)}
+                          </span>
+                        </td>
+                        <td className="table-td mytasks-action-cell">
+                          <div className="mytasks-btn-group">
+                            <button
+                              className={`mytasks-status-btn ${
+                                task.status === "NEW" ? "active" : ""
+                              }`}
+                              onClick={() => handleStatusChange(task.id, "NEW")}
+                              disabled={updating}
+                              title="Chưa bắt đầu"
+                            >
+                              <span className="mytasks-status-dot new"></span>
+                            </button>
+                            <button
+                              className={`mytasks-status-btn ${
+                                task.status === "IN_PROGRESS" ? "active" : ""
+                              }`}
+                              onClick={() =>
+                                handleStatusChange(task.id, "IN_PROGRESS")
+                              }
+                              disabled={updating}
+                              title="Đang thực hiện"
+                            >
+                              <span className="mytasks-status-dot in-progress"></span>
+                            </button>
+                            <button
+                              className={`mytasks-status-btn ${
+                                task.status === "COMPLETED" ? "active" : ""
+                              }`}
+                              onClick={() =>
+                                handleStatusChange(task.id, "COMPLETED")
+                              }
+                              disabled={updating}
+                              title="Hoàn thành"
+                            >
+                              <span className="mytasks-status-dot completed"></span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {currentTasks.length === 0 ? 0 : startIndex + 1}–
+                  {Math.min(startIndex + pageSize, tasks.length)} trên{" "}
+                  {tasks.length}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(1)}
+                    title="Về trang đầu"
                   >
-                    {task.priority === "HIGH"
-                      ? "Cao"
-                      : task.priority === "MEDIUM"
-                      ? "Trung bình"
-                      : "Thấp"}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    className={`status ${
-                      task.status === "COMPLETED"
-                        ? "done"
-                        : task.status === "IN_PROGRESS"
-                        ? "progress"
-                        : "pending"
-                    }`}
+                    « Đầu
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    title="Trang trước"
                   >
-                    {task.status === "COMPLETED"
-                      ? "Hoàn thành"
-                      : task.status === "IN_PROGRESS"
-                      ? "Đang thực hiện"
-                      : "Chưa bắt đầu"}
-                  </span>
-                </td>
-                <td>
-                  <span className="deadline">
-                    {task.dueDate
-                      ? new Date(task.dueDate).toLocaleDateString("vi-VN")
-                      : "Chưa có"}
-                  </span>
-                </td>
-                <td className="action-buttons">
-                  <div className="btn-group">
-                    <button
-                      className={`status-btn ${
-                        task.status === "NEW" ? "active" : ""
-                      } ${updating ? "disabled" : ""}`}
-                      onClick={() => handleStatusChange(task.id, "NEW")}
-                      disabled={updating}
-                      title="Chưa bắt đầu"
-                    >
-                      <span className="status-dot new"></span>
-                    </button>
-                    <button
-                      className={`status-btn ${
-                        task.status === "IN_PROGRESS" ? "active" : ""
-                      } ${updating ? "disabled" : ""}`}
-                      onClick={() => handleStatusChange(task.id, "IN_PROGRESS")}
-                      disabled={updating}
-                      title="Đang thực hiện"
-                    >
-                      <span className="status-dot in-progress"></span>
-                    </button>
-                    <button
-                      className={`status-btn ${
-                        task.status === "COMPLETED" ? "active" : ""
-                      } ${updating ? "disabled" : ""}`}
-                      onClick={() => handleStatusChange(task.id, "COMPLETED")}
-                      disabled={updating}
-                      title="Hoàn thành"
-                    >
-                      <span className="status-dot completed"></span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                    ‹ Trước
+                  </button>
+
+                  {getPageNumbers().map((p, idx) =>
+                    p === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`btn btn-sm page-btn ${
+                          p === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    title="Trang sau"
+                  >
+                    Sau ›
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(totalPages)}
+                    title="Đến trang cuối"
+                  >
+                    Cuối »
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

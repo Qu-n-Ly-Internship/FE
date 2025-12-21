@@ -34,6 +34,10 @@ const AttendanceReport = () => {
     searchText: "",
   });
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const [summary, setSummary] = useState({
     totalInterns: 0,
     totalWorkingDays: 0,
@@ -41,25 +45,36 @@ const AttendanceReport = () => {
     totalAbsentDays: 0,
   });
 
-  // Danh sách phòng ban (có thể lấy từ API sau)
-  // const [departments] = useState([
-  //   "Phát triển phần mềm",
-  //   "Thiết kế",
-  //   "Nhân sự",
-  //   "Kế toán",
-  //   "Kinh doanh",
-  //   "Marketing",
-  // ]);
+  // Tính toán phân trang
+  const totalItems = dataSource.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = dataSource.slice(startIndex, startIndex + pageSize);
 
-  // Danh sách mentor (có thể lấy từ API sau)
-  // const [mentors] = useState([
-  //   { id: 1, name: "Nguyễn Văn A" },
-  //   { id: 2, name: "Trần Thị B" },
-  //   { id: 3, name: "Lê Văn C" },
-  //   { id: 4, name: "Phạm Thị D" },
-  // ]);
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
 
-  // Load data khi component mount hoặc filters thay đổi
+  // Reset về trang đầu khi có thay đổi dữ liệu
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dataSource]);
+
+  // Load data khi component mount
   useEffect(() => {
     fetchAttendanceData();
   }, []);
@@ -158,21 +173,13 @@ const AttendanceReport = () => {
       width: 180,
       sorter: (a, b) => a.fullName.localeCompare(b.fullName),
     },
-
     {
       title: "Số ngày đi làm",
       dataIndex: "workingDays",
       key: "workingDays",
       width: 120,
       sorter: (a, b) => (a.workingDays || 0) - (b.workingDays || 0),
-      render: (days) => (
-        <span
-          className="working-days"
-          style={{ color: "#52c41a", fontWeight: "500" }}
-        >
-          {days || 0} ngày
-        </span>
-      ),
+      render: (days) => <span className="working-days">{days || 0} ngày</span>,
     },
     {
       title: "Nghỉ phép",
@@ -180,11 +187,7 @@ const AttendanceReport = () => {
       key: "leaveDays",
       width: 100,
       sorter: (a, b) => (a.leaveDays || 0) - (b.leaveDays || 0),
-      render: (days) => (
-        <span className="leave-days" style={{ color: "#1890ff" }}>
-          {days || 0} ngày
-        </span>
-      ),
+      render: (days) => <span className="leave-days">{days || 0} ngày</span>,
     },
     {
       title: "Đi muộn",
@@ -193,10 +196,7 @@ const AttendanceReport = () => {
       width: 100,
       sorter: (a, b) => (a.lateDays || 0) - (b.lateDays || 0),
       render: (days) => (
-        <span
-          className={days > 0 ? "late-days" : ""}
-          style={{ color: days > 0 ? "#faad14" : "#52c41a" }}
-        >
+        <span className={days > 0 ? "late-days" : ""}>
           {days > 0 ? `${days} lần` : "Không"}
         </span>
       ),
@@ -208,124 +208,129 @@ const AttendanceReport = () => {
       width: 110,
       sorter: (a, b) => (a.absentDays || 0) - (b.absentDays || 0),
       render: (days) => (
-        <span
-          className={days > 0 ? "absent-days" : ""}
-          style={{ color: days > 0 ? "#f5222d" : "#52c41a" }}
-        >
+        <span className={days > 0 ? "absent-days" : ""}>
           {days > 0 ? `${days} ngày` : "Không"}
         </span>
       ),
     },
   ];
 
-  // const handleDateRangeChange = (dates) => {
-  //   setFilters({ ...filters, dateRange: dates });
-  // };
-
-  // const handleSearch = (e) => {
-  //   setFilters({ ...filters, searchText: e.target.value });
-  // };
-
-  // const handleDepartmentChange = (value) => {
-  //   setFilters({ ...filters, group: value });
-  // };
-
-  // const handleMentorChange = (value) => {
-  //   setFilters({ ...filters, mentor: value });
-  // };
-
-  // const handleResetFilters = () => {
-  //   setFilters({
-  //     dateRange: [dayjs().startOf("month"), dayjs().endOf("month")],
-  //     group: null,
-  //     mentor: null,
-  //     searchText: "",
-  //   });
-  //   // Reload data sau khi reset
-  //   setTimeout(() => fetchAttendanceData(), 100);
-  // };
-
-  // const handleSearchSubmit = () => {
-  //   fetchAttendanceData();
-  // };
-
-  // const handleExport = () => {
-  //   message.info("Tính năng xuất Excel đang được phát triển");
-  //   // TODO: Implement export functionality
-  // };
-
   return (
-    <div className="attendance-report">
-      <h2 style={{ marginBottom: "20px" }}>Báo cáo chuyên cần thực tập sinh</h2>
+    <div className="page-container attendance-report">
+      {/* Page Header */}
+      <div className="page-header">
+        <h1 className="page-title">Báo cáo chuyên cần thực tập sinh</h1>
+      </div>
+
       {/* Summary Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Tổng số TTS"
-              value={summary.totalInterns}
-              valueStyle={{ color: "#1890ff" }}
-              loading={loading}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Tổng ngày làm việc"
-              value={summary.totalWorkingDays}
-              valueStyle={{ color: "#52c41a" }}
-              loading={loading}
-              suffix="ngày"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Tổng lần đi muộn"
-              value={summary.totalLateDays}
-              valueStyle={{ color: "#faad14" }}
-              loading={loading}
-              suffix="lần"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Tổng ngày vắng mặt"
-              value={summary.totalAbsentDays}
-              valueStyle={{ color: "#f5222d" }}
-              loading={loading}
-              suffix="ngày"
-            />
-          </Card>
-        </Col>
-      </Row>
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-icon stat-total">👥</div>
+          <div className="stat-info">
+            <div className="stat-value">{summary.totalInterns}</div>
+            <div className="stat-label">Tổng số TTS</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-approved-icon">✓</div>
+          <div className="stat-info">
+            <div className="stat-value stat-approved-value">
+              {summary.totalWorkingDays}
+            </div>
+            <div className="stat-label">Tổng ngày làm việc</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-pending-icon">⏰</div>
+          <div className="stat-info">
+            <div className="stat-value stat-pending-value">
+              {summary.totalLateDays}
+            </div>
+            <div className="stat-label">Tổng lần đi muộn</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon stat-rejected-icon">✕</div>
+          <div className="stat-info">
+            <div className="stat-value stat-rejected-value">
+              {summary.totalAbsentDays}
+            </div>
+            <div className="stat-label">Tổng ngày vắng mặt</div>
+          </div>
+        </div>
+      </div>
 
       {/* Data Table */}
-      <Card>
+      <div className="card">
         <Spin spinning={loading} tip="Đang tải dữ liệu...">
-          <Table
-            dataSource={dataSource}
-            columns={columns}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total) => `Tổng cộng: ${total} TTS`,
-              pageSizeOptions: ["10", "20", "50", "100"],
-            }}
-            scroll={{ x: 1000 }}
-            bordered
-            size="middle"
-            locale={{
-              emptyText: "Không có dữ liệu",
-            }}
-          />
+          <div className="table-wrapper">
+            <Table
+              dataSource={currentItems}
+              columns={columns}
+              pagination={false}
+              scroll={{ x: 1000 }}
+              bordered
+              size="middle"
+              locale={{
+                emptyText: (
+                  <div className="empty">
+                    <div className="empty-icon">📊</div>
+                    <div className="empty-text">Không có dữ liệu</div>
+                  </div>
+                ),
+              }}
+            />
+
+            {/* Phân trang */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+                  {Math.min(startIndex + pageSize, totalItems)} trên{" "}
+                  {totalItems}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    ‹ Trước
+                  </button>
+
+                  {getPageNumbers().map((p, idx) =>
+                    p === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`btn btn-sm page-btn ${
+                          p === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                  >
+                    Sau ›
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </Spin>
-      </Card>
+      </div>
     </div>
   );
 };
