@@ -29,17 +29,6 @@ const getStatusBadge = (status) => {
   return <span className={`badge ${info.class}`}>{info.label}</span>;
 };
 
-const getStatusBadge = (status) => {
-  const statusMap = {
-    SCHEDULED: { label: "Đã lên lịch", class: "badge-primary" },
-    COMPLETED: { label: "Đã hoàn thành", class: "badge-success" },
-    CANCELLED: { label: "Đã hủy", class: "badge-danger" },
-    "Đã tạo lịch": { label: "Đã tạo lịch", class: "badge-primary" },
-  };
-  const info = statusMap[status] || { label: status, class: "" };
-  return <span className={`badge ${info.class}`}>{info.label}</span>;
-};
-
 export default function MeetingManagement() {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -592,7 +581,7 @@ function EditMeetingModal({ meeting, onClose, onUpdate }) {
       location: location.trim(),
     });
   };
-  
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div

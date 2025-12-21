@@ -33,7 +33,7 @@ export default function HRLeaveApprovalPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 15;
+  const pageSize = 10;
 
   useEffect(() => {
     loadLeaveRequests();

@@ -44,6 +44,10 @@ export default function SupportRequests() {
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState("ALL");
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+
   const loadRequests = async () => {
     setLoading(true);
     try {
@@ -66,11 +70,43 @@ export default function SupportRequests() {
     toast.success("Tạo yêu cầu thành công! 🎉");
   };
 
+  // Reset về trang đầu khi filter thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus]);
+
   // Filter trên client-side
   const filteredRequests = requests.filter((req) => {
     if (filterStatus === "ALL") return true;
     return req.status === filterStatus;
   });
+
+  // Tính toán phân trang
+  const totalItems = filteredRequests.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = filteredRequests.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
 
   return (
     <div className="page-container">
@@ -173,7 +209,7 @@ export default function SupportRequests() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRequests.map((req, index) => (
+                {currentItems.map((req, index) => (
                   <tr key={req.id}>
                     <td className="table-td center">{index + 1}</td>
                     <td className="table-td">
@@ -234,6 +270,72 @@ export default function SupportRequests() {
                 ))}
               </tbody>
             </table>
+
+            {/* Phân trang */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+                  {Math.min(startIndex + pageSize, totalItems)} trên{" "}
+                  {totalItems}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(1)}
+                    title="Về trang đầu"
+                  >
+                    « Đầu
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    title="Trang trước"
+                  >
+                    ‹ Trước
+                  </button>
+
+                  {getPageNumbers().map((p, idx) =>
+                    p === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`btn btn-sm page-btn ${
+                          p === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    title="Trang sau"
+                  >
+                    Sau ›
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(totalPages)}
+                    title="Đến trang cuối"
+                  >
+                    Cuối »
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
