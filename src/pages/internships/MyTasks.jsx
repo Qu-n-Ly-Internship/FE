@@ -23,6 +23,8 @@ export default function MyTasks() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     loadTasks();
@@ -147,6 +149,19 @@ export default function MyTasks() {
     return STATUS_MAP[status] || { label: status, class: "status-pending" };
   };
 
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentTasks = tasks.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(tasks.length / pageSize);
+
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i);
+    }
+    return pageNumbers;
+  };
+
   if (loading) {
     return (
       <div className="page-container mytasks-container">
@@ -221,91 +236,157 @@ export default function MyTasks() {
             </div>
           </div>
         ) : (
-          <div className="table-wrapper">
-            <table className="table mytasks-table">
-              <thead>
-                <tr>
-                  <th className="table-th">Tên công việc</th>
-                  <th className="table-th">Mô tả</th>
-                  <th className="table-th">Ưu tiên</th>
-                  <th className="table-th">Trạng thái</th>
-                  <th className="table-th">Hạn chót</th>
-                  <th className="table-th center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tasks.map((task) => {
-                  const priorityInfo = getPriorityInfo(task.priority);
-                  const statusInfo = getStatusInfo(task.status);
+          <div>
+            <div className="table-wrapper">
+              <table className="table mytasks-table">
+                <thead>
+                  <tr>
+                    <th className="table-th">Tên công việc</th>
+                    <th className="table-th">Mô tả</th>
+                    <th className="table-th">Ưu tiên</th>
+                    <th className="table-th">Trạng thái</th>
+                    <th className="table-th">Hạn chót</th>
+                    <th className="table-th center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentTasks.map((task) => {
+                    const priorityInfo = getPriorityInfo(task.priority);
+                    const statusInfo = getStatusInfo(task.status);
 
-                  return (
-                    <tr key={task.id}>
-                      <td className="table-td">
-                        <strong>{task.title}</strong>
-                      </td>
-                      <td className="table-td">{task.description || "-"}</td>
-                      <td className="table-td">
-                        <span
-                          className={`priority-badge ${priorityInfo.class}`}
-                        >
-                          {priorityInfo.label}
-                        </span>
-                      </td>
-                      <td className="table-td">
-                        <span
-                          className={`mytasks-status-badge ${statusInfo.class}`}
-                        >
-                          {statusInfo.label}
-                        </span>
-                      </td>
-                      <td className="table-td">
-                        <span className="mytasks-deadline">
-                          {formatDate(task.dueDate)}
-                        </span>
-                      </td>
-                      <td className="table-td mytasks-action-cell">
-                        <div className="mytasks-btn-group">
-                          <button
-                            className={`mytasks-status-btn ${
-                              task.status === "NEW" ? "active" : ""
-                            }`}
-                            onClick={() => handleStatusChange(task.id, "NEW")}
-                            disabled={updating}
-                            title="Chưa bắt đầu"
+                    return (
+                      <tr key={task.id}>
+                        <td className="table-td">
+                          <strong>{task.title}</strong>
+                        </td>
+                        <td className="table-td">{task.description || "-"}</td>
+                        <td className="table-td">
+                          <span
+                            className={`priority-badge ${priorityInfo.class}`}
                           >
-                            <span className="mytasks-status-dot new"></span>
-                          </button>
-                          <button
-                            className={`mytasks-status-btn ${
-                              task.status === "IN_PROGRESS" ? "active" : ""
-                            }`}
-                            onClick={() =>
-                              handleStatusChange(task.id, "IN_PROGRESS")
-                            }
-                            disabled={updating}
-                            title="Đang thực hiện"
+                            {priorityInfo.label}
+                          </span>
+                        </td>
+                        <td className="table-td">
+                          <span
+                            className={`mytasks-status-badge ${statusInfo.class}`}
                           >
-                            <span className="mytasks-status-dot in-progress"></span>
-                          </button>
-                          <button
-                            className={`mytasks-status-btn ${
-                              task.status === "COMPLETED" ? "active" : ""
-                            }`}
-                            onClick={() =>
-                              handleStatusChange(task.id, "COMPLETED")
-                            }
-                            disabled={updating}
-                            title="Hoàn thành"
-                          >
-                            <span className="mytasks-status-dot completed"></span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            {statusInfo.label}
+                          </span>
+                        </td>
+                        <td className="table-td">
+                          <span className="mytasks-deadline">
+                            {formatDate(task.dueDate)}
+                          </span>
+                        </td>
+                        <td className="table-td mytasks-action-cell">
+                          <div className="mytasks-btn-group">
+                            <button
+                              className={`mytasks-status-btn ${
+                                task.status === "NEW" ? "active" : ""
+                              }`}
+                              onClick={() => handleStatusChange(task.id, "NEW")}
+                              disabled={updating}
+                              title="Chưa bắt đầu"
+                            >
+                              <span className="mytasks-status-dot new"></span>
+                            </button>
+                            <button
+                              className={`mytasks-status-btn ${
+                                task.status === "IN_PROGRESS" ? "active" : ""
+                              }`}
+                              onClick={() =>
+                                handleStatusChange(task.id, "IN_PROGRESS")
+                              }
+                              disabled={updating}
+                              title="Đang thực hiện"
+                            >
+                              <span className="mytasks-status-dot in-progress"></span>
+                            </button>
+                            <button
+                              className={`mytasks-status-btn ${
+                                task.status === "COMPLETED" ? "active" : ""
+                              }`}
+                              onClick={() =>
+                                handleStatusChange(task.id, "COMPLETED")
+                              }
+                              disabled={updating}
+                              title="Hoàn thành"
+                            >
+                              <span className="mytasks-status-dot completed"></span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-info">
+                  Hiển thị {currentTasks.length === 0 ? 0 : startIndex + 1}–
+                  {Math.min(startIndex + pageSize, tasks.length)} trên{" "}
+                  {tasks.length}
+                </div>
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(1)}
+                    title="Về trang đầu"
+                  >
+                    « Đầu
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    title="Trang trước"
+                  >
+                    ‹ Trước
+                  </button>
+
+                  {getPageNumbers().map((p, idx) =>
+                    p === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`btn btn-sm page-btn ${
+                          p === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    title="Trang sau"
+                  >
+                    Sau ›
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(totalPages)}
+                    title="Đến trang cuối"
+                  >
+                    Cuối »
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

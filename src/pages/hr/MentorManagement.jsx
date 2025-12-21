@@ -29,6 +29,10 @@ export default function HRProjectManagement() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferData, setTransferData] = useState(null);
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   useEffect(() => {
     loadProjects();
     loadPrograms();
@@ -256,6 +260,7 @@ export default function HRProjectManagement() {
     }
   }, [showInternMenu]);
 
+  // Lọc dự án
   const filteredProjects = projects.filter((project) => {
     const matchSearch =
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -270,6 +275,38 @@ export default function HRProjectManagement() {
 
     return matchSearch && matchStatus;
   });
+
+  // Tính toán phân trang
+  const totalItems = filteredProjects.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = filteredProjects.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
+
+  // Reset về trang đầu khi có thay đổi bộ lọc
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, selectedProgramId, selectedDepartmentId]);
 
   const getStatusInfo = (project) => {
     const current = project.internNames?.length || 0;
@@ -314,6 +351,7 @@ export default function HRProjectManagement() {
             setSelectedDepartmentId("");
             setSearchTerm("");
             setFilterStatus("all");
+            setCurrentPage(1);
             loadProjects();
           }}
           disabled={loading}
@@ -459,7 +497,7 @@ export default function HRProjectManagement() {
           </div>
         ) : (
           <div className="hr-project-grid">
-            {filteredProjects.map((project) => {
+            {currentItems.map((project) => {
               const status = getStatusInfo(project);
               return (
                 <div key={project.id} className="hr-project-card">
@@ -619,6 +657,51 @@ export default function HRProjectManagement() {
           </div>
         )}
       </div>
+
+      {/* Phân trang */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <div className="pagination-info">
+            Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+            {Math.min(startIndex + pageSize, totalItems)} trên {totalItems}
+          </div>
+          <div className="pagination-controls">
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
+              ‹ Trước
+            </button>
+
+            {getPageNumbers().map((p, idx) =>
+              p === "..." ? (
+                <span key={`dots-${idx}`} className="page-dots">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  className={`btn btn-sm page-btn ${
+                    p === currentPage ? "active" : ""
+                  }`}
+                  onClick={() => setCurrentPage(p)}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Sau ›
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Intern Selection Modal */}
       {showModal && (

@@ -18,6 +18,11 @@ export default function AttendancePage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+
   // Cập nhật đồng hồ mỗi giây
   useEffect(() => {
     const timer = setInterval(() => {
@@ -26,9 +31,16 @@ export default function AttendancePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Load dữ liệu khi component mount
+  // Load dữ liệu khi component mount hoặc khi thay đổi trang
   useEffect(() => {
     loadAttendanceData();
+  }, [currentPage]);
+
+  // Reset về trang đầu khi component unmount
+  useEffect(() => {
+    return () => {
+      setCurrentPage(0);
+    };
   }, []);
 
   async function loadAttendanceData() {
@@ -47,20 +59,32 @@ export default function AttendancePage() {
         setTodayRecord(null);
       }
 
-      // Load lịch sử chấm công
+      // Load lịch sử chấm công với phân trang
       const historyResponse = await getAttendanceHistory({
-        page: 0,
-        size: 10,
+        page: currentPage,
+        size: pageSize,
       });
       console.log("History response:", historyResponse);
 
       // Xử lý response wrapper
       if (historyResponse && historyResponse.data) {
-        setHistory(
-          Array.isArray(historyResponse.data) ? historyResponse.data : []
-        );
+        const responseData = historyResponse.data;
+
+        // Kiểm tra nếu response có thuộc tính content (Spring Data JPA Page)
+        if (responseData.content && Array.isArray(responseData.content)) {
+          setHistory(responseData.content);
+          setTotalItems(responseData.totalElements || 0);
+        } else if (Array.isArray(responseData)) {
+          // Trường hợp API trả về mảng trực tiếp
+          setHistory(responseData);
+          setTotalItems(responseData.length);
+        } else {
+          setHistory([]);
+          setTotalItems(0);
+        }
       } else {
         setHistory([]);
+        setTotalItems(0);
       }
     } catch (error) {
       console.error("Error loading attendance data:", error);
@@ -86,7 +110,8 @@ export default function AttendancePage() {
 
       toast.success("Check-in thành công! ✅");
 
-      // Reload data để cập nhật
+      // Reset về trang đầu khi có thay đổi dữ liệu
+      setCurrentPage(0);
       await loadAttendanceData();
     } catch (error) {
       console.error("Error checking in:", error);
@@ -111,7 +136,8 @@ export default function AttendancePage() {
 
       toast.success("Check-out thành công! 👋");
 
-      // Reload data để cập nhật
+      // Reset về trang đầu khi có thay đổi dữ liệu
+      setCurrentPage(0);
       await loadAttendanceData();
     } catch (error) {
       console.error("Error checking out:", error);
@@ -151,6 +177,49 @@ export default function AttendancePage() {
     if (status === "Đã hoàn thành") return "badge-completed";
     return "badge-pending";
   }
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const pages = [];
+
+    if (totalPages <= 7) {
+      // Nếu có ít hơn 7 trang thì hiển thị tất cả
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Nhiều hơn 7 trang thì hiển thị có dấu ...
+      // Luôn hiển thị trang đầu
+      pages.push(1);
+
+      // Tính toán các trang cần hiển thị
+      const left = Math.max(2, currentPage);
+      const right = Math.min(totalPages - 1, currentPage + 2);
+
+      // Thêm dấu ... nếu cần
+      if (left > 2) {
+        pages.push("...");
+      }
+
+      // Thêm các trang ở giữa
+      for (let i = left; i <= right; i++) {
+        pages.push(i);
+      }
+
+      // Thêm dấu ... nếu cần
+      if (right < totalPages - 1) {
+        pages.push("...");
+      }
+
+      // Luôn hiển thị trang cuối
+      if (right < totalPages) {
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
 
   if (loading) {
     return (
@@ -265,6 +334,14 @@ export default function AttendancePage() {
           <div className="empty">Chưa có dữ liệu chấm công</div>
         ) : (
           <div className="history-table-wrapper">
+            <div className="table-header">
+              <h3>Lịch sử chấm công</h3>
+              <div className="pagination-info">
+                Hiển thị {history.length === 0 ? 0 : currentPage * pageSize + 1}
+                –{Math.min((currentPage + 1) * pageSize, totalItems)} trên{" "}
+                {totalItems}
+              </div>
+            </div>
             <table className="table">
               <thead>
                 <tr>
@@ -314,6 +391,75 @@ export default function AttendancePage() {
                 ))}
               </tbody>
             </table>
+
+            {/* Phân trang */}
+            {Math.ceil(totalItems / pageSize) > 1 && (
+              <div className="pagination">
+                <div className="pagination-controls">
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 0}
+                    onClick={() => setCurrentPage(0)}
+                    title="Về trang đầu"
+                  >
+                    « Đầu
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage === 0}
+                    onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                    title="Trang trước"
+                  >
+                    ‹ Trước
+                  </button>
+
+                  {getPageNumbers().map((page, idx) =>
+                    page === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        className={`btn btn-sm page-btn ${
+                          page - 1 === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(page - 1)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    className="btn btn-sm"
+                    disabled={
+                      currentPage >= Math.ceil(totalItems / pageSize) - 1
+                    }
+                    onClick={() =>
+                      setCurrentPage((p) =>
+                        Math.min(Math.ceil(totalItems / pageSize) - 1, p + 1)
+                      )
+                    }
+                    title="Trang sau"
+                  >
+                    Sau ›
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={
+                      currentPage >= Math.ceil(totalItems / pageSize) - 1
+                    }
+                    onClick={() =>
+                      setCurrentPage(Math.ceil(totalItems / pageSize) - 1)
+                    }
+                    title="Đến trang cuối"
+                  >
+                    Cuối »
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

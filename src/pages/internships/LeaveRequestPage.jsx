@@ -19,12 +19,21 @@ export default function LeaveRequestPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
   const currentUser = useAuthStore((state) => state.user);
   const [notification, setNotification] = useState(null);
 
+  // Load data when component mounts or when page changes
   useEffect(() => {
     loadLeaveRequests();
+  }, [currentPage]);
+
+  // Reset to first page when component unmounts
+  useEffect(() => {
+    return () => {
+      setCurrentPage(1);
+    };
   }, []);
 
   useEffect(() => {
@@ -36,6 +45,52 @@ export default function LeaveRequestPage() {
     }
   }, [notification]);
 
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      // If 7 or fewer pages, show all
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    // Always show first page
+    pages.push(1);
+
+    // Calculate window of pages around current page
+    let startPage = Math.max(2, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    // Adjust if we're at the start or end
+    if (currentPage <= 3) {
+      endPage = 4;
+    } else if (currentPage >= totalPages - 2) {
+      startPage = totalPages - 3;
+    }
+
+    // Add ellipsis after first page if needed
+    if (startPage > 2) {
+      pages.push("...");
+    }
+
+    // Add middle pages
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    // Add ellipsis before last page if needed
+    if (endPage < totalPages - 1) {
+      pages.push("...");
+    }
+
+    // Always show last page
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
   async function loadLeaveRequests() {
     if (!currentUser?.email) {
       setLoading(false);
@@ -44,10 +99,28 @@ export default function LeaveRequestPage() {
 
     setLoading(true);
     try {
-      const response = await getLeaveRequests(currentUser.email);
+      const response = await getLeaveRequests(currentUser.email, {
+        page: currentPage - 1, // Convert to 0-based for API
+        size: pageSize,
+      });
 
-      let userRequests = Array.isArray(response.data) ? response.data : [];
+      let userRequests = [];
+      let total = 0;
 
+      if (response && response.data) {
+        // Handle both array and paginated response
+        if (Array.isArray(response.data)) {
+          userRequests = response.data;
+        } else if (
+          response.data.content &&
+          Array.isArray(response.data.content)
+        ) {
+          // Handle Spring Data Page response
+          userRequests = response.data.content;
+        }
+      }
+
+      // Filter by current user email (as a fallback)
       const currentEmail = currentUser.email.toLowerCase();
       userRequests = userRequests.filter((req) => {
         const internEmail = (req.internEmail || "").toLowerCase();
@@ -55,6 +128,7 @@ export default function LeaveRequestPage() {
       });
 
       setRequests(userRequests);
+      setTotalItems(total || userRequests.length);
     } catch (error) {
       console.error("Error loading leave requests:", error);
       setNotification({
@@ -67,19 +141,20 @@ export default function LeaveRequestPage() {
     }
   }
 
+  // Handle create request success
   async function handleCreateRequest(data) {
     try {
       await createLeaveRequest(data);
-
       setNotification({
         type: "success",
-        message: "Gửi yêu cầu nghỉ phép thành công! 🎉",
+        message: "Gửi yêu cầu nghỉ phép thành công! ",
         details: `Từ ${dayjs(data.startDate).format("DD/MM/YYYY")} đến ${dayjs(
           data.endDate
         ).format("DD/MM/YYYY")}`,
       });
 
       setShowCreate(false);
+      setCurrentPage(1); // Reset to first page after creating new request
       await loadLeaveRequests();
     } catch (error) {
       console.error("Error creating leave request:", error);
@@ -112,17 +187,17 @@ export default function LeaveRequestPage() {
     );
   }
 
+  // Calculate days between two dates
   function calculateDays(startDate, endDate) {
     const start = dayjs(startDate);
     const end = dayjs(endDate);
     return end.diff(start, "day") + 1;
   }
 
-  // Pagination
-  const totalItems = requests.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  // Pagination calculations
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
-  const pageItems = requests.slice(startIndex, startIndex + pageSize);
+  const pageItems = requests; // Already paginated by the API
 
   if (loading) {
     return (
@@ -272,23 +347,57 @@ export default function LeaveRequestPage() {
                 </div>
                 <div className="pagination-controls">
                   <button
-                    className="btn btn-sm btn-outline"
+                    className="btn btn-sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(1)}
+                    title="Về trang đầu"
+                  >
+                    « Đầu
+                  </button>
+                  <button
+                    className="btn btn-sm"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    title="Trang trước"
                   >
                     ‹ Trước
                   </button>
-                  <span className="page-current">
-                    Trang {currentPage} / {totalPages}
-                  </span>
+
+                  {getPageNumbers().map((page, idx) =>
+                    page === "..." ? (
+                      <span key={`dots-${idx}`} className="page-dots">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        className={`btn btn-sm page-btn ${
+                          page === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+
                   <button
-                    className="btn btn-sm btn-outline"
-                    disabled={currentPage === totalPages}
+                    className="btn btn-sm"
+                    disabled={currentPage >= totalPages}
                     onClick={() =>
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
+                    title="Trang sau"
                   >
                     Sau ›
+                  </button>
+                  <button
+                    className="btn btn-sm"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage(totalPages)}
+                    title="Đến trang cuối"
+                  >
+                    Cuối »
                   </button>
                 </div>
               </div>

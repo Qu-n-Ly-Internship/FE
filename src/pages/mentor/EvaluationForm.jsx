@@ -14,7 +14,6 @@ import {
   Star,
   Award,
   Calendar,
-  MessageSquare,
   ClipboardList,
   ArrowLeft,
 } from "lucide-react";
@@ -45,6 +44,10 @@ export default function MentorReviewInterns() {
   const [selectedIntern, setSelectedIntern] = useState(null);
   const [copiedInternId, setCopiedInternId] = useState(null);
   const [showInternList, setShowInternList] = useState(true);
+
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(9); // 9 cards mỗi trang cho grid 3 cột
 
   // Form states
   const [showForm, setShowForm] = useState(false);
@@ -87,6 +90,35 @@ export default function MentorReviewInterns() {
       loadEvaluations(selectedIntern.id);
     }
   }, [selectedIntern]);
+
+  // Reset về trang đầu khi có thay đổi dữ liệu
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [interns]);
+
+  // Tính toán phân trang
+  const totalItems = interns.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = interns.slice(startIndex, startIndex + pageSize);
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
 
   const loadPrograms = async () => {
     try {
@@ -329,7 +361,6 @@ export default function MentorReviewInterns() {
       </div>
 
       {/* Statistics */}
-
       <div className="stats-row">
         <div className="stat-card">
           <div className="stat-icon stat-total">
@@ -412,57 +443,111 @@ export default function MentorReviewInterns() {
               <div className="empty-text">Không có thực tập sinh nào</div>
             </div>
           ) : (
-            <div className="interns-grid">
-              {interns.map((intern) => (
-                <div
-                  key={`${intern.id}-${intern.projectId}`}
-                  className="intern-card"
-                  onClick={() => handleSelectIntern(intern)}
-                >
-                  <div className="intern-header">
-                    <div>
-                      <h3 className="intern-name">{intern.fullName}</h3>
-                      <div className="intern-id">
-                        <span>ID: {intern.id}</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyInternId(intern.id);
-                          }}
-                          className={`copy-btn ${
-                            copiedInternId === intern.id ? "copied" : ""
-                          }`}
-                          title="Copy ID"
-                        >
-                          {copiedInternId === intern.id ? <Check /> : <Copy />}
-                        </button>
+            <>
+              <div className="interns-grid">
+                {currentItems.map((intern) => (
+                  <div
+                    key={`${intern.id}-${intern.projectId}`}
+                    className="intern-card"
+                    onClick={() => handleSelectIntern(intern)}
+                  >
+                    <div className="intern-header">
+                      <div>
+                        <h3 className="intern-name">{intern.fullName}</h3>
+                        <div className="intern-id">
+                          <span>ID: {intern.id}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopyInternId(intern.id);
+                            }}
+                            className={`copy-btn ${
+                              copiedInternId === intern.id ? "copied" : ""
+                            }`}
+                            title="Copy ID"
+                          >
+                            {copiedInternId === intern.id ? (
+                              <Check />
+                            ) : (
+                              <Copy />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="intern-info">
+                      <div className="info-row">
+                        <BookOpen style={{ color: "#667eea" }} />
+                        <div>
+                          <span className="info-label">Dự án</span>
+                          <span className="info-value">
+                            {intern.projectTitle}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="info-row">
+                        <Star style={{ color: "#f59e0b" }} />
+                        <div>
+                          <span className="info-label">Mentor</span>
+                          <span className="info-value">
+                            {intern.mentorName || "Chưa có"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
+                ))}
+              </div>
 
-                  <div className="intern-info">
-                    <div className="info-row">
-                      <BookOpen style={{ color: "#667eea" }} />
-                      <div>
-                        <span className="info-label">Dự án</span>
-                        <span className="info-value">
-                          {intern.projectTitle}
+              {/* Phân trang */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <div className="pagination-info">
+                    Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+                    {Math.min(startIndex + pageSize, totalItems)} trên{" "}
+                    {totalItems}
+                  </div>
+                  <div className="pagination-controls">
+                    <button
+                      className="btn btn-sm"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    >
+                      ‹ Trước
+                    </button>
+
+                    {getPageNumbers().map((p, idx) =>
+                      p === "..." ? (
+                        <span key={`dots-${idx}`} className="page-dots">
+                          …
                         </span>
-                      </div>
-                    </div>
-                    <div className="info-row">
-                      <Star style={{ color: "#f59e0b" }} />
-                      <div>
-                        <span className="info-label">Mentor</span>
-                        <span className="info-value">
-                          {intern.mentorName || "Chưa có"}
-                        </span>
-                      </div>
-                    </div>
+                      ) : (
+                        <button
+                          key={p}
+                          className={`btn btn-sm page-btn ${
+                            p === currentPage ? "active" : ""
+                          }`}
+                          onClick={() => setCurrentPage(p)}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+
+                    <button
+                      className="btn btn-sm"
+                      disabled={currentPage === totalPages}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                    >
+                      Sau ›
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       )}

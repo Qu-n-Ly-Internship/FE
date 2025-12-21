@@ -44,6 +44,10 @@ export default function InternshipProgramList() {
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
 
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   // 📥 Load danh sách chương trình từ API
   useEffect(() => {
     async function loadPrograms() {
@@ -147,6 +151,33 @@ export default function InternshipProgramList() {
     return nameMatch;
   });
 
+  // Tính toán phân trang
+  const totalItems = filteredPrograms.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = filteredPrograms.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+
+  // Hàm tạo số trang hiển thị
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
+
   const clearFilters = () => {
     setNameFilter("");
     setStartDateFilter("");
@@ -207,7 +238,14 @@ export default function InternshipProgramList() {
             />
           </div>
           <div className="form-group">
-            <button className="btn btn-clear" onClick={clearFilters}>
+            <button
+              type="button"
+              className="btn btn-clear"
+              onClick={() => {
+                clearFilters();
+                setCurrentPage(1); // Reset về trang đầu khi xóa bộ lọc
+              }}
+            >
               Xóa bộ lọc
             </button>
           </div>
@@ -229,16 +267,18 @@ export default function InternshipProgramList() {
               </tr>
             </thead>
             <tbody>
-              {filteredPrograms.length === 0 ? (
+              {currentItems.length === 0 ? (
                 <tr>
                   <td className="table-td center" colSpan={7}>
                     Không tìm thấy chương trình nào.
                   </td>
                 </tr>
               ) : (
-                filteredPrograms.map((program, index) => (
+                currentItems.map((program, index) => (
                   <tr key={program.id}>
-                    <td className="table-td center">{index + 1}</td>
+                    <td className="table-td center">
+                      {startIndex + index + 1}
+                    </td>
                     <td className="table-td">{program.programName}</td>
                     <td className="table-td">
                       {formatDate(program.dateCreate)}
@@ -286,6 +326,53 @@ export default function InternshipProgramList() {
             </tbody>
           </table>
         </div>
+
+        {/* Phân trang */}
+        {totalPages > 1 && (
+          <div className="pagination">
+            <div className="pagination-info">
+              Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+              {Math.min(startIndex + pageSize, totalItems)} trên {totalItems}
+            </div>
+            <div className="pagination-controls">
+              <button
+                className="btn btn-sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              >
+                ‹ Trước
+              </button>
+
+              {getPageNumbers().map((p, idx) =>
+                p === "..." ? (
+                  <span key={`dots-${idx}`} className="page-dots">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    className={`btn btn-sm page-btn ${
+                      p === currentPage ? "active" : ""
+                    }`}
+                    onClick={() => setCurrentPage(p)}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+
+              <button
+                className="btn btn-sm"
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+              >
+                Sau ›
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showCreate && (

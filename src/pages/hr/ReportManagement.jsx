@@ -50,6 +50,10 @@ export default function ReportManagement() {
   const [showInternList, setShowInternList] = useState(true);
 
   // Form states
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const [showForm, setShowForm] = useState(false);
   const [editingReport, setEditingReport] = useState(null);
   const [formData, setFormData] = useState({
@@ -313,9 +317,38 @@ export default function ReportManagement() {
     return "poor";
   };
 
+  // Pagination calculations
+  const totalItems = interns.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentItems = interns.slice(startIndex, startIndex + pageSize);
+
+  // Function to generate page numbers
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    const add = (n) => pages.push(n);
+    add(1);
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) pages.push("...");
+    add(totalPages);
+    return pages;
+  };
+
+  // Reset to first page when interns change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [interns]);
+
   // Statistics
   const stats = {
-    totalInterns: interns.length,
+    totalInterns: totalItems,
     totalReports: reports.length,
     totalEvaluations: evaluations.length,
     avgScore:
@@ -426,8 +459,12 @@ export default function ReportManagement() {
           <div className="section-header">
             <h2 className="section-title">
               Danh sách thực tập sinh
-              <span className="count-badge">{interns.length}</span>
+              <span className="badge">{totalItems} thực tập sinh</span>
             </h2>
+            <div className="pagination-info">
+              Hiển thị {startIndex + 1}-
+              {Math.min(startIndex + pageSize, totalItems)} trên {totalItems}
+            </div>
           </div>
 
           {interns.length === 0 ? (
@@ -439,7 +476,7 @@ export default function ReportManagement() {
             </div>
           ) : (
             <div className="interns-grid">
-              {interns.map((intern) => (
+              {currentItems.map((intern) => (
                 <div
                   key={`${intern.id}-${intern.projectId}`}
                   className="intern-card"
@@ -763,6 +800,51 @@ export default function ReportManagement() {
           <div className="loading center">
             <div className="spinner"></div>
             <p>Đang tải dữ liệu...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && selectedProgramId && showInternList && totalPages > 1 && (
+        <div className="pagination">
+          <div className="pagination-info">
+            Hiển thị {currentItems.length === 0 ? 0 : startIndex + 1}–
+            {Math.min(startIndex + pageSize, totalItems)} trên {totalItems}
+          </div>
+          <div className="pagination-controls">
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
+              ‹ Trước
+            </button>
+
+            {getPageNumbers().map((p, idx) =>
+              p === "..." ? (
+                <span key={`dots-${idx}`} className="page-dots">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  className={`btn btn-sm page-btn ${
+                    p === currentPage ? "active" : ""
+                  }`}
+                  onClick={() => setCurrentPage(p)}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Sau ›
+            </button>
           </div>
         </div>
       )}
