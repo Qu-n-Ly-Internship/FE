@@ -6,9 +6,6 @@ const api = axios.create({
     import.meta.env.VITE_API_BASE_URL || "http://codeft.duckdns.org:8090/api",
   withCredentials: true, // Cho phép gửi cookies cho OAuth session
   timeout: 15000, // Timeout sau 15 giây
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 // ==================== REQUEST INTERCEPTOR ====================
