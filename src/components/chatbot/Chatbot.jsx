@@ -186,7 +186,7 @@ const ChatbotWidget = () => {
       const botMessage = {
         id: Date.now() + 1,
         type: "bot",
-        content: response.answer,
+        content: response.response,
         timestamp: new Date(),
       };
 
