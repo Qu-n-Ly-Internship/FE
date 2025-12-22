@@ -6,6 +6,9 @@ export async function uploadCV({ file }) {
   const formData = new FormData();
   formData.append("file", file);
   const email = useAuthStore.getState().user?.email;
+  if (!email) {
+      throw new Error("Bạn chưa đăng nhập!");  // ✅ Validate trước khi gửi
+    }
   if (email) formData.append("uploaderEmail", email);
 
   const response = await api.post("/cvs/upload", formData);
