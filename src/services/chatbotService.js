@@ -10,7 +10,7 @@ export async function sendChatMessage(question, conversationId) {
 
   const body = {
     message: question,
-     user_id: userId || "anonymous",
+     user_id: userId || 0,
      conversation_id: conversationId || undefined
   };
 
