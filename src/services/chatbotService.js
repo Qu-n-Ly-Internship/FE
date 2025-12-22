@@ -9,9 +9,9 @@ export async function sendChatMessage(question, conversationId) {
   const userId = user?.id || null;
 
   const body = {
-    user_id: userId,
-    conversation_id: conversationId || null,
-    question,
+    message: question,
+     user_id: userId || "anonymous",
+     conversation_id: conversationId || undefined
   };
 
   const res = await fetch(API_URL, {
